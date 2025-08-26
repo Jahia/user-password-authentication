@@ -16,3 +16,5 @@ target
 
 # Jahia DX Studio
 repository.xml.generated
+
+.DS_Store
