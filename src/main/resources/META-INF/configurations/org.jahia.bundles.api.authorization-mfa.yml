@@ -1,0 +1,10 @@
+---
+mfa:
+  grants:
+  - api: "graphql.Mutation.mfa"
+  - api: "graphql.Query.mfa"
+  - api: "graphql.MfaMutation"
+  - api: "graphql.MfaResponse"
+  - api: "graphql.MfaFactorsMutation"
+  auto_apply:
+  - always: "true"
