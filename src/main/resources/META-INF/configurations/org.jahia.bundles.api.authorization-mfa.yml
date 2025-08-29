@@ -3,6 +3,7 @@ mfa:
   grants:
   - api: "graphql.Mutation.mfa"
   - api: "graphql.Query.mfa"
+  - api: "graphql.MfaQuery"
   - api: "graphql.MfaMutation"
   - api: "graphql.MfaResponse"
   - api: "graphql.MfaFactorsMutation"
