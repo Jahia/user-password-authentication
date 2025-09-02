@@ -27,6 +27,7 @@ import org.jahia.modules.mfa.MfaSessionState;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -78,8 +79,7 @@ public class GqlMfaQuery {
             response.setSuccess(true);
             response.setSessionState(session.getState());
             response.setRequiredFactors(mfaService.getAvailableFactors());
-            response.setCompletedFactors(session.getCompletedFactors().stream()
-                    .collect(Collectors.toList()));
+            response.setCompletedFactors(new ArrayList<>(session.getCompletedFactors()));
 
             return response;
 

@@ -4,8 +4,8 @@ import graphql.annotations.annotationTypes.GraphQLDescription;
 import graphql.annotations.annotationTypes.GraphQLField;
 import graphql.annotations.annotationTypes.GraphQLName;
 import graphql.schema.DataFetchingEnvironment;
-import org.jahia.modules.graphql.provider.dxm.osgi.annotations.GraphQLOsgiService;
 import org.jahia.modules.graphql.provider.dxm.util.ContextUtil;
+import org.jahia.modules.mfa.impl.factors.EmailCodeFactorProvider;
 import org.jahia.modules.mfa.impl.gql.GqlMfaResponse;
 import org.jahia.modules.mfa.impl.gql.GqlMfaUtils;
 
@@ -18,8 +18,6 @@ import javax.servlet.http.HttpServletRequest;
 @GraphQLName("MfaFactorsMutation")
 @GraphQLDescription("MFA state-modifying operations")
 public class GqlMfaFactorsMutation {
-
-    private final static String EMAIL_CODE_FACTOR = "email_code";
 
     private MfaService mfaService;
 
@@ -34,10 +32,8 @@ public class GqlMfaFactorsMutation {
         try {
             HttpServletRequest httpServletRequest = ContextUtil.getHttpServletRequest(environment.getGraphQlContext());
 
-            // Set the code for the provider to access
-            httpServletRequest.setAttribute("code", code);
-            MfaSession session = mfaService.verifyFactor(EMAIL_CODE_FACTOR, httpServletRequest);
-            String error = session.getFactorVerificationError(EMAIL_CODE_FACTOR);
+            MfaSession session = mfaService.verifyFactor(EmailCodeFactorProvider.FACTOR_TYPE, httpServletRequest, code);
+            String error = session.getFactorVerificationError(EmailCodeFactorProvider.FACTOR_TYPE);
             if (error != null) {
                 return GqlMfaUtils.createErrorResponse(error);
             }

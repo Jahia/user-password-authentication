@@ -1,8 +1,5 @@
 package org.jahia.modules.mfa;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * Represents the state of a single MFA factor within a session.
  * Tracks preparation status, completion status, errors, and associated data.
@@ -12,7 +9,6 @@ public class MfaFactorState {
     private boolean completed = false;
     private String preparationError;
     private String verificationError;
-    private final Map<String, Object> data = new HashMap<>();
 
     public boolean isPrepared() {
         return prepared;
@@ -44,9 +40,5 @@ public class MfaFactorState {
 
     public void setVerificationError(String verificationError) {
         this.verificationError = verificationError;
-    }
-
-    public Map<String, Object> getData() {
-        return data;
     }
 }

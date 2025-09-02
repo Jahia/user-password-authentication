@@ -13,19 +13,17 @@ import javax.servlet.http.HttpServletRequest;
 @Component(immediate = true, service = LoginUrlProvider.class)
 public class MfaLoginUrlProvider implements LoginUrlProvider {
 
-    private MfaService mfaService;
     private MfaServiceImpl mfaServiceImpl;
 
     @Reference
     public void setMfaService(MfaService mfaService) {
-        this.mfaService = mfaService;
         // Cast to implementation to access config
         this.mfaServiceImpl = (MfaServiceImpl) mfaService;
     }
 
     @Override
     public String getLoginUrl(HttpServletRequest httpServletRequest) {
-        return mfaService.isEnabled() ? mfaServiceImpl.getConfigInstance().loginUrl() : null;
+        return mfaServiceImpl.isEnabled() ? mfaServiceImpl.getConfigInstance().loginUrl() : null;
     }
 
     @Override
