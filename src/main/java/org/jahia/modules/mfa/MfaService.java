@@ -23,12 +23,12 @@ public interface MfaService {
     /**
      * Initiates MFA authentication for a user with username/password.
      */
-    MfaSession initiateMfa(String username, String password, HttpServletRequest request) throws MfaException;
+    MfaSession initiateMfa(String username, String password, HttpServletRequest request);
 
     /**
      * Prepares a specific MFA factor for verification.
      */
-    MfaSession prepareFactor(String factorType, HttpServletRequest request) throws MfaException;
+    MfaSession prepareFactor(String factorType, HttpServletRequest request);
 
     /**
      * Verifies a specific MFA factor with the provided verification data.

@@ -19,7 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 @GraphQLDescription("MFA state-modifying operations")
 public class GqlMfaFactorsMutation {
 
-    private MfaService mfaService;
+    private final MfaService mfaService;
 
     public GqlMfaFactorsMutation(MfaService mfaService) {
         this.mfaService = mfaService;

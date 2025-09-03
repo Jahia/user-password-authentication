@@ -29,7 +29,6 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @GraphQLName("MfaQuery")
 @GraphQLDescription("MFA read-only operations")

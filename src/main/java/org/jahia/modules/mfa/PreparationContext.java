@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class PreparationContext {
     private final JCRUserNode user;
-    private final HttpServletRequest httpServletRequest;  // TODO should we keep it (not needed from email factor)?
+    private final HttpServletRequest httpServletRequest;  // TODO should we keep it (not needed for email factor)?
 
     /**
      * Constructs a new PreparationContext.

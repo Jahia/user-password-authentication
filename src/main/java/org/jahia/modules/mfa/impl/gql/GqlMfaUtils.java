@@ -2,8 +2,8 @@ package org.jahia.modules.mfa.impl.gql;
 
 import org.jahia.modules.mfa.MfaSession;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class GqlMfaUtils {
 
@@ -16,16 +16,12 @@ public class GqlMfaUtils {
     }
 
     public static GqlMfaResponse createSessionStatusResponse(MfaSession session) {
-        GqlMfaResponse response = new GqlMfaResponse();
-        response.setSuccess(true);
-        response.setSessionState(session.getState());
+        GqlMfaResponse response = createSuccessResponse(session);
 
-        List<String> preparedFactors = session.getPreparedFactors().stream()
-                .collect(Collectors.toList());
+        List<String> preparedFactors = new ArrayList<>(session.getPreparedFactors());
         response.setRequiredFactors(preparedFactors);
 
-        List<String> completedFactors = session.getCompletedFactors().stream()
-                .collect(Collectors.toList());
+        List<String> completedFactors = new ArrayList<>(session.getCompletedFactors());
         response.setCompletedFactors(completedFactors);
 
         return response;

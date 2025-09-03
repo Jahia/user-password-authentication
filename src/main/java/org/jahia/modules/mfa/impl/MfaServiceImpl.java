@@ -151,6 +151,9 @@ public class MfaServiceImpl implements org.jahia.modules.mfa.MfaService {
             request.getSession().setAttribute(getAttributeKey(factorType), preparationResult);
             session.markFactorPrepared(provider.getFactorType());
             logger.info("Factor {} preparation completed for user: {}", factorType, session.getUserId());
+        } catch (MfaException mfaException) {
+            session.markFactorPreparationFailed(factorType, mfaException.getMessage());
+            logger.error("Factor {} preparation failed for user: {}", factorType, session.getUserId(), mfaException);
         } catch (Exception e) {
             session.markFactorPreparationFailed(factorType, "Preparation failed: " + e.getMessage());
             logger.error("Factor {} preparation failed for user: {}", factorType, session.getUserId(), e);
