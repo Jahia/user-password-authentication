@@ -74,7 +74,7 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
             throw new MfaException(String.format("Failed to prepare email code factor for user: %s", user.getName()), e);
         }
         if (email == null || email.trim().isEmpty()) {
-            throw new MfaException("User does not have an email address configured");
+            throw new MfaException("User does not have an email address configured"); // TODO should we skip MFA in this case?
         }
         return email;
     }
