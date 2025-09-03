@@ -6,7 +6,9 @@ import org.jahia.modules.mfa.MfaException;
 import org.jahia.modules.mfa.MfaFactorProvider;
 import org.jahia.modules.mfa.PreparationContext;
 import org.jahia.modules.mfa.VerificationContext;
+import org.jahia.registries.ServicesRegistry;
 import org.jahia.services.content.decorator.JCRUserNode;
+import org.jahia.services.mail.MailService;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,8 +40,16 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
         // Generate verification code
         String code = generateEmailCode();
 
-        // TODO: Send actual email (for now just log)
-        logger.info("Sending validation code {} to user {} (email: {})", code, user.getName(), emailAddress);
+        MailService mailService = ServicesRegistry.getInstance().getMailService();
+        // TODO use i18n for email details
+        String subject = "Validation code";
+        String message = String.format("Your verification code is: %s", code);
+
+        if (mailService.sendMessage(null, emailAddress, null, null, subject, message)) {
+            logger.info("Validation code sent to user {} (email: {})", user.getName(), emailAddress);
+        } else {
+            throw new MfaException(String.format("Failed to send validation code to user: %s", user.getName()));
+        }
         return code;
 
     }
