@@ -1,18 +1,20 @@
 package org.jahia.modules.mfa.impl.factors;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
+import org.jahia.modules.mfa.MfaException;
 import org.jahia.modules.mfa.MfaFactorProvider;
-import org.jahia.modules.mfa.MfaSession;
+import org.jahia.modules.mfa.PreparationContext;
+import org.jahia.modules.mfa.VerificationContext;
+import org.jahia.registries.ServicesRegistry;
 import org.jahia.services.content.decorator.JCRUserNode;
+import org.jahia.services.mail.MailService;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.jcr.RepositoryException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import java.security.SecureRandom;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Email code MFA factor provider.
@@ -22,8 +24,7 @@ import java.util.Map;
 public class EmailCodeFactorProvider implements MfaFactorProvider {
     private static final Logger logger = LoggerFactory.getLogger(EmailCodeFactorProvider.class);
     private static final int EMAIL_CODE_LENGTH = 6;
-    private static final String SESSION_KEY_PREFIX = "mfa_email_code_";
-    protected static final String FACTOR_TYPE = "email_code";
+    public static final String FACTOR_TYPE = "email_code";
     private static final SecureRandom random = new SecureRandom();
 
     @Override
@@ -32,80 +33,60 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
     }
 
     @Override
-    public void prepare(MfaSession session, JCRUserNode user, HttpServletRequest request) {
-        try {
-            String email = user.hasProperty("j:email") ? user.getProperty("j:email").getString() : null;
-            if (email == null || email.trim().isEmpty()) {
-                session.markFactorPreparationFailed(getFactorType(), "User does not have an email address configured");
-                return;
-            }
+    public String prepare(PreparationContext preparationContext) throws MfaException {
+        JCRUserNode user = preparationContext.getUser();
+        String emailAddress = getUserEmailAddress(user);
 
-            // Generate verification code
-            String code = generateEmailCode();
+        // Generate verification code
+        String code = generateEmailCode();
 
-            // Store code in HTTP session for verification
-            HttpSession httpSession = request.getSession();
-            httpSession.setAttribute(SESSION_KEY_PREFIX + user.getName(), code);
+        MailService mailService = ServicesRegistry.getInstance().getMailService();
+        // TODO use i18n for email details
+        String subject = "Validation code";
+        String message = String.format("Your verification code is: %s", code);
 
-            // TODO: Send actual email (for now just log)
-            logger.info("Generated email code for user {}: {}", user.getName(), code);
-
-            // Update MFA session with preparation data
-            Map<String, Object> data = new HashMap<>();
-            data.put("email", email);
-            data.put("codeSent", true);
-
-            session.markFactorPrepared(getFactorType(), data);
-
-        } catch (RepositoryException e) {
-            logger.error("Failed to prepare email code factor for user: {}", user.getName(), e);
-            session.markFactorPreparationFailed(getFactorType(), "Failed to prepare email verification");
+        if (mailService.sendMessage(null, emailAddress, null, null, subject, message)) {
+            logger.info("Validation code sent to user {} (email: {})", user.getName(), emailAddress);
+        } else {
+            throw new MfaException(String.format("Failed to send validation code to user: %s", user.getName()));
         }
+        return code;
+
     }
+
 
     @Override
-    public void verify(MfaSession session, JCRUserNode user, HttpServletRequest request) {
-        try {
-            // Get submitted code from request attribute (set by GraphQL mutation)
-            String submittedCode = (String) request.getAttribute("code");
-            if (submittedCode == null || submittedCode.trim().isEmpty()) {
-                session.markFactorVerificationFailed(getFactorType(), "Verification code is required");
-                return;
-            }
-
-            // Get stored code from HTTP session
-            HttpSession httpSession = request.getSession(false);
-            if (httpSession == null) {
-                session.markFactorVerificationFailed(getFactorType(), "No active session found");
-                return;
-            }
-
-            String storedCode = (String) httpSession.getAttribute(SESSION_KEY_PREFIX + user.getName());
-            if (storedCode == null) {
-                session.markFactorVerificationFailed(getFactorType(), "No verification code found. Please request a new code.");
-                return;
-            }
-
-            // Verify code
-            if (submittedCode.trim().equals(storedCode)) {
-                // Clear code after successful verification
-                httpSession.removeAttribute(SESSION_KEY_PREFIX + user.getName());
-                session.markFactorCompleted(getFactorType());
-            } else {
-                session.markFactorVerificationFailed(getFactorType(), "Invalid verification code");
-            }
-
-        } catch (Exception e) {
-            logger.error("Failed to verify email code for user: {}", user.getName(), e);
-            session.markFactorVerificationFailed(getFactorType(), "Verification failed due to system error");
+    public boolean verify(VerificationContext verificationContext) throws MfaException {
+        String submittedCode = (String) verificationContext.getVerificationData();
+        if (StringUtils.isEmpty(submittedCode)) {
+            throw new MfaException("Verification code is required");
         }
+        String storedCode = (String) verificationContext.getPreparationResult();
+        if (StringUtils.isEmpty(storedCode)) {
+            throw new MfaException("No verification code found. Please request a new code.");
+        }
+        return Strings.CS.equals(submittedCode, storedCode);
     }
 
-    private String generateEmailCode() {
+    private static String generateEmailCode() {
         StringBuilder code = new StringBuilder();
         for (int i = 0; i < EMAIL_CODE_LENGTH; i++) {
             code.append(random.nextInt(10));
         }
         return code.toString();
     }
+
+    private static String getUserEmailAddress(JCRUserNode user) throws MfaException {
+        String email;
+        try {
+            email = user.hasProperty("j:email") ? user.getProperty("j:email").getString() : null;
+        } catch (RepositoryException e) {
+            throw new MfaException(String.format("Failed to prepare email code factor for user: %s", user.getName()), e);
+        }
+        if (email == null || email.trim().isEmpty()) {
+            throw new MfaException("User does not have an email address configured"); // TODO should we skip MFA in this case?
+        }
+        return email;
+    }
+
 }

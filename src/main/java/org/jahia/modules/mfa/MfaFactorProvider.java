@@ -1,8 +1,6 @@
 package org.jahia.modules.mfa;
 
-import org.jahia.services.content.decorator.JCRUserNode;
-
-import javax.servlet.http.HttpServletRequest;
+import java.io.Serializable;
 
 /**
  * Interface for MFA factor providers.
@@ -13,26 +11,28 @@ public interface MfaFactorProvider {
 
     /**
      * Gets the factor type this provider handles as a string identifier.
+     *
+     * @return the factor type identifier
      */
     String getFactorType();
 
     /**
      * Prepares the factor for verification (e.g., generates and sends code).
-     * Updates the session state directly through the session parameter.
+     * Updates the session state directly through the provided preparation context.
      *
-     * @param session The MFA session to update with preparation results
-     * @param user The user for whom to prepare the factor
-     * @param request The HTTP request context
+     * @param preparationContext the context containing all necessary data for preparation
+     * @return a serializable result of the preparation step
+     * @throws MfaException if an error occurs when preparing the factor
      */
-    void prepare(MfaSession session, JCRUserNode user, HttpServletRequest request);
+    Serializable prepare(PreparationContext preparationContext) throws MfaException;
 
     /**
      * Verifies the factor with the provided data.
-     * Updates the session state directly through the session parameter.
+     * Updates the session state directly through the provided verification context.
      *
-     * @param session The MFA session to update with verification results
-     * @param user The user being verified
-     * @param request The HTTP request containing verification data
+     * @param verificationContext the context containing all necessary data for verification
+     * @return true if verification is successful, false otherwise
+     * @throws MfaException if an error occurs during verification
      */
-    void verify(MfaSession session, JCRUserNode user, HttpServletRequest request);
+    boolean verify(VerificationContext verificationContext) throws MfaException;
 }

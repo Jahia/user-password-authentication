@@ -11,7 +11,7 @@ import java.util.Set;
  */
 public class MfaSession {
     private final String userId;
-    private final String sessionId;
+    private final String sessionId; // TODO what's the intention of storing the session id here? as the MfaSession is istelf stored in session...
     private MfaSessionState state;
     private final Map<String, MfaFactorState> factorStates;
     private final LocalDateTime createdAt;
@@ -58,13 +58,10 @@ public class MfaSession {
     /**
      * Marks a factor as successfully prepared.
      */
-    public void markFactorPrepared(String factorType, Map<String, Object> data) {
+    public void markFactorPrepared(String factorType) {
         MfaFactorState factorState = getOrCreateFactorState(factorType);
         factorState.setPrepared(true);
         factorState.setPreparationError(null);
-        if (data != null) {
-            factorState.getData().putAll(data);
-        }
         this.updatedAt = LocalDateTime.now();
     }
 
@@ -138,14 +135,6 @@ public class MfaSession {
     public String getFactorVerificationError(String factorType) {
         MfaFactorState factorState = factorStates.get(factorType);
         return factorState != null ? factorState.getVerificationError() : null;
-    }
-
-    /**
-     * Gets the data associated with a factor.
-     */
-    public Map<String, Object> getFactorData(String factorType) {
-        MfaFactorState factorState = factorStates.get(factorType);
-        return factorState != null ? new HashMap<>(factorState.getData()) : new HashMap<>();
     }
 
     // ===== PRIVATE HELPERS =====

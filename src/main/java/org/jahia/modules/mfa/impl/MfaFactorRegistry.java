@@ -1,11 +1,16 @@
 package org.jahia.modules.mfa.impl;
 
 import org.jahia.modules.mfa.MfaFactorProvider;
-import org.osgi.service.component.annotations.*;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.component.annotations.ReferencePolicyOption;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -20,29 +25,29 @@ public class MfaFactorRegistry {
     private final Map<String, MfaFactorProvider> providers = new ConcurrentHashMap<>();
 
     @Reference(
-        cardinality = ReferenceCardinality.MULTIPLE,
-        policy = ReferencePolicy.DYNAMIC,
-        policyOption = ReferencePolicyOption.GREEDY
+            cardinality = ReferenceCardinality.MULTIPLE,
+            policy = ReferencePolicy.DYNAMIC,
+            policyOption = ReferencePolicyOption.GREEDY
     )
     public void addFactorProvider(MfaFactorProvider provider) {
         String factorType = provider.getFactorType();
         providers.put(factorType, provider);
         logger.info("Registered MFA factor provider: {} for type: {}",
-                   provider.getClass().getSimpleName(), factorType);
+                provider.getClass().getSimpleName(), factorType);
     }
 
     public void removeFactorProvider(MfaFactorProvider provider) {
         String factorType = provider.getFactorType();
         providers.remove(factorType, provider);
         logger.info("Unregistered MFA factor provider: {} for type: {}",
-                   provider.getClass().getSimpleName(), factorType);
+                provider.getClass().getSimpleName(), factorType);
     }
 
     /**
      * Gets the provider for a specific factor type.
      */
-    public Optional<MfaFactorProvider> getProvider(String factorType) {
-        return Optional.ofNullable(providers.get(factorType));
+    public MfaFactorProvider lookupProvider(String factorType) {
+        return providers.get(factorType);
     }
 
     /**

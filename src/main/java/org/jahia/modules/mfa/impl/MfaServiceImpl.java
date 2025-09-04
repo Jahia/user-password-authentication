@@ -1,9 +1,18 @@
 package org.jahia.modules.mfa.impl;
 
-import org.jahia.modules.mfa.*;
+import org.jahia.modules.mfa.MfaException;
+import org.jahia.modules.mfa.MfaFactorProvider;
+import org.jahia.modules.mfa.MfaSession;
+import org.jahia.modules.mfa.MfaSessionState;
+import org.jahia.modules.mfa.PreparationContext;
+import org.jahia.modules.mfa.VerificationContext;
 import org.jahia.services.content.decorator.JCRUserNode;
 import org.jahia.services.usermanager.JahiaUserManagerService;
-import org.osgi.service.component.annotations.*;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.ConfigurationPolicy;
+import org.osgi.service.component.annotations.Modified;
+import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.Designate;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
@@ -12,10 +21,10 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -91,7 +100,7 @@ public class MfaServiceImpl implements org.jahia.modules.mfa.MfaService {
 
         // Filter to only include factors that have registered providers
         return configuredFactors.stream()
-                .filter(factorType -> factorRegistry.getProvider(factorType).isPresent())
+                .filter(factorType -> factorRegistry.lookupProvider(factorType) != null)
                 .collect(Collectors.toList());
     }
 
@@ -124,8 +133,8 @@ public class MfaServiceImpl implements org.jahia.modules.mfa.MfaService {
             throw new IllegalStateException("No active MFA session found");
         }
 
-        Optional<MfaFactorProvider> providerOpt = factorRegistry.getProvider(factorType);
-        if (!providerOpt.isPresent()) {
+        MfaFactorProvider provider = factorRegistry.lookupProvider(factorType);
+        if (provider == null) {
             session.markFactorPreparationFailed(factorType, "Factor type not supported: " + factorType);
             return session;
         }
@@ -137,8 +146,14 @@ public class MfaServiceImpl implements org.jahia.modules.mfa.MfaService {
         }
 
         try {
-            providerOpt.get().prepare(session, user, request);
+            PreparationContext preparationContext = new PreparationContext(user, request);
+            Object preparationResult = provider.prepare(preparationContext);
+            request.getSession().setAttribute(getAttributeKey(factorType), preparationResult);
+            session.markFactorPrepared(provider.getFactorType());
             logger.info("Factor {} preparation completed for user: {}", factorType, session.getUserId());
+        } catch (MfaException mfaException) {
+            session.markFactorPreparationFailed(factorType, mfaException.getMessage());
+            logger.error("Factor {} preparation failed for user: {}", factorType, session.getUserId(), mfaException);
         } catch (Exception e) {
             session.markFactorPreparationFailed(factorType, "Preparation failed: " + e.getMessage());
             logger.error("Factor {} preparation failed for user: {}", factorType, session.getUserId(), e);
@@ -148,7 +163,7 @@ public class MfaServiceImpl implements org.jahia.modules.mfa.MfaService {
     }
 
     @Override
-    public MfaSession verifyFactor(String factorType, HttpServletRequest request) {
+    public MfaSession verifyFactor(String factorType, HttpServletRequest request, Serializable verificationData) {
         MfaSession session = getMfaSession(request);
         if (session == null) {
             throw new IllegalStateException("No active MFA session found");
@@ -159,8 +174,8 @@ public class MfaServiceImpl implements org.jahia.modules.mfa.MfaService {
             return session;
         }
 
-        Optional<MfaFactorProvider> providerOpt = factorRegistry.getProvider(factorType);
-        if (providerOpt.isEmpty()) {
+        MfaFactorProvider provider = factorRegistry.lookupProvider(factorType);
+        if (provider == null) {
             session.markFactorVerificationFailed(factorType, "Factor type not supported: " + factorType);
             return session;
         }
@@ -173,7 +188,15 @@ public class MfaServiceImpl implements org.jahia.modules.mfa.MfaService {
         }
 
         try {
-            providerOpt.get().verify(session, user, request);
+            Serializable preparationResult = (Serializable) request.getSession().getAttribute(getAttributeKey(factorType));
+            VerificationContext verificationContext = new VerificationContext(user, request, preparationResult, verificationData);
+            if (provider.verify(verificationContext)) {
+                // Clear preparation result after successful verification
+                request.getSession().removeAttribute(getAttributeKey(factorType));
+                session.markFactorCompleted(factorType);
+            } else {
+                session.markFactorVerificationFailed(factorType, "Invalid verification code"); // TODO more generic
+            }
 
             if (session.isFactorCompleted(factorType)) {
                 logger.info("Factor {} verified successfully for user: {}", factorType, session.getUserId());
@@ -220,4 +243,10 @@ public class MfaServiceImpl implements org.jahia.modules.mfa.MfaService {
         // This can be made configurable later
         return !session.getCompletedFactors().isEmpty();
     }
+
+
+    private static String getAttributeKey(String factorType) {
+        return String.format("%s.preparationResult.%s", MfaServiceImpl.class.getSimpleName(), factorType);
+    }
+
 }

@@ -1,11 +1,12 @@
 package org.jahia.modules.mfa;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * Public interface for MFA service operations.
- * This interface defines the core MFA functionality available to external consumers.
+ * It defines the core MFA functionality available to external consumers.
  */
 public interface MfaService {
 
@@ -30,9 +31,9 @@ public interface MfaService {
     MfaSession prepareFactor(String factorType, HttpServletRequest request);
 
     /**
-     * Verifies a specific MFA factor with the provided data.
+     * Verifies a specific MFA factor with the provided verification data.
      */
-    MfaSession verifyFactor(String factorType, HttpServletRequest request);
+    MfaSession verifyFactor(String factorType, HttpServletRequest request, Serializable verificationData);
 
     /**
      * Gets the current MFA session for the request.
