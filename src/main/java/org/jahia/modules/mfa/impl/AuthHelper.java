@@ -44,6 +44,10 @@ import java.util.Locale;
 public class AuthHelper {
     private static final Logger logger = LoggerFactory.getLogger(AuthHelper.class);
 
+    private AuthHelper() {
+        // helper class
+    }
+
     // TODO partially duplicated from LoginEngineAuthValveImpl#getJcrUserNode(), to be refactored
     public static JCRUserNode lookupUserFromCredentials(String username, String password, String site) {
         JCRUserNode theUser = JahiaUserManagerService.getInstance().lookupUser(username, site);

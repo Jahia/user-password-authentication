@@ -7,6 +7,10 @@ import java.util.List;
 
 public class GqlMfaUtils {
 
+    private GqlMfaUtils() {
+        // helper class
+    }
+
     // Helper methods to reduce duplication
     public static GqlMfaResponse createSuccessResponse(MfaSession session) {
         GqlMfaResponse response = new GqlMfaResponse();

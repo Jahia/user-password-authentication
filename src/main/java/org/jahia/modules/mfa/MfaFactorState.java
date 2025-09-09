@@ -1,10 +1,12 @@
 package org.jahia.modules.mfa;
 
+import java.io.Serializable;
+
 /**
  * Represents the state of a single MFA factor within a session.
  * Tracks preparation status, completion status, errors, and associated data.
  */
-public class MfaFactorState {
+public class MfaFactorState implements Serializable {
     private boolean prepared = false;
     private boolean completed = false;
     private String preparationError;
