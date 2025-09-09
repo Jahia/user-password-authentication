@@ -1,0 +1,81 @@
+{
+  "name": "jahia-multi-factor-authentication-cypress",
+  "version": "1.0.0",
+  "description": "Cypress tests for the Jahia MFA (Multi-Factor Authentication) module",
+  "devDependencies": {
+    "@apollo/client": "^3.13.6",
+    "@cypress/code-coverage": "^3.14.0",
+    "@istanbuljs/nyc-config-typescript": "^1.0.1",
+    "@jahia/cypress": "^6.2.0",
+    "@jahia/eslint-config": "^2.1.2",
+    "@jahia/jahia-reporter": "^1.5.0",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "babel-plugin-istanbul": "^6.1.1",
+    "compare-versions": "^6.1.1",
+    "cross-fetch": "^3.1.4",
+    "cypress": "14.3.0",
+    "cypress-file-upload": "^5.0.8",
+    "cypress-multi-reporters": "^2.0.5",
+    "cypress-terminal-report": "^7.1.0",
+    "cypress-wait-until": "^3.0.1",
+    "date-fns": "^2.25.0",
+    "diff": "^5.0.0",
+    "eslint": "8.57.1",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-chai-friendly": "^0.7.2",
+    "eslint-plugin-cypress": "^2.15.1",
+    "eslint-plugin-jest": "^28.11.0",
+    "eslint-plugin-prettier": "^5.2.6",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "graphql": "^15.7.0",
+    "graphql-tag": "^2.12.5",
+    "istanbul-lib-coverage": "^3.2.0",
+    "lint-staged": "^11.2.6",
+    "mocha-junit-reporter": "^2.2.0",
+    "mochawesome": "^7.1.3",
+    "mochawesome-merge": "^5.0.0",
+    "mochawesome-report-generator": "^6.2.0",
+    "node-ssh": "^13.1.0",
+    "nyc": "^15.1.0",
+    "prettier": "^3.5.3",
+    "react": "^18.3.1",
+    "subscriptions-transport-ws": "^0.11.0",
+    "supports-color": "^9.0.2",
+    "typescript": "~5.5.4",
+    "util": "^0.12.4",
+    "uuid": "^10.0.0"
+  },
+  "scripts": {
+    "instrument": "nyc instrument --compact=false cypress instrumented",
+    "e2e:coverage": "yarn instrument && yarn cypress run --config integrationFolder=./instrumented/integration && yarn nyc report --reporter=html --report-dir=./results/coverage && yarn nyc report",
+    "e2e:ci": "cypress run",
+    "e2e:debug": "cypress open",
+    "lint": "eslint . -c .eslintrc.json --ext .ts",
+    "lint:fix": "yarn lint --fix",
+    "report:merge": "mochawesome-merge results/reports/cypress*.json > results/reports/report.json && rm results/reports/cypress*.json",
+    "report:html": "marge --inline results/reports/report.json --reportDir results/reports/"
+  },
+  "nyc": {
+    "extends": "@istanbuljs/nyc-config-typescript",
+    "all": true,
+    "include": [
+      "cypress/integration",
+      "cypress/page-object"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jahia/jahia-multi-factor-authentication.git",
+    "directory": "tests"
+  },
+  "author": "",
+  "license": "SEE LICENSE IN LICENSE.txt",
+  "bugs": {
+    "url": "https://github.com/Jahia/jahia-multi-factor-authentication/issues"
+  },
+  "homepage": "https://github.com/Jahia/jahia-multi-factor-authentication#readme",
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+
+}

@@ -1,0 +1,11 @@
+mutation prepareFactor($factorType: String!) {
+    mfa {
+        prepareFactor(factorType: $factorType) {
+            success
+            error
+            sessionState
+            requiredFactors
+            completedFactors
+        }
+    }
+}

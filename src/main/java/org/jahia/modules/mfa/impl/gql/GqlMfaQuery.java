@@ -60,11 +60,12 @@ public class GqlMfaQuery {
     @GraphQLName("sessionStatus")
     @GraphQLDescription("Get current MFA session status")
     public GqlMfaResponse sessionStatus(DataFetchingEnvironment environment) {
+        GqlMfaResponse response = new GqlMfaResponse();
+        response.setRequiredFactors(mfaService.getAvailableFactors());
         try {
             HttpServletRequest httpServletRequest = ContextUtil.getHttpServletRequest(environment.getGraphQlContext());
 
             MfaSession session = mfaService.getMfaSession(httpServletRequest);
-            GqlMfaResponse response = new GqlMfaResponse();
 
             if (session == null) {
                 response.setSuccess(true);
@@ -77,13 +78,12 @@ public class GqlMfaQuery {
             // Build response from service data directly in GraphQL layer
             response.setSuccess(true);
             response.setSessionState(session.getState());
-            response.setRequiredFactors(mfaService.getAvailableFactors());
+
             response.setCompletedFactors(new ArrayList<>(session.getCompletedFactors()));
 
             return response;
 
         } catch (Exception e) {
-            GqlMfaResponse response = new GqlMfaResponse();
             response.setSuccess(false);
             response.setError("Failed to get session status: " + e.getMessage());
             return response;

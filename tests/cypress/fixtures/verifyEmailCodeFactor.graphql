@@ -1,0 +1,13 @@
+mutation verifyEmailCodeFactor($code: String!) {
+    mfa {
+        factors {
+            verifyEmailCodeFactor(code: $code) {
+                success
+                error
+                sessionState
+                requiredFactors
+                completedFactors
+            }
+        }
+    }
+}

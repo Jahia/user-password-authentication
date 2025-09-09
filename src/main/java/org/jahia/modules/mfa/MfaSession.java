@@ -72,6 +72,7 @@ public class MfaSession {
         MfaFactorState factorState = getOrCreateFactorState(factorType);
         factorState.setPrepared(false);
         factorState.setPreparationError(error);
+        setState(MfaSessionState.FAILED);
         this.updatedAt = LocalDateTime.now();
     }
 
