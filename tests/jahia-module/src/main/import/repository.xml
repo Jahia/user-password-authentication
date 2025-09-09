@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <content xmlns:j="http://www.jahia.org/jahia/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0">
    <modules jcr:primaryType="jnt:modules">
-      <multi-factor-authentication-test-module j:dependencies="default"
-                             j:installedModules="multi-factor-authentication-test-module"
+      <jahia-multi-factor-authentication-test-module j:dependencies="default"
+                             j:installedModules="jahia-multi-factor-authentication-test-module"
                              j:modulePriority="0"
                              j:moduleType="templatesSet"
                              j:title="HTML Filtering test module - templatesSet"
@@ -11,8 +11,8 @@
          <files jcr:primaryType="jnt:folder"/>
          <contents jcr:primaryType="jnt:contentFolder"/>
          <templates jcr:primaryType="jnt:templatesFolder">
-            <base j:theme="#/modules/multi-factor-authentication-test-module/templates/files/themes/default"
-                  j:view="multi-factor-authentication-test-module"
+            <base j:theme="#/modules/jahia-multi-factor-authentication-test-module/templates/files/themes/default"
+                  j:view="jahia-multi-factor-authentication-test-module"
                   jcr:mixinTypes="jmix:theme"
                   jcr:primaryType="jnt:template">
                <simple jcr:primaryType="jnt:pageTemplate"/>
@@ -26,6 +26,6 @@
                               jcr:primaryType="jnt:translation"
                               jcr:title="Home"/>
          </home>
-      </multi-factor-authentication-test-module>
+      </jahia-multi-factor-authentication-test-module>
    </modules>
 </content>

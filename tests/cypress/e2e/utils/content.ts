@@ -10,7 +10,7 @@ export function createSiteWithLoginPage(siteKey:string, pageName: string) {
     createSite(siteKey, {
         locale: 'en',
         serverName: 'localhost',
-        templateSet: 'multi-factor-authentication-test-module'
+        templateSet: 'jahia-multi-factor-authentication-test-module'
     });
     addNode({
         parentPathOrId: `/sites/${siteKey}`,
