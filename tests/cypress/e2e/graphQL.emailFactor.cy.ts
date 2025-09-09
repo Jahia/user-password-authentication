@@ -1,14 +1,13 @@
-import {deleteSite, deleteUser} from '@jahia/cypress';
+import {deleteUser} from '@jahia/cypress';
 import {
     assertIsLoggedIn,
     assertIsNotLoggedIn,
-    createSiteWithLoginPage,
     createUserForMFA,
     deleteAllEmails,
     generateWrongCode,
     getVerificationCode,
     initiate,
-    installConfig,
+    installMFAConfig,
     prepare,
     verifyEmailCodeFactor
 } from './utils';
@@ -16,13 +15,11 @@ import {
 const USERNAME = 'test_mfa_user';
 const PASSWORD = 'password';
 const EMAIL = 'testmfauser@example.com';
-const SITE_KEY = 'sample';
 
 describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', () => {
     before(() => {
-        createSiteWithLoginPage(SITE_KEY, 'myLoginPage');
         createUserForMFA(USERNAME, PASSWORD, EMAIL);
-        installConfig('cfg/org.jahia.modules.mfa.cfg');
+        installMFAConfig('fake.yml');
     });
 
     beforeEach(() => {
@@ -34,9 +31,9 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
     afterEach(() => {
         deleteAllEmails();
     });
+
     after(() => {
         deleteUser(USERNAME);
-        deleteSite(SITE_KEY);
     });
 
     it('Should be authenticated when correct credentials and code are provided', () => {

@@ -1,13 +1,9 @@
 /**
- * Installs a module configuration.
- * @param configFilePath configuration file path relative to fixtures folder
+ * Installs a configuration for the MFA module.
+ * @param configFilename name of the configuration YAML file located in the `fixtures/mfa-configuration/` folder
  */
-export const installConfig = (configFilePath: string) => {
+export const installMFAConfig = (configFilename: string) => {
     cy.runProvisioningScript({
-        script: [{installConfiguration: configFilePath}],
-        files: [{
-            fileName: configFilePath,
-            type: 'text/plain'
-        }]
+        script: {fileName: `mfa-configuration/${configFilename}`, type: 'application/yaml'}
     });
 };
