@@ -1,10 +1,5 @@
 - addMavenRepository: 'https://devtools.jahia.com/nexus/content/groups/public/@snapshots@noreleases@id=JahiaPublicSnapshots'
 - installBundle:
-    - 'mvn:org.jahia.modules/jcontent'
     - 'mvn:org.jahia.modules/jahia-multi-factor-authentication'
-    - 'mvn:org.jahia.modules/jahia-administration'
-    - 'mvn:org.jahia.modules/graphql-dxm-provider'
-    - 'mvn:org.jahia.modules/jahia-ui-root'
-    - 'mvn:org.jahia.test/jcontent-test-module'
-    - 'mvn:org.jahia.test/jcontent-test-template'
+    - 'mvn:org.jahia.test/jahia-multi-factor-authentication-test-module'
 - include: 'provisioning.yml'
