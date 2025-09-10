@@ -15,5 +15,5 @@ jobs:
       testrail_project: Jahia Multi-Factor Authentication Module
       pagerduty_incident_service: jahia-multi-factor-authentication-JahiaSN
       provisioning_manifest: provisioning-manifest-snapshot.yml
-      artifact_prefix: jahia-multi-factor-authentication-nightly-sn
+      artifact_prefix: mfa-nightly-sn
       module_branch: ${{ github.ref }}

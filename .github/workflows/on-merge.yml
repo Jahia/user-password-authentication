@@ -58,7 +58,6 @@ jobs:
       jahia_image: jahia/jahia-ee-dev:8-SNAPSHOT
       module_id: jahia-multi-factor-authentication
       testrail_project: Jahia Multi-Factor Authentication Module
-      pagerduty_skip_notification: true
       provisioning_manifest: provisioning-manifest-build.yml
       should_use_build_artifacts: true
       pagerduty_incident_service: jahia-multi-factor-authentication-JahiaSN
