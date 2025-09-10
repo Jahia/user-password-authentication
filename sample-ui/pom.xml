@@ -34,19 +34,4 @@
         <jahia-module-signature>MCwCFFilcSB3g9G4g9amen4Ypp4mBy4lAhQdQ27Hi/uQW4m4ZBWK7zxOkVAEaA==</jahia-module-signature>
     </properties>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <extensions>true</extensions>
-                <configuration>
-                    <instructions>
-                        <Jahia-Depends>default</Jahia-Depends>
-                        <Jahia-Module-Type>templatesSet</Jahia-Module-Type>
-                    </instructions>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 </project>
