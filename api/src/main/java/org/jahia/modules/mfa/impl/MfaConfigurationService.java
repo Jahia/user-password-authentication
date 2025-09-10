@@ -33,6 +33,9 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 /**
  * Internal configuration service for the MFA module.
  * This is an implementation detail and is not meant to be used outside of this module (hence, not exported).
@@ -42,6 +45,16 @@ import org.slf4j.LoggerFactory;
 public class MfaConfigurationService {
     private static final Logger logger = LoggerFactory.getLogger(MfaConfigurationService.class);
     private Config config;
+    /**
+     * A thread-safe list to store change listeners registered for notifications about changes in the
+     * MFA configuration. When a change occurs, all registered listeners will be notified.
+     * <p>
+     * This variable is used internally to manage and trigger callbacks whenever there are modifications
+     * to the associated configuration. The use of {@link CopyOnWriteArrayList} ensures thread safety
+     * while supporting efficient iteration when notifying listeners, even in the presence of concurrent
+     * updates.
+     */
+    private final transient List<Runnable> changeListeners = new CopyOnWriteArrayList<>();
 
     @ObjectClassDefinition(name = "%configName", description = "%configDesc", localization = "OSGI-INF/l10n/config")
     public @interface Config {
@@ -53,6 +66,27 @@ public class MfaConfigurationService {
 
         @AttributeDefinition(name = "%enabledFactors", description = "%enabledFactorsDesc")
         String[] enabledFactors() default {"email_code"};
+
+        @AttributeDefinition(
+                name = "%maxAuthFailuresBeforeLock",
+                description = "%maxAuthFailuresBeforeLockDesc",
+                defaultValue = "5"
+        )
+        int maxAuthFailuresBeforeLock();
+
+        @AttributeDefinition(
+                name = "%authFailuresWindowSeconds",
+                description = "%authFailuresWindowSecondsDesc",
+                defaultValue = "120"
+        )
+        int authFailuresWindowSeconds();
+
+        @AttributeDefinition(
+                name = "%userTemporarySuspensionSeconds",
+                description = "%userTemporarySuspensionSecondsDesc",
+                defaultValue = "600"
+        )
+        int userTemporarySuspensionSeconds();
     }
 
     @Activate
@@ -65,6 +99,15 @@ public class MfaConfigurationService {
     public void modified(Config config) {
         this.config = config;
         logger.info("MFA Service configuration modified with enabled={}", config.enabled());
+        changeListeners.forEach(Runnable::run);
+    }
+
+    public void addChangeListener(Runnable listener) {
+        changeListeners.add(listener);
+    }
+
+    public void removeChangeListener(Runnable listener) {
+        changeListeners.remove(listener);
     }
 
     public String getLoginUrl() {
@@ -81,4 +124,17 @@ public class MfaConfigurationService {
     public String[] getEnabledFactors() {
         return config.enabledFactors();
     }
+
+    public int getMaxAuthFailuresBeforeLock() {
+        return config.maxAuthFailuresBeforeLock();
+    }
+
+    public int getAuthFailuresWindowSeconds() {
+        return config.authFailuresWindowSeconds();
+    }
+
+    public int getUserTemporarySuspensionSeconds() {
+        return config.userTemporarySuspensionSeconds();
+    }
+
 }

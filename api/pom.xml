@@ -99,6 +99,11 @@
             <artifactId>commons-lang3</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <!-- embedded as not provided by Jahia -->
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -124,6 +129,9 @@
                             org.slf4j;version="[1.7,2)",
                             *
                         </Import-Package>
+                        <Export-Package>
+                            org.jahia.modules.mfa
+                        </Export-Package>
                     </instructions>
                 </configuration>
             </plugin>
