@@ -34,6 +34,8 @@ jobs:
         with:
           nexus_username: ${{ secrets.NEXUS_USERNAME }}
           nexus_password: ${{ secrets.NEXUS_PASSWORD }}
+          # the test module is built as part of the Maven build
+          tests_module_type: "disabled"
 
   sbom:
     name: SBOM processing
