@@ -3,7 +3,7 @@ services:
         image: '${JAHIA_IMAGE}'
         container_name: jahia
         depends_on:
-            -   smtp-server
+            - smtp-server
         ports:
             - '8080:8080'
         environment:
