@@ -40,11 +40,11 @@
         <form id="login-form" class="mfa-form">
             <div class="form-group">
                 <label for="username">${usernameLabel}:</label>
-                <input type="text" id="username" name="username" required>
+                <input type="text" id="username" name="username" required autocomplete>
             </div>
             <div class="form-group">
                 <label for="password">${passwordLabel}:</label>
-                <input type="password" id="password" name="password" required>
+                <input type="password" id="password" name="password" required autocomplete="current-password">
             </div>
             <button type="submit" class="mfa-button primary">${loginButton}</button>
         </form>
@@ -68,7 +68,7 @@
             <form id="email-code-form" class="mfa-form">
                 <div class="form-group">
                     <label for="email-code">${enterCodeLabel}:</label>
-                    <input type="text" id="email-code" name="code" required maxlength="6" pattern="[0-9]{6}">
+                    <input type="text" id="email-code" name="code" required maxlength="6" pattern="[0-9]{6}" autocomplete="one-time-code">
                 </div>
                 <button type="submit" class="mfa-button primary">${verifyButton}</button>
             </form>

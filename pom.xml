@@ -25,16 +25,16 @@
         <version>8.2.3.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jahia-mfa</artifactId>
+    <artifactId>jahia-multi-factor-authentication</artifactId>
     <name>Jahia MFA</name>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>bundle</packaging>
     <description>This modules provides multi factor authentication API and components for Jahia server.</description>
 
     <scm>
-        <connection>scm:git:git@github.com:Jahia/jahia-mfa.git</connection>
-        <developerConnection>scm:git:git@github.com:Jahia/jahia-mfa.git</developerConnection>
-        <url>https://github.com/Jahia/jahia-mfa</url>
+        <connection>scm:git:git@github.com:Jahia/jahia-multi-factor-authentication.git</connection>
+        <developerConnection>scm:git:git@github.com:Jahia/jahia-multi-factor-authentication.git</developerConnection>
+        <url>https://github.com/Jahia/jahia-multi-factor-authentication</url>
         <tag>HEAD</tag>
     </scm>
 
@@ -47,7 +47,7 @@
         -->
         <!--jahia-module-type>system</jahia-module-type-->
         <jahia-depends>graphql-dxm-provider</jahia-depends>
-        <jahia-module-signature>MCwCFGJUgmanCKuV6yk9a315C23xt3EsAhRAMt2fcHwB2Q2d2rRNLoZNiTsn5g==</jahia-module-signature>
+        <jahia-module-signature>MCwCFGK4d1RciAXUEcpwzN4dDpMCpnxbAhQfUtCbDec5dNAm+L9xMjaOEnqxrQ==</jahia-module-signature>
     </properties>
 
     <repositories>

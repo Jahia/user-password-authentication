@@ -1,0 +1,44 @@
+services:
+    jahia:
+        image: '${JAHIA_IMAGE}'
+        container_name: jahia
+        depends_on:
+            - smtp-server
+        ports:
+            - '8080:8080'
+        environment:
+            - SUPER_USER_PASSWORD=${SUPER_USER_PASSWORD}
+            - JAHIA_LICENSE=${JAHIA_LICENSE}
+            - SMTP_SERVER_URL=smtp://smtp-server:1025
+        extra_hosts:
+            - jahia:127.0.0.1
+        networks:
+            - stack
+    # Cypress container
+    cypress:
+        image: '${TESTS_IMAGE}'
+        # https://github.com/cypress-io/cypress/issues/350
+        ipc: host
+        container_name: cypress
+        depends_on:
+            - jahia
+            - smtp-server
+        environment:
+            - MANIFEST=${MANIFEST}
+            - SUPER_USER_PASSWORD=${SUPER_USER_PASSWORD}
+            - JAHIA_URL=http://jahia:8080
+            - NEXUS_USERNAME=${NEXUS_USERNAME}
+            - NEXUS_PASSWORD=${NEXUS_PASSWORD}
+            - MAILPIT_URL=http://smtp-server:8025
+        networks:
+            - stack
+    smtp-server:
+        image: axllent/mailpit:v1.27
+        container_name: smtp-server
+        ports:
+            - '1025:1025' # SMTP
+            - '8025:8025' # web UI
+        networks:
+            - stack
+networks:
+    stack:

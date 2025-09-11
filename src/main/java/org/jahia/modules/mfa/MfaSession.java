@@ -1,5 +1,6 @@
 package org.jahia.modules.mfa;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -9,7 +10,7 @@ import java.util.Set;
  * Comprehensive MFA session that serves as the single source of truth for all MFA state.
  * Includes factor preparation status, verification results, and error tracking.
  */
-public class MfaSession {
+public class MfaSession implements Serializable {
     private final String userId;
     private final String sessionId; // TODO what's the intention of storing the session id here? as the MfaSession is istelf stored in session...
     private MfaSessionState state;
@@ -72,6 +73,7 @@ public class MfaSession {
         MfaFactorState factorState = getOrCreateFactorState(factorType);
         factorState.setPrepared(false);
         factorState.setPreparationError(error);
+        setState(MfaSessionState.FAILED);
         this.updatedAt = LocalDateTime.now();
     }
 

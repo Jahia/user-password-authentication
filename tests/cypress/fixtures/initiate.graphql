@@ -1,0 +1,11 @@
+mutation initiate($username: String!, $password: String!) {
+    mfa {
+        initiate(username: $username, password: $password) {
+            success
+            error
+            sessionState
+            requiredFactors
+            completedFactors
+        }
+    }
+}
