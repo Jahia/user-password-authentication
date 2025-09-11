@@ -1,5 +1,5 @@
 import 'cypress-mailpit';
-import {createUserForMFA, initiate, installConfig, prepare} from './utils';
+import {createUserForMFA, initiate, installMFAConfig, prepare} from './utils';
 import {deleteUser} from '@jahia/cypress';
 
 const userName = 'test_mfa_user';
@@ -9,10 +9,11 @@ const email = 'testmfauser@example.com';
 describe('Error scenarios common to all factors', () => {
     before(() => {
         createUserForMFA(userName, password, email);
-        installConfig('cfg/org.jahia.modules.mfa.cfg');
+        installMFAConfig('fake.yml');
     });
     after(() => {
         deleteUser(userName);
+        installMFAConfig('disabled.yml');
     });
 
     it('Should throw an error when invalid credential is provided', () => {

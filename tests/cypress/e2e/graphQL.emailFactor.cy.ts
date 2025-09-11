@@ -34,6 +34,7 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
 
     after(() => {
         deleteUser(USERNAME);
+        installMFAConfig('disabled.yml');
     });
 
     it('Should be authenticated when correct credentials and code are provided', () => {

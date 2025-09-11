@@ -1,0 +1,7 @@
+# Configuration used to disable MFA, handy as a post-test execution step
+- editConfiguration: "org.jahia.modules.mfa"
+  properties:
+    enabled: "false"
+    # the login URL is not relevant when MFA is disabled
+    loginUrl: ""
+    enabledFactors: "email_code"
