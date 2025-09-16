@@ -47,11 +47,6 @@ public class MfaServiceImpl implements MfaService {
     // ===== PUBLIC INTERFACE IMPLEMENTATION =====
 
     @Override
-    public boolean isEnabled() {
-        return mfaConfigurationService.isEnabled();
-    }
-
-    @Override
     public List<String> getAvailableFactors() {
         String[] enabledFactorsConfig = mfaConfigurationService.getEnabledFactors();
         if (enabledFactorsConfig == null || enabledFactorsConfig.length == 0) {

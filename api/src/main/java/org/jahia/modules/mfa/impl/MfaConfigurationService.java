@@ -71,6 +71,9 @@ public class MfaConfigurationService {
         return config.enabled() ? config.loginUrl() : null;
     }
 
+    /**
+     * Checks if MFA is enabled in the system configuration.
+     */
     public boolean isEnabled() {
         return config.enabled();
     }

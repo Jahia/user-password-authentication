@@ -24,6 +24,7 @@ import org.jahia.modules.graphql.provider.dxm.util.ContextUtil;
 import org.jahia.modules.mfa.MfaService;
 import org.jahia.modules.mfa.MfaSession;
 import org.jahia.modules.mfa.MfaSessionState;
+import org.jahia.modules.mfa.impl.MfaConfigurationService;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -35,6 +36,7 @@ import java.util.List;
 public class GqlMfaQuery {
 
     private MfaService mfaService;
+    private MfaConfigurationService mfaConfigurationService;
 
     @Inject
     @GraphQLOsgiService
@@ -42,11 +44,17 @@ public class GqlMfaQuery {
         this.mfaService = mfaService;
     }
 
+    @Inject
+    @GraphQLOsgiService
+    public void setMfaConfigurationService(MfaConfigurationService mfaConfigurationService) {
+        this.mfaConfigurationService = mfaConfigurationService;
+    }
+
     @GraphQLField
     @GraphQLName("enabled")
     @GraphQLDescription("Check if MFA is enabled")
     public boolean enabled() {
-        return mfaService.isEnabled();
+        return mfaConfigurationService.isEnabled();
     }
 
     @GraphQLField
