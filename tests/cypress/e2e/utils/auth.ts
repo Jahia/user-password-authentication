@@ -34,8 +34,9 @@ export const createUserForMFA = (userName: string, password: string, email:strin
 export const assertIsNotLoggedIn = () => {
     // TODO find a more efficient way
     cy.visit('/jahia/dashboard', {failOnStatusCode: false});
-    // Should match the configuration in org.jahia.modules.mfa.cfg
-    cy.url().should('contain', '/sites/sample/myLoginPage.html');
+    // Should match the configuration in fake.yml
+    // Ensure the user gets redirected when visiting a page that requires authentication
+    cy.url().should('contain', '/sites/fake/fakePage.html');
 };
 
 /**

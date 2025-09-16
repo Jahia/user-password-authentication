@@ -1,35 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright (C) 2002-2024 Jahia Solutions Group SA. All rights reserved.
+   Copyright (C) 2002-2025 Jahia Solutions Group SA. All rights reserved.
 
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-      http://www.apache.org/licenses/LICENSE-2.0
+     http://www.apache.org/licenses/LICENSE-2.0
 
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>jahia-modules</artifactId>
         <groupId>org.jahia.modules</groupId>
-        <version>8.2.3.0-SNAPSHOT</version>
+        <version>8.2.1.0</version> <!-- should match ${jahia-bom.version} -->
     </parent>
-
     <artifactId>jahia-multi-factor-authentication</artifactId>
     <name>Jahia MFA</name>
     <version>1.0.0-SNAPSHOT</version>
-    <packaging>bundle</packaging>
-    <description>This modules provides multi factor authentication API and components for Jahia server.</description>
+    <packaging>pom</packaging>
+    <description>Root of the multi-module project of the Jahia Multi-Factor Authentication (MFA) module</description>
 
     <scm>
         <connection>scm:git:git@github.com:Jahia/jahia-multi-factor-authentication.git</connection>
@@ -38,17 +36,87 @@
         <tag>HEAD</tag>
     </scm>
 
+    <modules>
+        <module>api</module>
+        <module>sample-ui</module>
+        <module>test-module</module>
+    </modules>
+
     <properties>
         <jahia.plugin.version>6.9</jahia.plugin.version>
-        <!--
-            TODO: move components to a separate module to keep mfa core system and standalone: backend + GraphQL API
-            Should probably be a system a module, but current POC contains
-            components with views and need to be enabled per site for usages.
-        -->
-        <!--jahia-module-type>system</jahia-module-type-->
-        <jahia-depends>graphql-dxm-provider</jahia-depends>
-        <jahia-module-signature>MCwCFGK4d1RciAXUEcpwzN4dDpMCpnxbAhQfUtCbDec5dNAm+L9xMjaOEnqxrQ==</jahia-module-signature>
+        <jahia-bom.version>8.2.1.0</jahia-bom.version> <!-- should match ${project.parent.version} -->
+        <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
+        <maven-clean-plugin.version>3.5.0</maven-clean-plugin.version>
+        <maven-dependency-plugin.version>3.8.1</maven-dependency-plugin.version>
+        <cyclonedx-maven-plugin.version>2.9.1</cyclonedx-maven-plugin.version>
+        <jacoco-maven-plugin.version>0.8.13</jacoco-maven-plugin.version>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- other modules of this multi-module project: -->
+            <dependency>
+                <groupId>org.jahia.modules</groupId>
+                <artifactId>jahia-multi-factor-authentication-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- Jahia modules: -->
+            <dependency>
+                <groupId>org.jahia.modules</groupId>
+                <artifactId>graphql-dxm-provider</artifactId>
+                <version>3.4.0</version> <!-- matches https://github.com/Jahia/jahia-pack/blob/JAHIA_8_2_1_0/core-modules/pom.xml#L196 -->
+            </dependency>
+
+            <!-- Jahia dependencies: -->
+            <dependency>
+                <groupId>com.graphql-java</groupId>
+                <artifactId>graphql-java</artifactId>
+                <version>${graphql-java.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.graphql-java</groupId>
+                <artifactId>graphql-java-annotations</artifactId>
+                <version>${graphql-java-annotations.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.inject</groupId>
+                <artifactId>javax.inject</artifactId>
+                <version>1</version>  <!-- matches https://github.com/Jahia/jahia-private/blob/JAHIA_8_2_1_0/war/src/data/resources/karaf/etc/custom.properties#L401 -->
+            </dependency>
+            <dependency>
+                <groupId>javax.jcr</groupId>
+                <artifactId>jcr</artifactId>
+                <version>2.0</version> <!-- matches https://github.com/Jahia/jahia/blob/JAHIA_8_2_1_0/core/pom.xml#L457 -->
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>3.12.0</version> <!-- matches https://github.com/Jahia/jahia/blob/JAHIA_8_2_1_0/core/pom.xml#L175 -->
+            </dependency>
+            <dependency>
+                <groupId>org.jahia.server</groupId>
+                <artifactId>jahia-impl</artifactId>
+                <version>${jahia-bom.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jahia.server</groupId>
+                <artifactId>jahia-api</artifactId>
+                <version>${jahia-bom.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.osgi</groupId>
+                <artifactId>osgi.cmpn</artifactId>
+                <version>${osgi.compendium.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
 
     <repositories>
         <repository>
@@ -64,198 +132,34 @@
             </snapshots>
         </repository>
     </repositories>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.jahia.server</groupId>
-            <artifactId>jahia-impl</artifactId>
-            <version>${project.parent.version}</version>
-            <scope>provided</scope>
-            <exclusions>
-                <!-- prevent transitive dependencies to be used in lieu of the declared dependencies -->
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.jahia.server</groupId>
-            <artifactId>jahia-api</artifactId>
-            <version>${project.parent.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>osgi.cmpn</artifactId>
-            <version>${osgi.compendium.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.ops4j.pax.web</groupId>
-            <artifactId>pax-web-jsp</artifactId>
-            <version>${pax.web.jsp.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jahia.modules</groupId>
-            <artifactId>graphql-dxm-provider</artifactId>
-            <version>3.4.0</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.github.graphql-java</groupId>
-            <artifactId>graphql-java-annotations</artifactId>
-            <version>${graphql-java-annotations.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.graphql-java</groupId>
-            <artifactId>graphql-java</artifactId>
-            <version>${graphql-java.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>javax.inject</groupId>
-            <artifactId>javax.inject</artifactId>
-            <version>1</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>javax.jcr</groupId>
-            <artifactId>jcr</artifactId>
-            <version>2.0</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.18.0</version>
-            <scope>provided</scope>
-        </dependency>
-    </dependencies>
-
     <build>
         <pluginManagement>
+            <!-- define plugins versions not set in parent pom -->
             <plugins>
                 <plugin>
-                    <groupId>org.cyclonedx</groupId>
-                    <artifactId>cyclonedx-maven-plugin</artifactId>
-                    <version>2.7.11</version>
+                    <artifactId>maven-clean-plugin</artifactId>
+                    <version>${maven-clean-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven-compiler-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-dependency-plugin</artifactId>
-                    <version>3.8.1</version>
+                    <version>${maven-dependency-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.cyclonedx</groupId>
+                    <artifactId>cyclonedx-maven-plugin</artifactId>
+                    <version>${cyclonedx-maven-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>0.8.12</version>
+                    <version>${jacoco-maven-plugin.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <extensions>true</extensions>
-                <configuration>
-                    <instructions>
-                        <_dsannotations>*</_dsannotations>
-                        <Import-Package>
-                            ${jahia.plugin.projectPackageImport},
-                            graphql.annotations.annotationTypes;version="[6.5,99)",
-                            javax.jcr;version="[2.0,3)",
-                            org.apache.commons.io;version="[2.11,3)",
-                            org.apache.commons.collections;version="[3.2,4)",
-                            org.jahia.api,
-                            org.jahia.modules.graphql.provider.dxm;version="[3.4,4)",
-                            org.jahia.modules.graphql.provider.dxm.security;version="[3.4,4)",
-                            org.jahia.modules.graphql.provider.dxm.osgi.annotations;version="[3.4,4)",
-                            org.jahia.modules.graphql.provider.dxm.node;version="[3.4,4)",
-                            org.jahia.modules.graphql.provider.dxm.util;version="[3.4,4)",
-                            org.jahia.osgi,
-                            org.jahia.services.content,
-                            org.osgi.framework;version="[1.8,2)",
-                            org.slf4j;version="[1.7,2)",
-                            *
-                        </Import-Package>
-                    </instructions>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.cyclonedx</groupId>
-                <artifactId>cyclonedx-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>makeAggregateBom</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <projectType>library</projectType>
-                    <schemaVersion>1.4</schemaVersion>
-                    <includeBomSerialNumber>true</includeBomSerialNumber>
-                    <includeCompileScope>true</includeCompileScope>
-                    <includeProvidedScope>false</includeProvidedScope>
-                    <includeRuntimeScope>true</includeRuntimeScope>
-                    <includeSystemScope>false</includeSystemScope>
-                    <includeTestScope>false</includeTestScope>
-                    <includeLicenseText>false</includeLicenseText>
-                    <outputReactorProjects>true</outputReactorProjects>
-                    <outputFormat>json</outputFormat>
-                    <outputName>java-bom.cdx</outputName>
-                </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>analyze-only</goal>
-                        </goals>
-                        <configuration>
-                            <failOnWarning>true</failOnWarning>
-                            <ignoredUnusedDeclaredDependencies>
-                                <!-- dependencies declared in the parent pom (hence inherited) but not used: -->
-                                <ignoredUnusedDeclaredDependency>org.springframework:spring-webmvc</ignoredUnusedDeclaredDependency>
-                                <ignoredUnusedDeclaredDependency>javax.servlet:jstl</ignoredUnusedDeclaredDependency>
-                                <ignoredUnusedDeclaredDependency>org.jahia.server:jahia-taglib</ignoredUnusedDeclaredDependency>
-                                <ignoredUnusedDeclaredDependency>javax.servlet:javax.servlet-api</ignoredUnusedDeclaredDependency>
-                                <!-- dependencies used at runtime to perform validation, without direct imports: -->
-                                <ignoredUnusedDeclaredDependency>org.ops4j.pax.web:pax-web-jsp</ignoredUnusedDeclaredDependency>
-                                <ignoredUnusedDeclaredDependency>org.hibernate.validator:hibernate-validator</ignoredUnusedDeclaredDependency>
-                            </ignoredUnusedDeclaredDependencies>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>jacoco-prepare-agent</id>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>jacoco-report</id>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
     </build>
+
 </project>

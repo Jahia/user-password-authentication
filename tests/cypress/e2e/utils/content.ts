@@ -3,9 +3,10 @@ import {addNode, createSite, deleteSite, publishAndWaitJobEnding} from '@jahia/c
 /**
  * Creates a new site with a login page. If a site matching this `siteKey` already exists, it is first deleted.
  * @param siteKey the site key to create
- * @param pageName the
+ * @param loginPageName name of the login page to create
+ * @param loginFormNodeType node type of the MFA form to use on the login page
  */
-export function createSiteWithLoginPage(siteKey:string, pageName: string) {
+export function createSiteWithLoginPage(siteKey:string, loginPageName: string, loginFormNodeType: string) {
     deleteSite(siteKey);
     createSite(siteKey, {
         locale: 'en',
@@ -14,7 +15,7 @@ export function createSiteWithLoginPage(siteKey:string, pageName: string) {
     });
     addNode({
         parentPathOrId: `/sites/${siteKey}`,
-        name: pageName,
+        name: loginPageName,
         primaryNodeType: 'jnt:page',
         properties: [
             {name: 'jcr:title', value: 'Login page', language: 'en'},
@@ -27,7 +28,7 @@ export function createSiteWithLoginPage(siteKey:string, pageName: string) {
                 children: [
                     {
                         name: 'mfaForm',
-                        primaryNodeType: 'jnt:mfaForm'
+                        primaryNodeType: loginFormNodeType
                     }
                 ]
             }
