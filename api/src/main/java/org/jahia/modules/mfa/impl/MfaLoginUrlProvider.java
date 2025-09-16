@@ -1,6 +1,5 @@
 package org.jahia.modules.mfa.impl;
 
-import org.apache.commons.lang3.StringUtils;
 import org.jahia.params.valves.LoginUrlProvider;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -28,6 +27,8 @@ public class MfaLoginUrlProvider implements LoginUrlProvider {
 
     @Override
     public boolean hasCustomLoginUrl() {
-        return StringUtils.isNoneEmpty(mfaConfigurationService.getLoginUrl());
+        // to be registered, the LoginUrlProvider must return true here
+        // this has been improved in https://github.com/Jahia/jahia-private/pull/4240, but is not available in Jahia 8.2.1.0 (the target Jahia version of this module)
+        return true;
     }
 }
