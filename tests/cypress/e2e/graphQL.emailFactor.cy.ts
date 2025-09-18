@@ -12,13 +12,18 @@ import {
     verifyEmailCodeFactor
 } from './utils';
 
-const USERNAME = 'test_mfa_user';
-const PASSWORD = 'password';
-const EMAIL = 'testmfauser@example.com';
+const TEST_USERS: Array<{ [key: string]: string }> = [
+    {username: 'test_mfa_user', password: 'password', email: 'email1@example.com', type: 'valid'},
+    {username: 'user_test', password: 'Maçif42', email: 'email2@example.com', type: 'valid'},
+    {username: 'رانيا', password: 'password', email: 'email3@example.com', type: 'valid'},
+    {username: 'エルヴィン', password: 'たいちょう', email: 'email4@example.com', type: 'valid'},
+    {username: 'étienne', password: 'たmYP@sswrd', email: 'email5@example.com', type: 'valid'},
+    {username: 'test_mfa_user_without_email', password: 'password', email: '', type: 'no_email'}
+];
 
 describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', () => {
     before(() => {
-        createUserForMFA(USERNAME, PASSWORD, EMAIL);
+        TEST_USERS.forEach(user => createUserForMFA(user.username, user.password, user.email));
         installMFAConfig('fake.yml');
     });
 
@@ -33,47 +38,39 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
     });
 
     after(() => {
-        deleteUser(USERNAME);
+        TEST_USERS.forEach(user => deleteUser(user.username));
         installMFAConfig('disabled.yml');
     });
 
-    it('Should be authenticated when correct credentials and code are provided', () => {
-        cy.log('1- initiate');
-        initiate(USERNAME, PASSWORD);
+    describe('Should be authenticated when correct credentials and code are provided', () => {
+        TEST_USERS.filter(user => user.type === 'valid').forEach(user => {
+            it(`Test with username: ${user.username}`, () => {
+                cy.log('1- initiate');
+                initiate(user.username, user.password);
 
-        cy.log('2- prepare');
-        prepare('email_code');
+                cy.log('2- prepare');
+                prepare('email_code');
 
-        cy.log('3- verification using the code received by email');
-        getVerificationCode(EMAIL).then(code => {
-            cy.log('Verification code received by email: ' + code);
-            verifyEmailCodeFactor(code);
-            assertIsLoggedIn(USERNAME);
+                cy.log('3- verification using the code received by email');
+                // eslint-disable-next-line max-nested-callbacks
+                getVerificationCode(user.email).then(code => {
+                    cy.log('Verification code received by email: ' + code);
+                    verifyEmailCodeFactor(code);
+                    assertIsLoggedIn(user.username);
+                });
+            });
         });
-    });
-
-    it('Should throw an error when the user does not have an email', () => {
-        const userNameWithoutEmail = 'test_mfa_user_without_email';
-        const passwordWithoutEmail = 'password';
-        createUserForMFA(userNameWithoutEmail, passwordWithoutEmail);
-
-        cy.log('1- initiate');
-        initiate(userNameWithoutEmail, passwordWithoutEmail);
-
-        cy.log('2- prepare');
-        prepare('email_code', 'User does not have an email address configured');
-        deleteUser(userNameWithoutEmail);
     });
 
     it('Should throw an error when the wrong verification code is entered', () => {
         cy.log('1- initiate');
-        initiate(USERNAME, PASSWORD);
+        initiate(TEST_USERS[0].username, TEST_USERS[0].password);
 
         cy.log('2- prepare');
         prepare('email_code');
 
         cy.log('3- verification using a wrong code');
-        getVerificationCode(EMAIL).then(code => {
+        getVerificationCode(TEST_USERS[0].email).then(code => {
             const wrongCode = generateWrongCode(code);
             verifyEmailCodeFactor(wrongCode, 'Invalid verification code');
         });
@@ -81,13 +78,24 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
 
     it('Should throw an error when no verification code is entered', () => {
         cy.log('1- initiate');
-        initiate(USERNAME, PASSWORD);
+        const validUser = TEST_USERS.find(user => user.type === 'valid');
+        initiate(validUser.username, validUser.password);
 
         cy.log('2- prepare');
         prepare('email_code');
 
         cy.log('3- verification without a code');
         verifyEmailCodeFactor('', 'Verification failed: Verification code is required');
+    });
+
+    it('Should throw an error when the user does not have an email', () => {
+        cy.log('1- initiate');
+        const userNoEmail = TEST_USERS.find(user => user.type === 'no_email');
+        initiate(userNoEmail.username, userNoEmail.password);
+
+        cy.log('2- prepare');
+        prepare('email_code', 'User does not have an email address configured');
+        deleteUser(userNoEmail.username);
     });
 
     it('Should throw an error when preparing without initiating the factor', () => {
