@@ -134,7 +134,7 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
         });
     });
 
-    it.only('Should be allowed to enter new code when an attempt is out of the authFailuresWindowSeconds', () => {
+    it('Should be allowed to enter new code when an attempt is out of the authFailuresWindowSeconds', () => {
         cy.log('0- installing the MFA configuration');
         // Config is:
         // maxAuthFailuresBeforeLock: 3
