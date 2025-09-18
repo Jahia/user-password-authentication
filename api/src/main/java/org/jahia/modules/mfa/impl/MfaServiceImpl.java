@@ -1,6 +1,5 @@
 package org.jahia.modules.mfa.impl;
 
-import org.jahia.api.Constants;
 import org.jahia.modules.mfa.*;
 import org.jahia.services.content.JCRTemplate;
 import org.jahia.services.content.decorator.JCRUserNode;
@@ -209,8 +208,7 @@ public class MfaServiceImpl implements MfaService {
 
     private boolean isUserSuspended(String userPath) {
         try {
-            // TODO which workspace to use? both?
-            return JCRTemplate.getInstance().doExecuteWithSystemSessionAsUser(null, Constants.LIVE_WORKSPACE, null, session -> {
+            return JCRTemplate.getInstance().doExecuteWithSystemSessionAsUser(null, null, null, session -> {
                 JCRUserNode userNode = (JCRUserNode) session.getNode(userPath);
                 if (!userNode.hasProperty(MFA_SUSPENDED_UNTIL_PROP)) {
                     logger.debug("User {} is not suspended", userNode);
@@ -236,8 +234,7 @@ public class MfaServiceImpl implements MfaService {
     private void suspendUserInJCR(String userPath) {
 
         try {
-            // TODO which workspace to use? both?
-            JCRTemplate.getInstance().doExecuteWithSystemSessionAsUser(null, Constants.LIVE_WORKSPACE, null, session -> {
+            JCRTemplate.getInstance().doExecuteWithSystemSessionAsUser(null, null, null, session -> {
                 Calendar suspendedUntil = Calendar.getInstance();
                 suspendedUntil.add(Calendar.SECOND, mfaConfigurationService.getUserTemporarySuspensionSeconds());
                 JCRUserNode userNode = (JCRUserNode) session.getNode(userPath);
@@ -255,7 +252,7 @@ public class MfaServiceImpl implements MfaService {
     private void authFailuresDetailsEvicted(String userNodePath, AuthFailuresDetails authFailuresDetails) {
         logger.info("Auth failures details evicted for user: {}", userNodePath);
         try {
-            JCRTemplate.getInstance().doExecuteWithSystemSessionAsUser(null, Constants.LIVE_WORKSPACE, null, session -> {
+            JCRTemplate.getInstance().doExecuteWithSystemSessionAsUser(null, null, null, session -> {
                 JCRUserNode userNode = (JCRUserNode) session.getNode(userNodePath);
                 logger.debug("Removing property {} for user {} that has been evicted from the tracker", MFA_SUSPENDED_UNTIL_PROP, userNodePath);
                 userNode.setProperty(MFA_SUSPENDED_UNTIL_PROP, (Calendar) null);
