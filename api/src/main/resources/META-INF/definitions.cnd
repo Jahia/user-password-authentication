@@ -1,3 +1,5 @@
 <jnt = 'http://www.jahia.org/jahia/nt/1.0'>
 <jmix = 'http://www.jahia.org/jahia/mix/1.0'>
+
+// the 'mfa' namespace is needed to set the 'mfa:suspendedUntil' property on JCR user nodes
 <mfa = 'http://www.jahia.org/jahia/multi-factor-authentication/1.0'>
