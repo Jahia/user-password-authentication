@@ -1,21 +1,10 @@
 package org.jahia.modules.mfa.impl;
 
-import org.jahia.modules.mfa.MfaException;
-import org.jahia.modules.mfa.MfaFactorProvider;
-import org.jahia.modules.mfa.MfaSession;
-import org.jahia.modules.mfa.MfaSessionState;
-import org.jahia.modules.mfa.PreparationContext;
-import org.jahia.modules.mfa.VerificationContext;
+import org.jahia.modules.mfa.*;
 import org.jahia.services.content.decorator.JCRUserNode;
 import org.jahia.services.usermanager.JahiaUserManagerService;
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.ConfigurationPolicy;
-import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.metatype.annotations.AttributeDefinition;
-import org.osgi.service.metatype.annotations.Designate;
-import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,27 +20,14 @@ import java.util.stream.Collectors;
  * Implementation of MFA service with MfaSession as the single source of truth.
  * Contains all MFA business logic and delegates to registry only for provider lookup.
  */
-@Component(configurationPid = "org.jahia.modules.mfa", service = {org.jahia.modules.mfa.MfaService.class}, immediate = true, configurationPolicy = ConfigurationPolicy.REQUIRE)
-@Designate(ocd = MfaServiceImpl.Config.class)
-public class MfaServiceImpl implements org.jahia.modules.mfa.MfaService {
+@Component(service = MfaService.class, immediate = true)
+public class MfaServiceImpl implements MfaService {
     private static final Logger logger = LoggerFactory.getLogger(MfaServiceImpl.class);
     private static final String MFA_SESSION_KEY = "mfa_session";
 
-    private Config configInstance;
     private JahiaUserManagerService userManagerService;
     private MfaFactorRegistry factorRegistry;
-
-    @ObjectClassDefinition(name = "%configName", description = "%configDesc", localization = "OSGI-INF/l10n/config")
-    public @interface Config {
-        @AttributeDefinition(name = "%loginUrl", description = "%loginUrlDesc")
-        String loginUrl();
-
-        @AttributeDefinition(name = "%enabled", description = "%enabledDesc", defaultValue = "false")
-        boolean enabled();
-
-        @AttributeDefinition(name = "%enabledFactors", description = "%enabledFactorsDesc")
-        String[] enabledFactors() default {"email_code"};
-    }
+    private MfaConfigurationService mfaConfigurationService;
 
     @Reference
     public void setUserManagerService(JahiaUserManagerService userManagerService) {
@@ -63,32 +39,16 @@ public class MfaServiceImpl implements org.jahia.modules.mfa.MfaService {
         this.factorRegistry = factorRegistry;
     }
 
-    public Config getConfigInstance() {
-        return configInstance;
-    }
-
-    @Activate
-    public void activate(Config config) {
-        this.configInstance = config;
-        logger.info("MFA Service activated with enabled={}", config.enabled());
-    }
-
-    @Modified
-    public void modified(Config config) {
-        this.configInstance = config;
-        logger.info("MFA Service configuration modified with enabled={}", config.enabled());
+    @Reference
+    public void setMfaConfigurationService(MfaConfigurationService mfaConfigurationService) {
+        this.mfaConfigurationService = mfaConfigurationService;
     }
 
     // ===== PUBLIC INTERFACE IMPLEMENTATION =====
 
     @Override
-    public boolean isEnabled() {
-        return configInstance.enabled();
-    }
-
-    @Override
     public List<String> getAvailableFactors() {
-        String[] enabledFactorsConfig = configInstance.enabledFactors();
+        String[] enabledFactorsConfig = mfaConfigurationService.getEnabledFactors();
         if (enabledFactorsConfig == null || enabledFactorsConfig.length == 0) {
             return Collections.emptyList(); // Return empty list if no factors configured
         }
