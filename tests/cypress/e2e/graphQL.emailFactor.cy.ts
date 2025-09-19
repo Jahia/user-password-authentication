@@ -87,7 +87,7 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
         prepare('email_code');
 
         cy.log('3- verification without a code');
-        verifyEmailCodeFactor('', 'Verification failed: Verification code is required');
+        verifyEmailCodeFactor('', 'Verification code is required');
     });
 
     it('Should throw an error when preparing without initiating the factor', () => {
