@@ -73,9 +73,9 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
         });
 
         // Tests with users having special characters in username and/or password
-        // These ones are applicable only since Jahia 8.2.2 and that's why they are grouped here.
+        // These ones are applicable only since Jahia 8.2.3.0 (https://github.com/Jahia/jahia-private/issues/3513) and that's why they are grouped here.
         // it() should be replaced with it.since() or similar once the support for it.since() is added in jahia-cypress, e.g.:
-        // it.since('8.2.2.0', `Test with username: ${user.username}`, () => {
+        // it.since('8.2.3.0', `Test with username: ${user.username}`, () => {
         // @see https://github.com/Jahia/jahia-cypress/issues/158 for implementation of it.since()
         SPECIAL_USERS.forEach(user => {
             it(`Test with username: ${user.username}`, () => {
