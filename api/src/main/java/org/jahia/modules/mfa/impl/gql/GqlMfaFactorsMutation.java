@@ -1,13 +1,13 @@
-package org.jahia.modules.mfa;
+package org.jahia.modules.mfa.impl.gql;
 
 import graphql.annotations.annotationTypes.GraphQLDescription;
 import graphql.annotations.annotationTypes.GraphQLField;
 import graphql.annotations.annotationTypes.GraphQLName;
 import graphql.schema.DataFetchingEnvironment;
 import org.jahia.modules.graphql.provider.dxm.util.ContextUtil;
+import org.jahia.modules.mfa.MfaService;
+import org.jahia.modules.mfa.MfaSession;
 import org.jahia.modules.mfa.impl.factors.EmailCodeFactorProvider;
-import org.jahia.modules.mfa.impl.gql.GqlMfaResponse;
-import org.jahia.modules.mfa.impl.gql.GqlMfaUtils;
 
 import javax.servlet.http.HttpServletRequest;
 

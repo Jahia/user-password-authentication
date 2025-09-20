@@ -14,10 +14,7 @@ import javax.jcr.RepositoryException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -37,6 +34,7 @@ public class MfaServiceImpl implements MfaService {
     private MfaFactorRegistry factorRegistry;
     private volatile MfaConfigurationService mfaConfigurationService;
     private volatile Cache<String, AuthFailuresDetails> failuresCache;
+    private volatile Cache<String, Long> prepareResultPerFactorPerUserCache;
 
     @Reference
     public void setUserManagerService(JahiaUserManagerService userManagerService) {
@@ -75,6 +73,8 @@ public class MfaServiceImpl implements MfaService {
         failuresCache = Caffeine.newBuilder()
                 .expireAfterWrite(mfaConfigurationService.getAuthFailuresWindowSeconds(), TimeUnit.SECONDS)
                 .build();
+        prepareResultPerFactorPerUserCache = Caffeine.newBuilder()
+                .expireAfterWrite(mfaConfigurationService.getTimeBeforeResend(), TimeUnit.SECONDS).build();
     }
 
     @Deactivate
@@ -147,8 +147,15 @@ public class MfaServiceImpl implements MfaService {
         }
 
         try {
+            String cacheKey = user.getPath() + "-" + provider.getFactorType() + "@" + provider.hashCode();
+            Long startedPrepareTime = prepareResultPerFactorPerUserCache.getIfPresent(cacheKey);
+            if (startedPrepareTime != null && startedPrepareTime > 0) {
+                throw new MfaException(String.format("The factor %s already generated for user %s, wait %ds before generating a new one", factorType, user.getDisplayableName(), mfaConfigurationService.getTimeBeforeResend() - (System.currentTimeMillis() - startedPrepareTime) / 1000 ));
+            }
             PreparationContext preparationContext = new PreparationContext(user, request);
             Object preparationResult = provider.prepare(preparationContext);
+            // Store in cache to prevent same user to generate a new preparationResult for the current factor.
+            prepareResultPerFactorPerUserCache.put(cacheKey, System.currentTimeMillis());
             request.getSession().setAttribute(getAttributeKey(factorType), preparationResult);
             session.markFactorPrepared(provider.getFactorType());
             logger.info("Factor {} preparation completed for user: {}", factorType, session.getUserId());

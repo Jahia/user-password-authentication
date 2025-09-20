@@ -74,6 +74,13 @@ public class MfaConfigurationService {
                 defaultValue = "600"
         )
         int userTemporarySuspensionSeconds();
+
+        @AttributeDefinition(
+                name="%timeBeforeResend",
+                description = "Time to wait in second between two factor is preparation",
+                defaultValue = "30"
+        )
+        int timeBeforeResend();
     }
 
     @Activate
@@ -113,6 +120,10 @@ public class MfaConfigurationService {
 
     public int getUserTemporarySuspensionSeconds() {
         return config.userTemporarySuspensionSeconds();
+    }
+
+    public int getTimeBeforeResend() {
+        return config.timeBeforeResend();
     }
 
 }

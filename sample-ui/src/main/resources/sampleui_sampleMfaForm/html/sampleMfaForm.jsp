@@ -26,6 +26,7 @@
 <fmt:message key="jahia-mfa.form.emailCode" var="emailCodeLabel"/>
 <fmt:message key="jahia-mfa.form.enterCode" var="enterCodeLabel"/>
 <fmt:message key="jahia-mfa.form.verify" var="verifyButton"/>
+<fmt:message key="jahia-mfa.form.resendCode" var="resendCode"/>
 <fmt:message key="jahia-mfa.form.processing" var="processingMessage"/>
 
 <div id="mfa-container" class="mfa-form-container">
@@ -71,6 +72,9 @@
                     <input data-testid="verification-code" type="text" id="email-code" name="code" required maxlength="6" pattern="[0-9]{6}" autocomplete="one-time-code">
                 </div>
                 <button data-testid="verification-submit" type="submit" class="mfa-button primary">${verifyButton}</button>
+            </form>
+            <form id="resend-code-form" class="mfa-form">
+                <button data-testid="resend-submit" type="submit" class="mfa-button primary">${resendCode}</button>
             </form>
         </div>
     </div>
@@ -239,10 +243,12 @@ class MfaForm {
 
         const loginForm = document.getElementById('login-form');
         const emailForm = document.getElementById('email-code-form');
+        const resendForm = document.getElementById('resend-code-form');
 
         console.log('MFA Form: Found elements', {
             loginForm: !!loginForm,
-            emailForm: !!emailForm
+            emailForm: !!emailForm,
+            resendForm: !!resendForm
         });
 
         if (loginForm) {
@@ -261,6 +267,14 @@ class MfaForm {
             });
         }
 
+        if (resendForm) {
+            resendForm.addEventListener('submit', (e) => {
+                console.log('MFA Form: Resend code form submitted');
+                e.preventDefault();
+                this.handleResendCode();
+            });
+        }
+
         console.log('MFA Form: Events bound successfully');
     }
 
@@ -271,7 +285,7 @@ class MfaForm {
         });
 
         try {
-            const response = await fetch('/modules/graphql', {
+            const response = await fetch('${renderContext.request.contextPath}/modules/graphql', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -541,10 +555,20 @@ class MfaForm {
 
     async selectFactor(factorType) {
         console.log('MFA Form: selectFactor called', { factorType });
+        await this.prepareFactor(factorType, false);
+    }
 
-        // Prevent multiple simultaneous factor selection
+    async handleResendCode() {
+        console.log('MFA Form: handleResendCode called');
+        await this.prepareFactor('email_code', true);
+    }
+
+    async prepareFactor(factorType, isResend = false) {
+        console.log('MFA Form: prepareFactor called', { factorType, isResend });
+
+        // Prevent multiple simultaneous factor preparation attempts
         if (this.isProcessing) {
-            console.warn('MFA Form: Factor selection blocked - already processing');
+            console.warn('MFA Form: Factor preparation blocked - already processing');
             return;
         }
 
@@ -568,11 +592,12 @@ class MfaForm {
                 }
             `;
 
-            console.log('MFA Form: Calling prepareFactor mutation...');
+            const operationType = isResend ? 'resend' : 'preparation';
+            console.log(`MFA Form: Calling prepareFactor mutation for ${operationType}...`);
             const data = await this.makeGraphQLRequest(query, { factorType });
             const response = data.mfa.prepareFactor;
 
-            console.log('MFA Form: PrepareFactor response received', {
+            console.log(`MFA Form: PrepareFactor response received for ${operationType}`, {
                 success: response.success,
                 sessionState: response.sessionState,
                 hasError: !!response.error,
@@ -580,29 +605,45 @@ class MfaForm {
             });
 
             if (!response.success) {
-                console.error('MFA Form: Factor preparation failed', response.error);
-                this.showError(response.error || 'Failed to prepare factor');
+                const errorMessage = isResend ? 'Failed to resend verification code' : 'Failed to prepare factor';
+                console.error(`MFA Form: Factor ${operationType} failed`, response.error);
+                this.showError(response.error || errorMessage);
                 this.showLoading(false);
                 this.isProcessing = false;
                 return;
             }
 
-            console.log('MFA Form: Factor preparation successful, updating session...');
+            console.log(`MFA Form: Factor ${operationType} successful, updating session...`);
             this.mfaSession = response;
 
-            // For email_code, show the code input form
-            if (factorType === 'email_code') {
-                console.log('MFA Form: Email factor prepared, showing email code step...');
-                this.showEmailCodeStep();
-            } else {
-                console.log('MFA Form: Other factor type prepared', { factorType });
+            if (isResend) {
+                // For resend, show success message and remain on the same step
+                this.showSuccess('Verification code has been resent to your email');
                 this.showLoading(false);
                 this.isProcessing = false;
+
+                // Clear the code input so user can enter the new code
+                const emailCodeInput = document.getElementById('email-code');
+                if (emailCodeInput) {
+                    emailCodeInput.value = '';
+                    emailCodeInput.focus();
+                }
+            } else {
+                // For initial factor selection, navigate to the appropriate step
+                if (factorType === 'email_code') {
+                    console.log('MFA Form: Email factor prepared, showing email code step...');
+                    this.showEmailCodeStep();
+                } else {
+                    console.log('MFA Form: Other factor type prepared', { factorType });
+                    this.showLoading(false);
+                    this.isProcessing = false;
+                }
             }
 
         } catch (error) {
-            console.error('MFA Form: Factor preparation error', error);
-            this.showError('Failed to prepare factor: ' + error.message);
+            const errorMessage = isResend ? 'Failed to resend code' : 'Failed to prepare factor';
+            console.error(`MFA Form: Factor ${operationType} error`, error);
+            this.showError(`${errorMessage}: ${error.message}`);
             this.showLoading(false);
             this.isProcessing = false;
         }
