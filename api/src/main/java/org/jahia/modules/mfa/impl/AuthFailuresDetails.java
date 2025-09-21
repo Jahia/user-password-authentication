@@ -23,8 +23,6 @@
  */
 package org.jahia.modules.mfa.impl;
 
-import org.jahia.modules.mfa.MfaFactorProvider;
-
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -32,10 +30,10 @@ import java.util.List;
 
 /**
  * Details about the authentication failures of a given user.
- * It contains the timestamps of the authentication failures, used by {@link AuthFailuresTracker#hasReachedAuthFailuresCountLimit(String, MfaFactorProvider)} to decide if the user has reached the maximum number of MFA authentication failures.
+ * It contains the timestamps of the authentication failures, used by {@link MfaServiceImpl} to decide if the user has reached the maximum number of MFA authentication failures.
  */
 
-public class AuthFailuresDetails implements Serializable {
+final class AuthFailuresDetails implements Serializable {
     private final List<Long> failureTimestamps = new LinkedList<>();
 
     public void addFailureAttempt() {
