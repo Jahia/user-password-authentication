@@ -18,11 +18,11 @@ const EMAIL = 'testmfauser@example.com';
 
 describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', () => {
     before(() => {
-        createUserForMFA(USERNAME, PASSWORD, EMAIL);
         installMFAConfig('fake.yml');
     });
 
     beforeEach(() => {
+        createUserForMFA(USERNAME, PASSWORD, EMAIL); // Create for each test as the user might have been updated by a previous test (with mfa:suspendedUser mixin)
         deleteAllEmails(); // Sanity cleanup
         cy.logout(); // Ensure to start with an unauthenticated session
         assertIsNotLoggedIn(); // Sanity check
@@ -30,10 +30,10 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
 
     afterEach(() => {
         deleteAllEmails();
+        deleteUser(USERNAME);
     });
 
     after(() => {
-        deleteUser(USERNAME);
         installMFAConfig('disabled.yml');
     });
 
