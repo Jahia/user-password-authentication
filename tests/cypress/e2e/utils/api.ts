@@ -24,14 +24,14 @@ export function initiate(username: string, password: string, expectedError:strin
 /**
  * Prepares an MFA factor and asserts the expected outcome.
  *
- * @param factoryType - The type of MFA factor to prepare.
+ * @param factorType - The type of MFA factor to prepare.
  * @param expectedError - Optional. If provided, asserts that the error matches this value. If not provided, assumes it's a success
  */
-export function prepare(factoryType: string, expectedError:string = undefined) {
+export function prepare(factorType: string, expectedError:string = undefined) {
     cy.apollo({
         queryFile: 'prepareFactor.graphql',
         variables: {
-            factorType: factoryType
+            factorType: factorType
         }
     }).then(response => {
         if (expectedError) {
@@ -45,7 +45,7 @@ export function prepare(factoryType: string, expectedError:string = undefined) {
             expect(response?.data?.mfa?.prepareFactor?.success).to.be.true;
             expect(response?.data?.mfa?.prepareFactor?.sessionState).to.eq('in_progress');
             expect(response?.data?.mfa?.prepareFactor?.requiredFactors).to.be.a('array').and.have.length(1);
-            expect(response?.data?.mfa?.prepareFactor?.requiredFactors[0]).to.eq(factoryType);
+            expect(response?.data?.mfa?.prepareFactor?.requiredFactors[0]).to.eq(factorType);
         }
     });
 }

@@ -53,6 +53,27 @@ public class MfaConfigurationService {
 
         @AttributeDefinition(name = "%enabledFactors", description = "%enabledFactorsDesc")
         String[] enabledFactors() default {"email_code"};
+
+        @AttributeDefinition(
+                name = "%maxAuthFailuresBeforeLock",
+                description = "%maxAuthFailuresBeforeLockDesc",
+                defaultValue = "5"
+        )
+        int maxAuthFailuresBeforeLock();
+
+        @AttributeDefinition(
+                name = "%authFailuresWindowSeconds",
+                description = "%authFailuresWindowSecondsDesc",
+                defaultValue = "120"
+        )
+        int authFailuresWindowSeconds();
+
+        @AttributeDefinition(
+                name = "%userTemporarySuspensionSeconds",
+                description = "%userTemporarySuspensionSecondsDesc",
+                defaultValue = "600"
+        )
+        int userTemporarySuspensionSeconds();
     }
 
     @Activate
@@ -81,4 +102,17 @@ public class MfaConfigurationService {
     public String[] getEnabledFactors() {
         return config.enabledFactors();
     }
+
+    public int getMaxAuthFailuresBeforeLock() {
+        return config.maxAuthFailuresBeforeLock();
+    }
+
+    public int getAuthFailuresWindowSeconds() {
+        return config.authFailuresWindowSeconds();
+    }
+
+    public int getUserTemporarySuspensionSeconds() {
+        return config.userTemporarySuspensionSeconds();
+    }
+
 }
