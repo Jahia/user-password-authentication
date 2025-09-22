@@ -3,4 +3,6 @@
     - 'mvn:org.jahia.modules/jahia-multi-factor-authentication-api'
     - 'mvn:org.jahia.modules/jahia-multi-factor-authentication-sample-ui'
     - 'mvn:org.jahia.test/jahia-multi-factor-authentication-test-module'
+  autoStart: true
+  uninstallPreviousVersion: true
 - include: 'provisioning.yml'
