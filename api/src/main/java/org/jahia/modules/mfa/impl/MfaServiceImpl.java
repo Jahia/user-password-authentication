@@ -36,7 +36,7 @@ public class MfaServiceImpl implements MfaService {
     private JahiaUserManagerService userManagerService;
     private MfaFactorRegistry factorRegistry;
     private volatile MfaConfigurationService mfaConfigurationService;
-    private Cache<String, AuthFailuresDetails> failuresCache;
+    private volatile Cache<String, AuthFailuresDetails> failuresCache;
 
     @Reference
     public void setUserManagerService(JahiaUserManagerService userManagerService) {
