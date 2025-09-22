@@ -35,11 +35,4 @@ public interface MfaFactorProvider {
      * @throws MfaException if an error occurs during verification
      */
     boolean verify(VerificationContext verificationContext) throws MfaException;
-
-    /**
-     * Indicates if the authentication failures should be tracked for this MFA factor provider.
-     *
-     * @return {@code true} if the authentication failures are tracked
-     */
-    boolean areAuthenticationFailuresTracked();
 }

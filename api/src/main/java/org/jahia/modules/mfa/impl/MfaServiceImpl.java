@@ -273,41 +273,33 @@ public class MfaServiceImpl implements MfaService {
     }
 
     private void trackFailure(String userNodePath, MfaFactorProvider provider) {
-        if (!provider.areAuthenticationFailuresTracked()) {
-            logger.debug("Provider {} does not track authentication failures", provider.getFactorType());
-            return;
-        }
         AuthFailuresDetails tracker = failuresCache.getIfPresent(userNodePath);
         if (tracker == null) {
             tracker = new AuthFailuresDetails();
         }
-        tracker.addFailureAttempt();
-        if (tracker.getFailureAttemptsCount() > mfaConfigurationService.getMaxAuthFailuresBeforeLock()) {
-            logger.warn("User {} has failed to authenticate {} times in a row", userNodePath, tracker.getFailureAttemptsCount());
+        String factorType = provider.getFactorType();
+        tracker.addFailureAttempt(factorType);
+        if (tracker.getFailureAttemptsCount(factorType) > mfaConfigurationService.getMaxAuthFailuresBeforeLock()) {
+            logger.warn("User {} has failed to authenticate {} times in a row", userNodePath, tracker.getFailureAttemptsCount(factorType));
         } else {
-            logger.debug("User {} has failed to authenticate {} times in a row", userNodePath, tracker.getFailureAttemptsCount());
+            logger.debug("User {} has failed to authenticate {} times in a row", userNodePath, tracker.getFailureAttemptsCount(factorType));
         }
         failuresCache.put(userNodePath, tracker);
     }
 
     private boolean hasReachedAuthFailuresCountLimit(String userNodePath, MfaFactorProvider provider) {
-        if (!provider.areAuthenticationFailuresTracked()) {
-            logger.debug("Provider {} does not track authentication failures", provider.getFactorType());
-            return false;
-        }
-
         AuthFailuresDetails tracker = failuresCache.getIfPresent(userNodePath);
         if (tracker == null) {
             logger.debug("User {} has not failed to authenticate yet", userNodePath);
             return false;
         }
-
-        if (tracker.removeAttemptsOutsideWindow(mfaConfigurationService.getAuthFailuresWindowSeconds() * 1000L)) {
+        String factorType = provider.getFactorType();
+        if (tracker.removeAttemptsOutsideWindow(factorType, mfaConfigurationService.getAuthFailuresWindowSeconds() * 1000L)) {
             logger.debug("Expired timestamps removed for user {}", userNodePath);
             failuresCache.put(userNodePath, tracker);
         }
 
-        return tracker.getFailureAttemptsCount() >= mfaConfigurationService.getMaxAuthFailuresBeforeLock();
+        return tracker.getFailureAttemptsCount(factorType) >= mfaConfigurationService.getMaxAuthFailuresBeforeLock();
     }
 
     @Override

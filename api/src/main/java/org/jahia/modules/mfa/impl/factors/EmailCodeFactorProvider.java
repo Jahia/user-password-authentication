@@ -67,11 +67,6 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
         return StringUtils.equals(submittedCode, storedCode);
     }
 
-    @Override
-    public boolean areAuthenticationFailuresTracked() {
-        return true;
-    }
-
     private static String generateEmailCode() {
         StringBuilder code = new StringBuilder();
         for (int i = 0; i < EMAIL_CODE_LENGTH; i++) {

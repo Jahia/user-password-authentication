@@ -24,30 +24,48 @@
 package org.jahia.modules.mfa.impl;
 
 import java.io.Serializable;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
- * Details about the authentication failures of a given user.
- * It contains the timestamps of the authentication failures, used by {@link MfaServiceImpl} to decide if the user has reached the maximum number of MFA authentication failures.
+ * Stores the authentication failure timestamps for a user, grouped by MFA provider type.
+ * <p>
+ * Used by {@link MfaServiceImpl} to determine if a user has exceeded the allowed number of MFA authentication failures
+ * within a configurable time window.
  */
-
 final class AuthFailuresDetails implements Serializable {
-    private final List<Long> failureTimestamps = new LinkedList<>();
+    private final Map<String, List<Long>> failureTimestamps = new HashMap<>();
 
-    public void addFailureAttempt() {
-        failureTimestamps.add(System.currentTimeMillis());
+
+    /**
+     * Records a new authentication failure attempt for the specified MFA provider type.
+     *
+     * @param factorType the MFA provider type (see {@link org.jahia.modules.mfa.MfaFactorProvider#getFactorType()})
+     */
+    public void addFailureAttempt(String factorType) {
+        getOrCreateFailureTimestamps(factorType).add(System.currentTimeMillis());
     }
 
-    public int getFailureAttemptsCount() {
-        return failureTimestamps.size();
+    /**
+     * Returns the number of authentication failure attempts for the specified MFA provider type.
+     *
+     * @param factorType the MFA provider type (see {@link org.jahia.modules.mfa.MfaFactorProvider#getFactorType()})
+     * @return the count of failure attempts
+     */
+    public int getFailureAttemptsCount(String factorType) {
+        return getOrCreateFailureTimestamps(factorType).size();
     }
 
-    public boolean removeAttemptsOutsideWindow(long authFailuresWindowMillis) {
+    /**
+     * Removes failure attempts for the specified MFA provider type that are outside the given time window.
+     *
+     * @param factorType              the MFA provider type (see {@link org.jahia.modules.mfa.MfaFactorProvider#getFactorType()})
+     * @param authFailuresWindowMillis the time window in milliseconds
+     * @return {@code true} if any attempts were removed, {@code false} otherwise
+     */
+    public boolean removeAttemptsOutsideWindow(String factorType, long authFailuresWindowMillis) {
         boolean removed = false;
         long timeLimit = System.currentTimeMillis() - authFailuresWindowMillis;
-        Iterator<Long> iterator = failureTimestamps.iterator();
+        Iterator<Long> iterator = getOrCreateFailureTimestamps(factorType).iterator();
 
         while (iterator.hasNext()) {
             Long ts = iterator.next();
@@ -62,5 +80,9 @@ final class AuthFailuresDetails implements Serializable {
         }
 
         return removed;
+    }
+
+    private List<Long> getOrCreateFailureTimestamps(String factorType) {
+        return failureTimestamps.computeIfAbsent(factorType, k -> new LinkedList<>());
     }
 }
