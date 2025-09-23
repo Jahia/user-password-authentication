@@ -63,6 +63,7 @@ public class MfaSession implements Serializable {
         MfaFactorState factorState = getOrCreateFactorState(factorType);
         factorState.setPrepared(true);
         factorState.setPreparationError(null);
+        setState(MfaSessionState.IN_PROGRESS);
         this.updatedAt = LocalDateTime.now();
     }
 

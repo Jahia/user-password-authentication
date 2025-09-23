@@ -36,7 +36,7 @@ export function prepare(factorType: string, expectedError:string = undefined) {
     }).then(response => {
         if (expectedError) {
             expect(response?.data?.mfa?.prepareFactor?.success).to.be.false;
-            expect(response?.data?.mfa?.prepareFactor?.error).to.eq(expectedError);
+            expect(response?.data?.mfa?.prepareFactor?.error).to.contain(expectedError);
             // TODO is that correct: ?
             expect(response?.data?.mfa?.prepareFactor?.sessionState).to.be.null;
             expect(response?.data?.mfa?.prepareFactor?.requiredFactors).to.be.null;

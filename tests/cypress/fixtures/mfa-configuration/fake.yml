@@ -5,3 +5,4 @@
     enabled: "true"
     loginUrl: "/sites/fake/fakePage.html"
     enabledFactors: "email_code"
+    factorStartRateLimitSeconds: "3"

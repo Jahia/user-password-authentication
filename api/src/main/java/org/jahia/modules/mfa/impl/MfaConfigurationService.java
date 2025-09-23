@@ -76,11 +76,11 @@ public class MfaConfigurationService {
         int userTemporarySuspensionSeconds();
 
         @AttributeDefinition(
-                name="%timeBeforeResend",
-                description = "Time to wait in second between two factor is preparation",
+                name="%factorStartRateLimitSeconds",
+                description = "Time to wait in second before a factor being started twice",
                 defaultValue = "30"
         )
-        int timeBeforeResend();
+        int factorStartRateLimitSeconds();
     }
 
     @Activate
@@ -122,8 +122,8 @@ public class MfaConfigurationService {
         return config.userTemporarySuspensionSeconds();
     }
 
-    public int getTimeBeforeResend() {
-        return config.timeBeforeResend();
+    public int getFactorStartRateLimitSeconds() {
+        return config.factorStartRateLimitSeconds();
     }
 
 }
