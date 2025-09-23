@@ -1,4 +1,5 @@
-import {deleteUser} from '@jahia/cypress';
+import {deleteUser, getJahiaVersion} from '@jahia/cypress';
+import {compare} from "compare-versions";
 import {
     assertIsLoggedIn,
     assertIsNotLoggedIn,
@@ -20,11 +21,17 @@ const SPECIAL_USERS: Array<{ [key: string]: string }> = [
     {username: 'エルヴィン', password: 'たいちょう', email: 'email3@example.com'},
     {username: 'étienne', password: 'たmYP@sswrd', email: 'email4@example.com'}
 ];
+const VERSION_VAR = '_JAHIA_VERSION_';
 
 describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', () => {
     before(() => {
         [TEST_USER, TEST_USER_NO_EMAIL, ...SPECIAL_USERS].forEach(user => createUserForMFA(user.username, user.password, user.email));
         installMFAConfig('fake.yml');
+
+        // Store the Jahia version in an environment variable to be used in tests
+        getJahiaVersion().then(jahiaVersion => {
+            Cypress.env(VERSION_VAR, jahiaVersion.release.replace('-SNAPSHOT', ''));
+        });
     });
 
     beforeEach(() => {
@@ -72,14 +79,14 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
             validatePositiveMFAFlow(TEST_USER);
         });
 
-        // Tests with users having special characters in username and/or password
-        // These ones are applicable only since Jahia 8.2.3.0 (https://github.com/Jahia/jahia-private/issues/3513) and that's why they are grouped here.
+        // Tests with users having special characters in username and/or password.
+        // These are applicable only since Jahia 8.2.3.0 (https://github.com/Jahia/jahia-private/issues/3513) and that's why they are grouped here.
         // it() should be replaced with it.since() or similar once the support for it.since() is added in jahia-cypress, e.g.:
         // it.since('8.2.3.0', `Test with username: ${user.username}`, () => {
         // @see https://github.com/Jahia/jahia-cypress/issues/158 for implementation of it.since()
         SPECIAL_USERS.forEach(user => {
-            it(`Test with username: ${user.username}`, () => {
-                validatePositiveMFAFlow(user);
+            it(`Test with username: ${user.username}`, function() {
+                compare(Cypress.env(VERSION_VAR), '8.2.3', '>=') ? validatePositiveMFAFlow(user) : this.skip();
             });
         });
     });

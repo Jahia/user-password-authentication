@@ -22,32 +22,28 @@ describe('Error scenarios common to all factors', () => {
         {
             description: 'invalid username',
             username: 'unknownUser',
-            password: pwd,
-            expectedError: 'Invalid username or password'
+            password: pwd
         },
         {
             description: 'invalid password',
             username: usr,
-            password: 'myPassword',
-            expectedError: 'Invalid username or password'
+            password: 'myPassword'
         },
         {
             description: 'empty username',
             username: '',
-            password: pwd,
-            expectedError: 'Invalid username or password'
+            password: pwd
         },
         {
             description: 'empty password',
             username: usr,
-            password: '',
-            expectedError: 'Invalid username or password'
+            password: ''
         }
     ];
 
-    INVALID_CASES.forEach(({description, username, password, expectedError}) => {
+    INVALID_CASES.forEach(({description, username, password}) => {
         it(`Should throw an error when ${description} is provided`, () => {
-            initiate(username, password, expectedError);
+            initiate(username, password, 'Invalid username or password');
         });
     });
 
