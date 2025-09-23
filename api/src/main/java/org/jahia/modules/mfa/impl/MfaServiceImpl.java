@@ -151,13 +151,14 @@ public class MfaServiceImpl implements MfaService {
         try {
             String cacheKey = getCacheKey(user, provider);
             Long startedPrepareTime = factorStartCache.getIfPresent(cacheKey);
-            if (startedPrepareTime != null && startedPrepareTime > 0) {
-                throw new MfaException(String.format("The factor %s already generated for user %s, wait %ds before generating a new one", factorType, user.getDisplayableName(), mfaConfigurationService.getFactorStartRateLimitSeconds() - (System.currentTimeMillis() - startedPrepareTime) / 1000 ));
+            long now = System.currentTimeMillis();
+            if (startedPrepareTime != null) {
+                throw new MfaException(String.format("The factor %s already generated for user %s, wait %ds before generating a new one", factorType, user.getDisplayableName(), mfaConfigurationService.getFactorStartRateLimitSeconds() - (now - startedPrepareTime) / 1000 ));
             }
             PreparationContext preparationContext = new PreparationContext(user, request);
             Object preparationResult = provider.prepare(preparationContext);
             // Store in cache to prevent same user to generate a new preparationResult for the current factor.
-            factorStartCache.put(cacheKey, System.currentTimeMillis());
+            factorStartCache.put(cacheKey, now);
             request.getSession().setAttribute(getAttributeKey(factorType), preparationResult);
             session.markFactorPrepared(provider.getFactorType());
             logger.info("Factor {} preparation completed for user: {}", factorType, session.getUserId());

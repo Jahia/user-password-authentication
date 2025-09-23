@@ -9,7 +9,7 @@ import {
     getVerificationCode,
     initiate,
     installMFAConfig,
-    prepare,
+    prepare, refreshMFA,
     verifyEmailCodeFactor
 } from './utils';
 
@@ -36,6 +36,7 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
     });
 
     beforeEach(() => {
+        refreshMFA(); // Clean up MFA internal caches
         createUserForMFA(TEST_USER.username, TEST_USER.password, TEST_USER.email); // Create for each test as the user might have been updated by a previous test (with mfa:suspendedUser mixin)
         deleteAllEmails(); // Sanity cleanup
         cy.logout(); // Ensure to start with an unauthenticated session

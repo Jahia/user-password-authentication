@@ -77,7 +77,7 @@ public class MfaConfigurationService {
 
         @AttributeDefinition(
                 name="%factorStartRateLimitSeconds",
-                description = "Time to wait in second before a factor being started twice",
+                description = "%factorStartRateLimitSecondsDesc",
                 defaultValue = "30"
         )
         int factorStartRateLimitSeconds();

@@ -55,20 +55,20 @@ describe('Error scenarios common to all factors', () => {
         prepare('unknown_factor', 'Factor type not supported: unknown_factor');
     });
 
-    it.only('Should throw an error when a factor is requested twice', () => {
+    it('Should throw an error when a factor is requested twice, then should pass after the timeout', () => {
         cy.log('1- initiate');
-        initiate(userName, password);
+        initiate(usr, pwd);
 
         cy.log('2- prepare');
         prepare('email_code');
 
         cy.log('3- prepare again');
-        prepare('email_code', `The factor email_code already generated for user ${userName}`);
+        prepare('email_code', `The factor email_code already generated for user ${usr}`);
 
         cy.log('4- wait for end of timeout');
         // eslint-disable-next-line cypress/no-unnecessary-waiting
         cy.wait(3000);
-        cy.log('4- wait for end of timeout');
+        cy.log('5- prepare after timeout should pass');
         prepare('email_code');
     });
 });
