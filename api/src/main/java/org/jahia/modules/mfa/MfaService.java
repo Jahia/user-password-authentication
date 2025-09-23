@@ -11,11 +11,6 @@ import java.util.List;
 public interface MfaService {
 
     /**
-     * Checks if MFA is enabled in the system configuration.
-     */
-    boolean isEnabled();
-
-    /**
      * Gets the list of available MFA factor types from registered providers.
      */
     List<String> getAvailableFactors();

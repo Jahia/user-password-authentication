@@ -1,57 +1,42 @@
 package org.jahia.modules.mfa.impl;
 
-import org.jahia.modules.mfa.MfaException;
-import org.jahia.modules.mfa.MfaFactorProvider;
-import org.jahia.modules.mfa.MfaSession;
-import org.jahia.modules.mfa.MfaSessionState;
-import org.jahia.modules.mfa.PreparationContext;
-import org.jahia.modules.mfa.VerificationContext;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import org.jahia.modules.mfa.*;
+import org.jahia.services.content.JCRTemplate;
 import org.jahia.services.content.decorator.JCRUserNode;
 import org.jahia.services.usermanager.JahiaUserManagerService;
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.ConfigurationPolicy;
-import org.osgi.service.component.annotations.Modified;
-import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.metatype.annotations.AttributeDefinition;
-import org.osgi.service.metatype.annotations.Designate;
-import org.osgi.service.metatype.annotations.ObjectClassDefinition;
+import org.osgi.service.component.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.jcr.RepositoryException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
  * Implementation of MFA service with MfaSession as the single source of truth.
  * Contains all MFA business logic and delegates to registry only for provider lookup.
  */
-@Component(configurationPid = "org.jahia.modules.mfa", service = {org.jahia.modules.mfa.MfaService.class}, immediate = true, configurationPolicy = ConfigurationPolicy.REQUIRE)
-@Designate(ocd = MfaServiceImpl.Config.class)
-public class MfaServiceImpl implements org.jahia.modules.mfa.MfaService {
+@Component(service = MfaService.class, immediate = true)
+public class MfaServiceImpl implements MfaService {
     private static final Logger logger = LoggerFactory.getLogger(MfaServiceImpl.class);
     private static final String MFA_SESSION_KEY = "mfa_session";
+    private static final String MFA_SUSPENDED_USER_MIXIN = "mfa:suspendedUser";
+    private static final String MFA_SUSPENDED_SINCE_PROP = "mfa:suspendedSince";
+    private static final String TOO_MANY_FAILED_ATTEMPTS_MESSAGE = "Too many failed authentication attempts";
 
-    private Config configInstance;
     private JahiaUserManagerService userManagerService;
     private MfaFactorRegistry factorRegistry;
-
-    @ObjectClassDefinition(name = "%configName", description = "%configDesc", localization = "OSGI-INF/l10n/config")
-    public @interface Config {
-        @AttributeDefinition(name = "%loginUrl", description = "%loginUrlDesc")
-        String loginUrl();
-
-        @AttributeDefinition(name = "%enabled", description = "%enabledDesc", defaultValue = "false")
-        boolean enabled();
-
-        @AttributeDefinition(name = "%enabledFactors", description = "%enabledFactorsDesc")
-        String[] enabledFactors() default {"email_code"};
-    }
+    private volatile MfaConfigurationService mfaConfigurationService;
+    private volatile Cache<String, AuthFailuresDetails> failuresCache;
 
     @Reference
     public void setUserManagerService(JahiaUserManagerService userManagerService) {
@@ -63,34 +48,50 @@ public class MfaServiceImpl implements org.jahia.modules.mfa.MfaService {
         this.factorRegistry = factorRegistry;
     }
 
-    public Config getConfigInstance() {
-        return configInstance;
+    @Reference(
+            policy = ReferencePolicy.DYNAMIC,
+            policyOption = ReferencePolicyOption.GREEDY,
+            updated = "setOrUpdateMfaConfigurationService"
+    )
+    public void setOrUpdateMfaConfigurationService(MfaConfigurationService mfaConfigurationService) {
+        this.mfaConfigurationService = mfaConfigurationService;
+        logger.info("Updating Caffeine cache for MFA auth failures...");
+        createCaffeineCache();
+        logger.info("Caffeine cache updated.");
+    }
+
+    public void unsetOrUpdateMfaConfigurationService(MfaConfigurationService mfaConfigurationService) {
+        this.mfaConfigurationService = null;
     }
 
     @Activate
-    public void activate(Config config) {
-        this.configInstance = config;
-        logger.info("MFA Service activated with enabled={}", config.enabled());
+    protected void activate() {
+        logger.info("Initializing Caffeine cache for MFA auth failures...");
+        createCaffeineCache();
+        logger.info("Caffeine cache initialized.");
     }
 
-    @Modified
-    public void modified(Config config) {
-        this.configInstance = config;
-        logger.info("MFA Service configuration modified with enabled={}", config.enabled());
+    private void createCaffeineCache() {
+        failuresCache = Caffeine.newBuilder()
+                .expireAfterWrite(mfaConfigurationService.getAuthFailuresWindowSeconds(), TimeUnit.SECONDS)
+                .build();
+    }
+
+    @Deactivate
+    protected void deactivate() {
+        logger.info("Clearing Caffeine cache for MFA auth failures...");
+        failuresCache.invalidateAll();
+        failuresCache.cleanUp();
+        logger.info("Caffeine cache cleared.");
     }
 
     // ===== PUBLIC INTERFACE IMPLEMENTATION =====
 
     @Override
-    public boolean isEnabled() {
-        return configInstance.enabled();
-    }
-
-    @Override
     public List<String> getAvailableFactors() {
-        String[] enabledFactorsConfig = configInstance.enabledFactors();
+        String[] enabledFactorsConfig = mfaConfigurationService.getEnabledFactors();
         if (enabledFactorsConfig == null || enabledFactorsConfig.length == 0) {
-            return Collections.emptyList(); // Return empty list if no factors configured
+            return Collections.emptyList(); // Return an empty list if no factors configured
         }
 
         List<String> configuredFactors = Arrays.stream(enabledFactorsConfig)
@@ -153,7 +154,7 @@ public class MfaServiceImpl implements org.jahia.modules.mfa.MfaService {
             logger.info("Factor {} preparation completed for user: {}", factorType, session.getUserId());
         } catch (MfaException mfaException) {
             session.markFactorPreparationFailed(factorType, mfaException.getMessage());
-            logger.error("Factor {} preparation failed for user: {}", factorType, session.getUserId(), mfaException);
+            logger.error("Factor {} preparation failed for user: {}", factorType, session.getUserId(), mfaException.getCause());
         } catch (Exception e) {
             session.markFactorPreparationFailed(factorType, "Preparation failed: " + e.getMessage());
             logger.error("Factor {} preparation failed for user: {}", factorType, session.getUserId(), e);
@@ -188,34 +189,117 @@ public class MfaServiceImpl implements org.jahia.modules.mfa.MfaService {
         }
 
         try {
+            if (isUserSuspended(user.getPath())) {
+                logger.warn("User {} is suspended", user.getIdentifier());
+                session.markFactorVerificationFailed(factorType, TOO_MANY_FAILED_ATTEMPTS_MESSAGE);
+                return session;
+
+            }
+            if (hasReachedAuthFailuresCountLimit(user.getPath(), provider)) {
+                suspendUserInJCR(user.getPath());
+                session.markFactorVerificationFailed(factorType, TOO_MANY_FAILED_ATTEMPTS_MESSAGE);
+                return session;
+            }
             Serializable preparationResult = (Serializable) request.getSession().getAttribute(getAttributeKey(factorType));
             VerificationContext verificationContext = new VerificationContext(user, request, preparationResult, verificationData);
             if (provider.verify(verificationContext)) {
                 // Clear preparation result after successful verification
                 request.getSession().removeAttribute(getAttributeKey(factorType));
                 session.markFactorCompleted(factorType);
+                logger.info("Factor {} verified successfully for user: {}", factorType, session.getUserId());
             } else {
+                trackFailure(user.getPath(), provider);
                 session.markFactorVerificationFailed(factorType, "Invalid verification code"); // TODO more generic
             }
-
-            if (session.isFactorCompleted(factorType)) {
-                logger.info("Factor {} verified successfully for user: {}", factorType, session.getUserId());
-
-                if (isAllRequiredFactorsCompleted(session)) {
-                    session.setState(MfaSessionState.COMPLETED);
-                    logger.info("All MFA factors completed for user: {}, proceed with authentication", session.getUserId());
-                    AuthHelper.authenticateUser(request, user);
-                }
-            } else {
-                String error = session.getFactorVerificationError(factorType);
-                logger.warn("Factor {} verification failed for user: {} - {}", factorType, session.getUserId(), error);
+            if (isAllRequiredFactorsCompleted(session)) {
+                session.setState(MfaSessionState.COMPLETED);
+                logger.info("All MFA factors completed for user: {}, proceed with authentication", session.getUserId());
+                AuthHelper.authenticateUser(request, user);
+                failuresCache.invalidate(user.getPath()); // clear any failure attempts for that user
             }
+        } catch (MfaException mfaException) {
+            session.markFactorVerificationFailed(factorType, mfaException.getMessage());
+            logger.error("Factor {} verification failed for user: {}", factorType, session.getUserId(), mfaException.getCause());
         } catch (Exception e) {
             session.markFactorVerificationFailed(factorType, "Verification failed: " + e.getMessage());
             logger.error("Factor {} verification failed for user: {}", factorType, session.getUserId(), e);
         }
 
         return session;
+    }
+
+    private boolean isUserSuspended(String userPath) throws MfaException {
+        try {
+            return JCRTemplate.getInstance().doExecuteWithSystemSession(session -> {
+                JCRUserNode userNode = (JCRUserNode) session.getNode(userPath);
+                if (!userNode.hasProperty(MFA_SUSPENDED_SINCE_PROP)) {
+                    logger.debug("User {} is not suspended", userNode);
+                    return false;
+                }
+                Calendar suspendedUntil = userNode.getProperty(MFA_SUSPENDED_SINCE_PROP).getDate();
+                suspendedUntil.add(Calendar.SECOND, mfaConfigurationService.getUserTemporarySuspensionSeconds());
+                // check if the suspension has expired
+                if (suspendedUntil.compareTo(Calendar.getInstance()) > 0) {
+                    logger.debug("User {} is suspended until {}", userNode, suspendedUntil);
+                    return true;
+                }
+                logger.debug("User {} is no longer suspended, removing its suspension in the JCR", userNode);
+                userNode.removeMixin(MFA_SUSPENDED_USER_MIXIN);
+                session.save();
+                return false;
+            });
+        } catch (RepositoryException e) {
+            throw new MfaException("Failed to check if the user is suspended", e);
+        }
+    }
+
+    private void suspendUserInJCR(String userPath) throws MfaException {
+
+        try {
+            JCRTemplate.getInstance().doExecuteWithSystemSession(session -> {
+                Calendar suspendedSince = Calendar.getInstance();
+                JCRUserNode userNode = (JCRUserNode) session.getNode(userPath);
+                logger.debug("Marking user {} as suspended...", userNode);
+                userNode.addMixin(MFA_SUSPENDED_USER_MIXIN);
+                userNode.setProperty(MFA_SUSPENDED_SINCE_PROP, suspendedSince);
+                logger.debug("Property '{}' set to {}", MFA_SUSPENDED_SINCE_PROP, suspendedSince);
+                session.save();
+                return null;
+            });
+        } catch (RepositoryException e) {
+            throw new MfaException("Failed to mark user as suspended", e);
+        }
+        failuresCache.invalidate(userPath); // no need to track failures anymore
+    }
+
+    private void trackFailure(String userNodePath, MfaFactorProvider provider) {
+        AuthFailuresDetails tracker = failuresCache.getIfPresent(userNodePath);
+        if (tracker == null) {
+            tracker = new AuthFailuresDetails();
+        }
+        String factorType = provider.getFactorType();
+        tracker.addFailureAttempt(factorType);
+        if (tracker.getFailureAttemptsCount(factorType) > mfaConfigurationService.getMaxAuthFailuresBeforeLock()) {
+            logger.warn("User {} has failed to authenticate {} times in a row", userNodePath, tracker.getFailureAttemptsCount(factorType));
+        } else {
+            logger.debug("User {} has failed to authenticate {} times in a row", userNodePath, tracker.getFailureAttemptsCount(factorType));
+        }
+        failuresCache.put(userNodePath, tracker);
+    }
+
+    private boolean hasReachedAuthFailuresCountLimit(String userNodePath, MfaFactorProvider provider) {
+        AuthFailuresDetails tracker = failuresCache.getIfPresent(userNodePath);
+        if (tracker == null) {
+            logger.debug("User {} has not failed to authenticate yet", userNodePath);
+            return false;
+        }
+        String factorType = provider.getFactorType();
+        if (tracker.removeAttemptsOutsideWindow(factorType, mfaConfigurationService.getAuthFailuresWindowSeconds() * 1000L)) {
+            logger.debug("Expired timestamps removed for user {}", userNodePath);
+            failuresCache.put(userNodePath, tracker);
+        }
+
+        return tracker.getFailureAttemptsCount(factorType) >= mfaConfigurationService.getMaxAuthFailuresBeforeLock();
     }
 
     @Override

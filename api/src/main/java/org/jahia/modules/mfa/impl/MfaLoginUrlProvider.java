@@ -1,6 +1,5 @@
 package org.jahia.modules.mfa.impl;
 
-import org.jahia.modules.mfa.MfaService;
 import org.jahia.params.valves.LoginUrlProvider;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -13,21 +12,23 @@ import javax.servlet.http.HttpServletRequest;
 @Component(immediate = true, service = LoginUrlProvider.class)
 public class MfaLoginUrlProvider implements LoginUrlProvider {
 
-    private MfaServiceImpl mfaServiceImpl;
+    @Reference
+    private MfaConfigurationService mfaConfigurationService;
 
     @Reference
-    public void setMfaService(MfaService mfaService) {
-        // Cast to implementation to access config
-        this.mfaServiceImpl = (MfaServiceImpl) mfaService;
+    public void setMfaConfigurationService(MfaConfigurationService mfaConfigurationService) {
+        this.mfaConfigurationService = mfaConfigurationService;
     }
 
     @Override
     public String getLoginUrl(HttpServletRequest httpServletRequest) {
-        return mfaServiceImpl.isEnabled() ? mfaServiceImpl.getConfigInstance().loginUrl() : null;
+        return mfaConfigurationService.getLoginUrl();
     }
 
     @Override
     public boolean hasCustomLoginUrl() {
+        // to be registered, the LoginUrlProvider must return true here
+        // this has been improved in https://github.com/Jahia/jahia-private/pull/4240, but is not available in Jahia 8.2.1.0 (the target Jahia version of this module)
         return true;
     }
 }
