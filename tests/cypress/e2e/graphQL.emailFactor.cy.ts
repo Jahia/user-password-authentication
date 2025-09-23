@@ -25,6 +25,7 @@ const VERSION_VAR = '_JAHIA_VERSION_';
 
 describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', () => {
     before(() => {
+        // Create special users first as they are not needed for each test
         [TEST_USER_NO_EMAIL, ...SPECIAL_USERS].forEach(user => createUserForMFA(user.username, user.password, user.email));
         installMFAConfig('fake.yml');
 
@@ -140,14 +141,14 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
         installMFAConfig('quick-locking.yml');
 
         cy.log('1- initiate');
-        initiate(USERNAME, PASSWORD);
+        initiate(TEST_USER.username, TEST_USER.password);
 
         cy.log('2- prepare');
         prepare('email_code');
 
         cy.log('3- verification using wrong codes');
         let wrongCode: string;
-        getVerificationCode(EMAIL).then(code => {
+        getVerificationCode(TEST_USER.email).then(code => {
             wrongCode = generateWrongCode(code);
             cy.log('1st attempt: ' + wrongCode);
             verifyEmailCodeFactor(wrongCode, 'Invalid verification code');
@@ -166,7 +167,7 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
             // eslint-disable-next-line cypress/no-unnecessary-waiting
             cy.wait(6000);
             verifyEmailCodeFactor(code);
-            assertIsLoggedIn(USERNAME);
+            assertIsLoggedIn(TEST_USER.username);
         });
     });
 
@@ -179,14 +180,14 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
         installMFAConfig('quick-locking.yml');
 
         cy.log('1- initiate');
-        initiate(USERNAME, PASSWORD);
+        initiate(TEST_USER.username, TEST_USER.password);
 
         cy.log('2- prepare');
         prepare('email_code');
 
         cy.log('3- verification using wrong codes');
         let wrongCode: string;
-        getVerificationCode(EMAIL).then(code => {
+        getVerificationCode(TEST_USER.email).then(code => {
             wrongCode = generateWrongCode(code);
             cy.log('1st attempt: ' + wrongCode);
             verifyEmailCodeFactor(wrongCode, 'Invalid verification code');
