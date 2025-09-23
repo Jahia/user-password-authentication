@@ -88,8 +88,12 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
         // it.since('8.2.3.0', `Test with username: ${user.username}`, () => {
         // @see https://github.com/Jahia/jahia-cypress/issues/158 for implementation of it.since()
         SPECIAL_USERS.forEach(user => {
-            it(`Test with username: ${user.username}`, function() {
-                compare(Cypress.env(VERSION_VAR), '8.2.3', '>=') ? validatePositiveMFAFlow(user) : this.skip();
+            it(`Test with username: ${user.username}`, function () {
+                if (compare(Cypress.env(VERSION_VAR), '8.2.3', '>=')) {
+                    validatePositiveMFAFlow(user);
+                } else {
+                    this.skip();
+                }
             });
         });
     });
