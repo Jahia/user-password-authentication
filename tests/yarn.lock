@@ -1071,6 +1071,13 @@
     eslint-plugin-react "^7.32.2"
     eslint-plugin-react-hooks "^4.6.0"
 
+"@jahia/jcontent-cypress@^3.4.0-tests.5":
+  version "3.4.0-tests.5"
+  resolved "https://registry.yarnpkg.com/@jahia/jcontent-cypress/-/jcontent-cypress-3.4.0-tests.5.tgz#504d4e608771cfb2ea98d4b2b4afd2b156a145fe"
+  integrity sha512-EYriazB04QkkSNqWkeiM/t8XQ6bjcIxWGumPr8xT+8QgkJWO7wzZClwz5DNqpulxwqykKdE60bbJ4YYQjf4r4w==
+  dependencies:
+    cypress-real-events "^1.14.0"
+
 "@jridgewell/gen-mapping@^0.3.12", "@jridgewell/gen-mapping@^0.3.5":
   version "0.3.13"
   resolved "https://registry.yarnpkg.com/@jridgewell/gen-mapping/-/gen-mapping-0.3.13.tgz#6342a19f44347518c93e43b1ac69deb3c4656a1f"
@@ -2495,7 +2502,7 @@ cypress-multi-reporters@^1.6.3:
     debug "^4.3.4"
     lodash "^4.17.21"
 
-cypress-real-events@^1.11.0:
+cypress-real-events@^1.11.0, cypress-real-events@^1.14.0:
   version "1.15.0"
   resolved "https://registry.yarnpkg.com/cypress-real-events/-/cypress-real-events-1.15.0.tgz#b84ed97455238139ac3d0c8f803991b30f22fc8a"
   integrity sha512-in98xxTnnM9Z7lZBvvVozm99PBT2eEOjXRG5LKWyYvQnj9mGWXMiPNpfw7e7WiraBFh7XlXIxnE9Cu5o+52kQQ==
