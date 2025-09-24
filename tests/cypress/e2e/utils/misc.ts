@@ -7,12 +7,3 @@ export const installMFAConfig = (configFilename: string) => {
         script: {fileName: `mfa-configuration/${configFilename}`, type: 'application/yaml'}
     });
 };
-
-/**
- * Utility method to refresh the MFA module, needed to clean up internal caches.
- */
-export const refreshMFA = () => {
-    cy.runProvisioningScript({
-        script: {fileName: 'refresh.yml', type: 'application/yaml'}
-    });
-};

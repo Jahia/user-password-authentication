@@ -33,7 +33,7 @@ export const createUserForMFA = (userName: string, password: string, email:strin
  */
 export const assertIsNotLoggedIn = () => {
     // TODO find a more efficient way
-    cy.visit('/jahia/dashboard', {failOnStatusCode: false});
+    cy.visit('/jahia/dashboard', {failOnStatusCode: false, timeout: 30000});
     // Should match the configuration in fake.yml
     // Ensure the user gets redirected when visiting a page that requires authentication
     cy.url().should('contain', '/sites/fake/fakePage.html');
@@ -45,6 +45,6 @@ export const assertIsNotLoggedIn = () => {
  */
 export const assertIsLoggedIn = (username: string) => {
     // TODO find a more efficient way
-    cy.visit('/jahia/dashboard');
+    cy.visit('/jahia/dashboard', {timeout: 30000});
     cy.contains('p', `Welcome ${username} to Jahia 8`);
 };

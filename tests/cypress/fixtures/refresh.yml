@@ -1,2 +1,0 @@
-# Refresh MFA module to clean up all internal caches
-- karafCommand: "bundle:refresh jahia-multi-factor-authentication-api"
