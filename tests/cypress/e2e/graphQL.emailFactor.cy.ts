@@ -76,25 +76,22 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
         });
     };
 
-    describe('Should be authenticated when correct credentials and code are provided', () => {
-        // Test with the normal test user
-        it(`Test with username: ${TEST_USER.username}`, () => {
-            validatePositiveMFAFlow(TEST_USER);
-        });
+    it(`Should be authenticated when correct credentials and code are provided: ${TEST_USER.username}`, () => {
+        validatePositiveMFAFlow(TEST_USER);
+    });
 
-        // Tests with users having special characters in username and/or password.
-        // These are applicable only since Jahia 8.2.3.0 (https://github.com/Jahia/jahia-private/issues/3513) and that's why they are grouped here.
-        // it() should be replaced with it.since() or similar once the support for it.since() is added in jahia-cypress, e.g.:
-        // it.since('8.2.3.0', `Test with username: ${user.username}`, () => {
-        // @see https://github.com/Jahia/jahia-cypress/issues/158 for implementation of it.since()
-        SPECIAL_USERS.forEach(user => {
-            it(`Test with username: ${user.username}`, function () {
-                if (compare(Cypress.env(VERSION_VAR), '8.2.3', '>=')) {
-                    validatePositiveMFAFlow(user);
-                } else {
-                    this.skip();
-                }
-            });
+    // Tests with users having special characters in username and/or password.
+    // These are applicable only since Jahia 8.2.3.0 (https://github.com/Jahia/jahia-private/issues/3513) and that's why they are grouped here.
+    // it() should be replaced with it.since() or similar once the support for it.since() is added in jahia-cypress, e.g.:
+    // it.since('8.2.3.0', `Test with username: ${user.username}`, () => {
+    // @see https://github.com/Jahia/jahia-cypress/issues/158 for implementation of it.since()
+    SPECIAL_USERS.forEach(user => {
+        it(`Should be authenticated when correct credentials and code are provided: ${user.username}`, function () {
+            if (compare(Cypress.env(VERSION_VAR), '8.2.3', '>=')) {
+                validatePositiveMFAFlow(user);
+            } else {
+                this.skip();
+            }
         });
     });
 
