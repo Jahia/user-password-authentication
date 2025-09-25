@@ -10,14 +10,6 @@ jahiaComponent(
   },
   ({ "jcr:title": title }, { renderContext }) => (
     <Layout title={title}>
-      {/*<div*/}
-      {/*  style={{*/}
-      {/*    minHeight: "100vh",*/}
-      {/*    background: "linear-gradient(133deg, #140933 0%, #00A0E3 100%)",*/}
-      {/*    backgroundBlendMode: "darken",*/}
-      {/*  }}*/}
-      {/*>*/}
-      {/*</div>*/}
       <div className={"card"}>
         <div className={"card-header"}>
           <Area name="card-header" />
