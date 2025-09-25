@@ -186,6 +186,17 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+        <plugins>
+            <plugin>
+                <artifactId>maven-release-plugin</artifactId>
+                <configuration>
+                    <!-- use profiles to trigger additional yarn commands during the release process -->
+                    <preparationGoals>-P release-prepare clean verify</preparationGoals> <!-- after transformation but before committing -->
+                    <completionGoals>-P release-prepare process-resources</completionGoals> <!-- after transformation back to the next development version but before committing -->
+                    <releaseProfiles>release-perform</releaseProfiles>
+                    <useReleaseProfile>true</useReleaseProfile>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
-
 </project>
