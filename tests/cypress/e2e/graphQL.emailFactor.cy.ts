@@ -3,6 +3,7 @@ import {compare} from 'compare-versions';
 import {
     assertIsLoggedIn,
     assertIsNotLoggedIn,
+    assertIsSuspended,
     createUserForMFA,
     deleteAllEmails,
     generateWrongCode,
@@ -180,6 +181,7 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
             wrongCode = generateWrongCode(wrongCode);
             cy.log('4th attempt: ' + wrongCode);
             verifyEmailCodeFactor(wrongCode, 'Too many failed authentication attempts');
+            assertIsSuspended(TEST_USER.username());
             cy.log('Even the valid code is not accepted: ' + code);
             verifyEmailCodeFactor(code, 'Too many failed authentication attempts');
             // Wait until the suspension expires

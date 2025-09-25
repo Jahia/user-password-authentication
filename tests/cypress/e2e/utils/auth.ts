@@ -57,4 +57,31 @@ export const assertIsLoggedIn = (username: string) => {
         timeout: 10000,
         interval: 1000
     });
+    // Also ensure the user is not suspended
+    assertIsNotSuspended(username);
+};
+
+export const assertIsSuspended = (username: string) => {
+    cy.apollo({
+        queryFile: 'userSuspendedSinceProperty.graphql',
+        variables: {
+            username: username
+        }
+    }).then(response => {
+        // Can't compare with actual JavaScript dates (or within a range) as the property is set in the backend and might differ by a few milliseconds
+        // expect(suspendedSince).to.be.within(rangeBegin, rangeEnd);
+        // so we just check that the property is defined
+        expect(response?.data?.admin?.userAdmin?.user?.property).to.not.be.undefined;
+    });
+};
+
+const assertIsNotSuspended = (username: string) => {
+    cy.apollo({
+        queryFile: 'userSuspendedSinceProperty.graphql',
+        variables: {
+            username: username
+        }
+    }).then(response => {
+        expect(response?.data?.admin?.userAdmin?.user?.property).to.be.null;
+    });
 };

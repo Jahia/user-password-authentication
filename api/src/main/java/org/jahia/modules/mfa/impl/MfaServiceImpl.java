@@ -3,6 +3,7 @@ package org.jahia.modules.mfa.impl;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.jahia.modules.mfa.*;
+import org.jahia.services.content.JCRPropertyWrapper;
 import org.jahia.services.content.JCRTemplate;
 import org.jahia.services.content.decorator.JCRUserNode;
 import org.jahia.services.usermanager.JahiaUserManagerService;
@@ -11,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.jcr.RepositoryException;
+import javax.jcr.Value;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -254,7 +256,8 @@ public class MfaServiceImpl implements MfaService {
                     logger.debug("User {} is not suspended", userNode);
                     return false;
                 }
-                Calendar suspendedUntil = userNode.getProperty(MFA_SUSPENDED_SINCE_PROP).getDate();
+                JCRPropertyWrapper suspendedSinceProperty = userNode.getProperty(MFA_SUSPENDED_SINCE_PROP);
+                Calendar suspendedUntil = suspendedSinceProperty.getDate();
                 suspendedUntil.add(Calendar.SECOND, mfaConfigurationService.getUserTemporarySuspensionSeconds());
                 // check if the suspension has expired
                 if (suspendedUntil.compareTo(Calendar.getInstance()) > 0) {
@@ -263,6 +266,7 @@ public class MfaServiceImpl implements MfaService {
                 }
                 logger.debug("User {} is no longer suspended, removing its suspension in the JCR", userNode);
                 userNode.removeMixin(MFA_SUSPENDED_USER_MIXIN);
+                suspendedSinceProperty.remove();
                 session.save();
                 return false;
             });

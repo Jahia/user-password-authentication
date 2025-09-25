@@ -1,0 +1,9 @@
+query userSuspendedSinceProperty($username: String!) {
+    admin {
+        userAdmin {
+            user(username: $username) {
+                property(name:"mfa:suspendedSince")
+            }
+        }
+    }
+}
