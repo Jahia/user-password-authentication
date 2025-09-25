@@ -6,10 +6,12 @@ services:
             - smtp-server
         ports:
             - '8080:8080'
+            - '8000:8000'
         environment:
             - SUPER_USER_PASSWORD=${SUPER_USER_PASSWORD}
             - JAHIA_LICENSE=${JAHIA_LICENSE}
             - SMTP_SERVER_URL=smtp://smtp-server:1025
+            - JPDA=true
         extra_hosts:
             - jahia:127.0.0.1
         networks:

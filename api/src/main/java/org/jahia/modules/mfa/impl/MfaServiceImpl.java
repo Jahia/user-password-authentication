@@ -14,10 +14,7 @@ import javax.jcr.RepositoryException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -37,6 +34,7 @@ public class MfaServiceImpl implements MfaService {
     private MfaFactorRegistry factorRegistry;
     private volatile MfaConfigurationService mfaConfigurationService;
     private volatile Cache<String, AuthFailuresDetails> failuresCache;
+    private volatile Cache<String, Long> factorStartCache;
 
     @Reference
     public void setUserManagerService(JahiaUserManagerService userManagerService) {
@@ -75,13 +73,17 @@ public class MfaServiceImpl implements MfaService {
         failuresCache = Caffeine.newBuilder()
                 .expireAfterWrite(mfaConfigurationService.getAuthFailuresWindowSeconds(), TimeUnit.SECONDS)
                 .build();
+        factorStartCache = Caffeine.newBuilder()
+                .expireAfterWrite(mfaConfigurationService.getFactorStartRateLimitSeconds(), TimeUnit.SECONDS).build();
     }
 
     @Deactivate
     protected void deactivate() {
-        logger.info("Clearing Caffeine cache for MFA auth failures...");
+        logger.info("Clearing Caffeine caches for MFA auth failures...");
         failuresCache.invalidateAll();
         failuresCache.cleanUp();
+        factorStartCache.invalidateAll();
+        factorStartCache.cleanUp();
         logger.info("Caffeine cache cleared.");
     }
 
@@ -147,8 +149,16 @@ public class MfaServiceImpl implements MfaService {
         }
 
         try {
+            String cacheKey = getCacheKey(user, provider);
+            Long startedPrepareTime = factorStartCache.getIfPresent(cacheKey);
+            long now = System.currentTimeMillis();
+            if (startedPrepareTime != null) {
+                throw new MfaException(String.format("The factor %s already generated for user %s, wait %ds before generating a new one", factorType, user.getDisplayableName(), mfaConfigurationService.getFactorStartRateLimitSeconds() - (now - startedPrepareTime) / 1000 ));
+            }
             PreparationContext preparationContext = new PreparationContext(user, request);
             Object preparationResult = provider.prepare(preparationContext);
+            // Store in cache to prevent same user to generate a new preparationResult for the current factor.
+            factorStartCache.put(cacheKey, now);
             request.getSession().setAttribute(getAttributeKey(factorType), preparationResult);
             session.markFactorPrepared(provider.getFactorType());
             logger.info("Factor {} preparation completed for user: {}", factorType, session.getUserId());
@@ -206,6 +216,8 @@ public class MfaServiceImpl implements MfaService {
                 // Clear preparation result after successful verification
                 request.getSession().removeAttribute(getAttributeKey(factorType));
                 session.markFactorCompleted(factorType);
+                // Clean up start cache
+                factorStartCache.invalidate(getCacheKey(user, provider));
                 logger.info("Factor {} verified successfully for user: {}", factorType, session.getUserId());
             } else {
                 trackFailure(user.getPath(), provider);
@@ -333,4 +345,7 @@ public class MfaServiceImpl implements MfaService {
         return String.format("%s.preparationResult.%s", MfaServiceImpl.class.getSimpleName(), factorType);
     }
 
+    private static String getCacheKey(JCRUserNode user, MfaFactorProvider provider) {
+        return String.format("%s-%s@%d", user.getPath(), provider.getFactorType(), provider.hashCode());
+    }
 }

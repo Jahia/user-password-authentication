@@ -74,6 +74,13 @@ public class MfaConfigurationService {
                 defaultValue = "600"
         )
         int userTemporarySuspensionSeconds();
+
+        @AttributeDefinition(
+                name="%factorStartRateLimitSeconds",
+                description = "%factorStartRateLimitSecondsDesc",
+                defaultValue = "30"
+        )
+        int factorStartRateLimitSeconds();
     }
 
     @Activate
@@ -113,6 +120,10 @@ public class MfaConfigurationService {
 
     public int getUserTemporarySuspensionSeconds() {
         return config.userTemporarySuspensionSeconds();
+    }
+
+    public int getFactorStartRateLimitSeconds() {
+        return config.factorStartRateLimitSeconds();
     }
 
 }

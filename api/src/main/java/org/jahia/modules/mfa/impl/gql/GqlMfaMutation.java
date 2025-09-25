@@ -6,7 +6,6 @@ import graphql.annotations.annotationTypes.GraphQLName;
 import graphql.schema.DataFetchingEnvironment;
 import org.jahia.modules.graphql.provider.dxm.osgi.annotations.GraphQLOsgiService;
 import org.jahia.modules.graphql.provider.dxm.util.ContextUtil;
-import org.jahia.modules.mfa.GqlMfaFactorsMutation;
 import org.jahia.modules.mfa.MfaService;
 import org.jahia.modules.mfa.MfaSession;
 
