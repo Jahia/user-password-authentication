@@ -2489,6 +2489,11 @@ cypress-file-upload@^5.0.8:
   resolved "https://registry.yarnpkg.com/cypress-file-upload/-/cypress-file-upload-5.0.8.tgz#d8824cbeaab798e44be8009769f9a6c9daa1b4a1"
   integrity sha512-+8VzNabRk3zG6x8f8BWArF/xA/W0VK4IZNx3MV0jFWrJS/qKn8eHfa5nU73P9fOQAgwHFJx7zjg4lwOnljMO8g==
 
+cypress-iframe@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/cypress-iframe/-/cypress-iframe-1.0.1.tgz#2a286cfd47a240aa9af0ad9f339f4c6f942089f8"
+  integrity sha512-Ne+xkZmWMhfq3x6wbfzK/SzsVTCrJru3R3cLXsoSAZyfUtJDamXyaIieHXeea3pQDXF4wE2w4iUuvCYHhoD31g==
+
 cypress-mailpit@^1.4.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/cypress-mailpit/-/cypress-mailpit-1.4.0.tgz#eaf5a42014181cff6b6da1f8e999794e89a8cb05"

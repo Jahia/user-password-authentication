@@ -1,5 +1,6 @@
 import {addNode, createSite, deleteSite, publishAndWaitJobEnding} from '@jahia/cypress';
 import {JContent} from '@jahia/jcontent-cypress/dist/page-object/jcontent';
+import 'cypress-iframe';
 
 /**
  * Creates a new site with a login page. If a site matching this `siteKey` already exists, it is first deleted.
@@ -23,10 +24,13 @@ export function createSiteWithLoginPage(siteKey:string, loginPageName: string) {
         ]
     });
 
-    // Workaround: open JContent to trigger area creations (in particular the "authentication" one (of type "mfaui:authentication")
-    // the switchToPageBuilder() gives enough time to the area creation to complete
+    // Workaround: open JContent to trigger area creations
+    // then wait for the "mfaui:authentication" area to be created
     cy.login();
-    JContent.visit(siteKey, 'en', `pages/${loginPageName}`).switchToPageBuilder();
+    JContent.visit(siteKey, 'en', `pages/${loginPageName}`);
+    cy.iframe('#page-builder-frame-1').within(() => {
+        cy.get('div[type="area"][areaType="mfaui:authentication"]').should('be.visible');
+    });
 
     publishAndWaitJobEnding(`/sites/${siteKey}`);
 }
