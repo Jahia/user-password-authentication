@@ -25,9 +25,10 @@ export function initiate(username: string, password: string, expectedError:strin
  * Prepares an MFA factor and asserts the expected outcome.
  *
  * @param factorType - The type of MFA factor to prepare.
+ * @param expectedRequiredFactor - The expected required factor type.
  * @param expectedError - Optional. If provided, asserts that the error matches this value. If not provided, assumes it's a success
  */
-export function prepare(factorType: string, expectedError:string = undefined) {
+export function prepare(factorType: string, expectedRequiredFactor: string = factorType, expectedError: string = undefined) {
     cy.apollo({
         queryFile: 'prepareFactor.graphql',
         variables: {
@@ -37,16 +38,14 @@ export function prepare(factorType: string, expectedError:string = undefined) {
         if (expectedError) {
             expect(response?.data?.mfa?.prepareFactor?.success).to.be.false;
             expect(response?.data?.mfa?.prepareFactor?.error).to.contain(expectedError);
-            // TODO is that correct: ?
-            expect(response?.data?.mfa?.prepareFactor?.sessionState).to.be.null;
-            expect(response?.data?.mfa?.prepareFactor?.requiredFactors).to.be.null;
-            expect(response?.data?.mfa?.prepareFactor?.completedFactors).to.be.null;
+            expect(response?.data?.mfa?.prepareFactor?.sessionState).to.eq('failed');
         } else {
             expect(response?.data?.mfa?.prepareFactor?.success).to.be.true;
             expect(response?.data?.mfa?.prepareFactor?.sessionState).to.eq('in_progress');
-            expect(response?.data?.mfa?.prepareFactor?.requiredFactors).to.be.a('array').and.have.length(1);
-            expect(response?.data?.mfa?.prepareFactor?.requiredFactors[0]).to.eq(factorType);
         }
+
+        expect(response?.data?.mfa?.prepareFactor?.requiredFactors).to.be.a('array').and.have.length(1);
+        expect(response?.data?.mfa?.prepareFactor?.requiredFactors[0]).to.eq(expectedRequiredFactor);
     });
 }
 

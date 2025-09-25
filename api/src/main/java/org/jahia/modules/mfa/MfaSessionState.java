@@ -7,7 +7,7 @@ public enum MfaSessionState {
     NOT_STARTED("not_started"),
     IN_PROGRESS("in_progress"),
     COMPLETED("completed"),
-    FAILED("failed"); // TODO when should it be used?
+    FAILED("failed");
 
     private final String value;
 
