@@ -137,12 +137,12 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
         initiate(TEST_USER_NO_EMAIL.username(), TEST_USER_NO_EMAIL.password);
 
         cy.log('2- prepare');
-        prepare('email_code', 'User does not have an email address configured');
+        prepare('email_code', 'email_code', 'User does not have an email address configured');
     });
 
     it('Should throw an error when preparing without initiating the factor', () => {
         cy.log('2- prepare');
-        prepare('email_code', 'Failed to prepare factor: No active MFA session found');
+        prepare('email_code', 'email_code', 'Failed to prepare factor: No active MFA session found');
     });
 
     it('Should be locked when multiple wrong verification codes are entered in a row', () => {

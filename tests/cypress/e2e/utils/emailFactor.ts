@@ -51,18 +51,17 @@ export function verifyEmailCodeFactor(code: string, expectedError: string = unde
         if (expectedError) {
             expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.success).false;
             expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.error).eq(expectedError);
-            // TODO is that correct: ?
-            expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.sessionState).to.be.null;
-            expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.requiredFactors).to.be.null;
-            expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.completedFactors).to.be.null;
+            expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.sessionState).eq('in_progress');
+            expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.completedFactors).to.be.a('array').and.be.empty;
         } else {
             expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.success).true;
             expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.sessionState).eq('completed');
-            expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.requiredFactors).a('array').and.have.length(1);
-            expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.requiredFactors[0]).eq('email_code');
             expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.completedFactors).to.be.a('array').and.have.length(1);
             expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.completedFactors[0]).eq('email_code');
         }
+
+        expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.requiredFactors).a('array').and.have.length(1);
+        expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.requiredFactors[0]).eq('email_code');
     });
 }
 

@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 
 /**
  * This GraphQL mutation class handles MFA factors specific operations.
- * It's exported and exposed, because it could be extended by other modules that would add their own factors.
+ * It's exported and exposed because it could be extended by other modules that would add their own factors.
  */
 @GraphQLName("MfaFactorsMutation")
 @GraphQLDescription("MFA state-modifying operations")
@@ -31,14 +31,8 @@ public class GqlMfaFactorsMutation {
     public GqlMfaResponse verifyEmailCodeFactor(@GraphQLName("code") String code, DataFetchingEnvironment environment) {
         try {
             HttpServletRequest httpServletRequest = ContextUtil.getHttpServletRequest(environment.getGraphQlContext());
-
             MfaSession session = mfaService.verifyFactor(EmailCodeFactorProvider.FACTOR_TYPE, httpServletRequest, code);
-            String error = session.getFactorVerificationError(EmailCodeFactorProvider.FACTOR_TYPE);
-            if (error != null) {
-                return GqlMfaUtils.createErrorResponse(error);
-            }
-
-            return GqlMfaUtils.createSessionStatusResponse(session);
+            return GqlMfaUtils.createFactorVerificationResponse(session, EmailCodeFactorProvider.FACTOR_TYPE);
         } catch (Exception e) {
             return GqlMfaUtils.createErrorResponse("Failed to verify email code: " + e.getMessage());
         }

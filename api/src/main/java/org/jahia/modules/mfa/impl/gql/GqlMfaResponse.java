@@ -54,10 +54,6 @@ public class GqlMfaResponse {
         return sessionState;
     }
 
-    public void setSessionState(String sessionState) {
-        this.sessionState = sessionState;
-    }
-
     public void setSessionState(MfaSessionState sessionState) {
         this.sessionState = sessionState.getValue();
     }

@@ -8,6 +8,7 @@ import org.jahia.modules.graphql.provider.dxm.osgi.annotations.GraphQLOsgiServic
 import org.jahia.modules.graphql.provider.dxm.util.ContextUtil;
 import org.jahia.modules.mfa.MfaService;
 import org.jahia.modules.mfa.MfaSession;
+import org.jahia.modules.mfa.MfaSessionState;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -30,15 +31,18 @@ public class GqlMfaMutation {
     public GqlMfaResponse initiate(@GraphQLName("username") String username,
                                    @GraphQLName("password") String password,
                                    DataFetchingEnvironment environment) {
+        GqlMfaResponse response;
         try {
             HttpServletRequest httpServletRequest = ContextUtil.getHttpServletRequest(environment.getGraphQlContext());
             MfaSession session = mfaService.initiateMfa(username, password, httpServletRequest);
-            return GqlMfaUtils.createSuccessResponse(session);
+            response = GqlMfaUtils.createInitiateResponse(session);
         } catch (IllegalArgumentException e) {
-            return GqlMfaUtils.createErrorResponse(e.getMessage());
+            response = GqlMfaUtils.createErrorResponse(e.getMessage());
         } catch (Exception e) {
-            return GqlMfaUtils.createErrorResponse("Failed to initiate MFA: " + e.getMessage());
+            response = GqlMfaUtils.createErrorResponse("Failed to initiate MFA: " + e.getMessage());
         }
+        response.setRequiredFactors(mfaService.getAvailableFactors());
+        return response;
     }
 
     @GraphQLField
@@ -46,34 +50,34 @@ public class GqlMfaMutation {
     @GraphQLDescription("Prepare a specific MFA factor")
     public GqlMfaResponse prepareFactor(@GraphQLName("factorType") String factorType,
                                         DataFetchingEnvironment environment) {
+        GqlMfaResponse response;
         try {
             HttpServletRequest httpServletRequest = ContextUtil.getHttpServletRequest(environment.getGraphQlContext());
             MfaSession session = mfaService.prepareFactor(factorType, httpServletRequest);
-            String error = session.getFactorPreparationError(factorType);
-            if (error != null) {
-                return GqlMfaUtils.createErrorResponse(error);
-            }
-
-            return GqlMfaUtils.createSessionStatusResponse(session);
+            response = GqlMfaUtils.createFactorPreparationResponse(session, factorType);
         } catch (Exception e) {
-            return GqlMfaUtils.createErrorResponse("Failed to prepare factor: " + e.getMessage());
+            response = GqlMfaUtils.createErrorResponse("Failed to prepare factor: " + e.getMessage());
         }
+        response.setRequiredFactors(mfaService.getAvailableFactors());
+        return response;
     }
 
     @GraphQLField
     @GraphQLName("clear")
     @GraphQLDescription("Clear current MFA session")
     public GqlMfaResponse clear(DataFetchingEnvironment environment) {
+        GqlMfaResponse response;
         try {
             HttpServletRequest httpServletRequest = ContextUtil.getHttpServletRequest(environment.getGraphQlContext());
             mfaService.clearMfaSession(httpServletRequest);
-            GqlMfaResponse response = new GqlMfaResponse();
+            response = new GqlMfaResponse();
             response.setSuccess(true);
-            response.setSessionState("not_started");
-            return response;
+            response.setSessionState(MfaSessionState.NOT_STARTED);
         } catch (Exception e) {
-            return GqlMfaUtils.createErrorResponse("Failed to clear session: " + e.getMessage());
+            response = GqlMfaUtils.createErrorResponse("Failed to clear session: " + e.getMessage());
         }
+        response.setRequiredFactors(mfaService.getAvailableFactors());
+        return response;
     }
 
     @GraphQLField
