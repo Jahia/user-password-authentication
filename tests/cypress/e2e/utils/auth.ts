@@ -41,8 +41,8 @@ export const assertIsNotLoggedIn = () => {
 };
 
 /**
- * Asserts the given user is logged by ensuring they can access the Jahia Dashboard
- * @param username
+ * Asserts the given user is logged by ensuring they can access the Jahia Dashboard and that they are not suspended.
+ * @param username the username to check
  */
 export const assertIsLoggedIn = (username: string) => {
     // TODO find better way to ensure the user is logged in
@@ -61,6 +61,10 @@ export const assertIsLoggedIn = (username: string) => {
     assertIsNotSuspended(username);
 };
 
+/**
+ * Asserts the given user is suspended by ensuring the JCR 'mfa:suspendedSince' property is set in their JCR user node
+ * @param username the username to check
+ */
 export const assertIsSuspended = (username: string) => {
     cy.apollo({
         queryFile: 'userSuspendedSinceProperty.graphql',
@@ -75,6 +79,10 @@ export const assertIsSuspended = (username: string) => {
     });
 };
 
+/**
+ * Asserts the given user is not suspended by ensuring the JCR 'mfa:suspendedSince' property is not set in their JCR user node
+ * @param username the username to check
+ */
 const assertIsNotSuspended = (username: string) => {
     cy.apollo({
         queryFile: 'userSuspendedSinceProperty.graphql',
