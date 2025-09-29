@@ -67,7 +67,7 @@ export const assertIsLoggedIn = (username: string) => {
  */
 export const assertIsSuspended = (username: string) => {
     cy.apollo({
-        queryFile: 'userSuspendedSinceProperty.graphql',
+        queryFile: 'suspendedUserDetails.graphql',
         variables: {
             username: username
         }
@@ -76,6 +76,9 @@ export const assertIsSuspended = (username: string) => {
         // expect(suspendedSince).to.be.within(rangeBegin, rangeEnd);
         // so we just check that the property is defined
         expect(response?.data?.admin?.userAdmin?.user?.property).to.not.be.undefined;
+        // And check the mixin is present
+        expect(response?.data?.admin?.userAdmin?.user?.node?.mixinTypes).to.be.a('array').and.have.length(1);
+        expect(response?.data?.admin?.userAdmin?.user?.node?.mixinTypes[0]?.name).to.eq('mfa:suspendedUser');
     });
 };
 
@@ -85,11 +88,12 @@ export const assertIsSuspended = (username: string) => {
  */
 const assertIsNotSuspended = (username: string) => {
     cy.apollo({
-        queryFile: 'userSuspendedSinceProperty.graphql',
+        queryFile: 'suspendedUserDetails.graphql',
         variables: {
             username: username
         }
     }).then(response => {
-        expect(response?.data?.admin?.userAdmin?.user?.property).to.be.null;
+        expect(response?.data?.admin?.userAdmin?.user?.property, 'the mfa:suspendedUser property should not be set').to.be.null;
+        expect(response?.data?.admin?.userAdmin?.user?.node?.mixinTypes, 'the mfa:suspendedUser mixin should not exist on the user node').to.be.empty;
     });
 };
