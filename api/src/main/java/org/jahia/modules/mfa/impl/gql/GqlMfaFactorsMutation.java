@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 
 /**
  * This GraphQL mutation class handles MFA factors specific operations.
- * It's exported and exposed because it could be extended by other modules that would add their own factors.
+ * TODO: move to a separate package and export via OSGi, in order to allow extending it with custom factors from other modules.
  */
 @GraphQLName("MfaFactorsMutation")
 @GraphQLDescription("MFA state-modifying operations")

@@ -12,6 +12,7 @@ import org.jahia.modules.mfa.MfaSessionState;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 @GraphQLName("MfaMutation")
 @GraphQLDescription("MFA state-modifying operations")
@@ -30,11 +31,12 @@ public class GqlMfaMutation {
     @GraphQLDescription("Initiate MFA authentication")
     public GqlMfaResponse initiate(@GraphQLName("username") String username,
                                    @GraphQLName("password") String password,
+                                   @GraphQLName("site") String siteKey,
                                    DataFetchingEnvironment environment) {
         GqlMfaResponse response;
         try {
             HttpServletRequest httpServletRequest = ContextUtil.getHttpServletRequest(environment.getGraphQlContext());
-            MfaSession session = mfaService.initiateMfa(username, password, httpServletRequest);
+            MfaSession session = mfaService.initiateMfa(username, password, siteKey, httpServletRequest);
             response = GqlMfaUtils.createInitiateResponse(session);
         } catch (IllegalArgumentException e) {
             response = GqlMfaUtils.createErrorResponse(e.getMessage());
@@ -53,7 +55,8 @@ public class GqlMfaMutation {
         GqlMfaResponse response;
         try {
             HttpServletRequest httpServletRequest = ContextUtil.getHttpServletRequest(environment.getGraphQlContext());
-            MfaSession session = mfaService.prepareFactor(factorType, httpServletRequest);
+            HttpServletResponse httpServletResponse = ContextUtil.getHttpServletResponse(environment.getGraphQlContext());
+            MfaSession session = mfaService.prepareFactor(factorType, httpServletRequest, httpServletResponse);
             response = GqlMfaUtils.createFactorPreparationResponse(session, factorType);
         } catch (Exception e) {
             response = GqlMfaUtils.createErrorResponse("Failed to prepare factor: " + e.getMessage());

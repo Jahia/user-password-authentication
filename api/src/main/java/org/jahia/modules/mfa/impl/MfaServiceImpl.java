@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.jcr.RepositoryException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.Serializable;
 import java.util.*;
@@ -34,13 +35,11 @@ public class MfaServiceImpl implements MfaService {
     private MfaFactorRegistry factorRegistry;
     private volatile MfaConfigurationService mfaConfigurationService;
     private volatile Cache<String, AuthFailuresDetails> failuresCache;
-    private volatile Cache<String, Long> factorStartCache;
 
     @Reference
     public void setUserManagerService(JahiaUserManagerService userManagerService) {
         this.userManagerService = userManagerService;
     }
-
     @Reference
     public void setFactorRegistry(MfaFactorRegistry factorRegistry) {
         this.factorRegistry = factorRegistry;
@@ -73,17 +72,13 @@ public class MfaServiceImpl implements MfaService {
         failuresCache = Caffeine.newBuilder()
                 .expireAfterWrite(mfaConfigurationService.getAuthFailuresWindowSeconds(), TimeUnit.SECONDS)
                 .build();
-        factorStartCache = Caffeine.newBuilder()
-                .expireAfterWrite(mfaConfigurationService.getFactorStartRateLimitSeconds(), TimeUnit.SECONDS).build();
     }
 
     @Deactivate
     protected void deactivate() {
-        logger.info("Clearing Caffeine caches for MFA auth failures...");
+        logger.info("Clearing Caffeine cache for MFA auth failures...");
         failuresCache.invalidateAll();
         failuresCache.cleanUp();
-        factorStartCache.invalidateAll();
-        factorStartCache.cleanUp();
         logger.info("Caffeine cache cleared.");
     }
 
@@ -108,21 +103,27 @@ public class MfaServiceImpl implements MfaService {
     }
 
     @Override
-    public MfaSession initiateMfa(String username, String password, HttpServletRequest request) {
+    public MfaSession initiateMfa(String username, String password, String siteKey, HttpServletRequest request) {
         logger.info("Initiating MFA for user: {}", username);
 
-        String site = null; // TODO - handle site users
-
-        JCRUserNode user = AuthHelper.lookupUserFromCredentials(username, password, site);
+        // Todo - site user check ?
+        boolean siteUser = false;
+        JCRUserNode user = AuthHelper.lookupUserFromCredentials(username, password, siteUser ? siteKey : null);
         if (user == null) {
             logger.warn("Invalid credentials for user: {}", username);
             throw new IllegalArgumentException("Invalid username or password");
         }
 
         HttpSession httpSession = request.getSession(true);
-        MfaSession mfaSession = new MfaSession(username, httpSession.getId());
+        Locale userLocale;
+        try {
+            userLocale = user.hasProperty("preferredLanguage") ?
+                    new Locale(user.getPropertyAsString("preferredLanguage")) : Locale.ENGLISH;
+        } catch (RepositoryException e) {
+            throw new IllegalStateException(e);
+        }
+        MfaSession mfaSession = new MfaSession(username, siteKey, userLocale);
         mfaSession.setState(MfaSessionState.IN_PROGRESS);
-
         httpSession.setAttribute(MFA_SESSION_KEY, mfaSession);
 
         logger.info("MFA session created for user: {}", username);
@@ -130,7 +131,7 @@ public class MfaServiceImpl implements MfaService {
     }
 
     @Override
-    public MfaSession prepareFactor(String factorType, HttpServletRequest request) {
+    public MfaSession prepareFactor(String factorType, HttpServletRequest request, HttpServletResponse response) {
         MfaSession session = getMfaSession(request);
         if (session == null) {
             throw new IllegalStateException("No active MFA session found");
@@ -149,16 +150,9 @@ public class MfaServiceImpl implements MfaService {
         }
 
         try {
-            String cacheKey = getCacheKey(user, provider);
-            Long startedPrepareTime = factorStartCache.getIfPresent(cacheKey);
-            long now = System.currentTimeMillis();
-            if (startedPrepareTime != null) {
-                throw new MfaException(String.format("The factor %s already generated for user %s, wait %ds before generating a new one", factorType, user.getDisplayableName(), mfaConfigurationService.getFactorStartRateLimitSeconds() - (now - startedPrepareTime) / 1000 ));
-            }
-            PreparationContext preparationContext = new PreparationContext(user, request);
+            PreparationContext preparationContext = new PreparationContext(session, user, request, response);
             Object preparationResult = provider.prepare(preparationContext);
-            // Store in cache to prevent same user to generate a new preparationResult for the current factor.
-            factorStartCache.put(cacheKey, now);
+            // TODO: why is the prepare result stored in the session independently, could be part of the MfaSession ?
             request.getSession().setAttribute(getAttributeKey(factorType), preparationResult);
             session.markFactorPrepared(provider.getFactorType());
             logger.info("Factor {} preparation completed for user: {}", factorType, session.getUserId());
@@ -216,8 +210,6 @@ public class MfaServiceImpl implements MfaService {
                 // Clear preparation result after successful verification
                 request.getSession().removeAttribute(getAttributeKey(factorType));
                 session.markFactorCompleted(factorType);
-                // Clean up start cache
-                factorStartCache.invalidate(getCacheKey(user, provider));
                 logger.info("Factor {} verified successfully for user: {}", factorType, session.getUserId());
             } else {
                 trackFailure(user.getPath(), provider);
@@ -345,7 +337,4 @@ public class MfaServiceImpl implements MfaService {
         return String.format("%s.preparationResult.%s", MfaServiceImpl.class.getSimpleName(), factorType);
     }
 
-    private static String getCacheKey(JCRUserNode user, MfaFactorProvider provider) {
-        return String.format("%s-%s@%d", user.getPath(), provider.getFactorType(), provider.hashCode());
-    }
 }
