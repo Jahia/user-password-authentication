@@ -26,15 +26,13 @@ jahiaComponent(
       linkLabel: additionalActionLoginLinkLabel,
     };
     return (
-      <div>
-        <Island
-          component={Authentication}
-          props={{
-            apiRoot,
-            additionalActionLogin,
-          }}
-        />
-      </div>
+      <Island
+        component={Authentication}
+        props={{
+          apiRoot,
+          additionalActionLogin,
+        }}
+      />
     );
   },
 );

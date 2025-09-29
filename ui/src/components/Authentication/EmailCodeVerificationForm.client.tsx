@@ -1,10 +1,11 @@
-import { type CSSProperties, type FormEvent, useEffect, useRef, useState } from "react";
+import { type ChangeEvent, type FormEvent, useEffect, useRef, useState } from "react";
 import { useApiRoot } from "../../hooks/ApiRootContext";
 import { prepareEmailFactor, verifyEmailCodeFactor } from "../../services";
 import classes from "./component.module.css";
 import ErrorMessage from "./ErrorMessage.client";
 import type { AdditionalActionProps } from "./types";
 import AdditionalAction from "./AdditionalAction.client";
+import clsx from "clsx";
 
 interface EmailCodeVerificationFormProps {
   onSuccess: () => void;
@@ -17,15 +18,9 @@ export default function EmailCodeVerificationForm(props: EmailCodeVerificationFo
   const hiddenInputRef = useRef<HTMLInputElement>(null);
   const apiRoot = useApiRoot();
 
-  const CODE_LENGTH = 6;
-
-  const hiddenInputStyle: CSSProperties = {
-    position: "absolute",
-    opacity: 0,
-    pointerEvents: "auto",
-    left: 0,
-    top: 0,
-  };
+  const codeLength = 6;
+  // 32px per digit, 6px between digits
+  const codeContainerWidth = codeLength * 32 + (codeLength - 1) * 6 + "px";
 
   useEffect(() => {
     prepareEmailFactor(apiRoot)
@@ -47,10 +42,10 @@ export default function EmailCodeVerificationForm(props: EmailCodeVerificationFo
   }
 
   const emailMasked = "***email***";
-  const codeSlots = code.padEnd(CODE_LENGTH, " ").slice(0, CODE_LENGTH).split("");
+  const codeSlots = code.padEnd(codeLength, " ").slice(0, codeLength).split("");
 
-  const handleCodeInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, "").slice(0, CODE_LENGTH);
+  const handleCodeInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, "").slice(0, codeLength);
     setCode(value);
   };
 
@@ -62,8 +57,8 @@ export default function EmailCodeVerificationForm(props: EmailCodeVerificationFo
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     setInProgress(true);
-    if (code.length < CODE_LENGTH) {
-      setError(`Please enter the ${CODE_LENGTH}-digit code.`);
+    if (code.length < codeLength) {
+      setError(`Please enter the ${codeLength}-digit code.`);
       return;
     }
     verifyEmailCodeFactor(apiRoot, code)
@@ -96,7 +91,10 @@ export default function EmailCodeVerificationForm(props: EmailCodeVerificationFo
 
   const renderDigitBox = (char: string, index: number) => (
     <div
-      className={` ${classes.digitBox} ${code.length === index ? classes.digitBoxActive : classes.digitBoxInactive}`}
+      className={clsx(
+        classes.digitBox,
+        code.length === index ? classes.digitBoxActive : classes.digitBoxInactive,
+      )}
       key={index}
       onClick={() => handleDigitClick(index)}
       role="textbox"
@@ -112,6 +110,7 @@ export default function EmailCodeVerificationForm(props: EmailCodeVerificationFo
     linkLabel: "Resend code",
     inProgress,
   };
+
   return (
     <div>
       <h2>Two Factor Authentication</h2>
@@ -125,16 +124,21 @@ export default function EmailCodeVerificationForm(props: EmailCodeVerificationFo
       </div>
 
       <form onSubmit={handleSubmit}>
-        <div className={classes.codeContainer} onClick={() => hiddenInputRef.current?.focus()}>
+        <div
+          className={classes.codeContainer}
+          style={{ width: codeContainerWidth }}
+          onClick={() => hiddenInputRef.current?.focus()}
+        >
           <input
+            className={classes.hiddenInput}
             ref={hiddenInputRef}
             type="text"
             inputMode="numeric"
             autoFocus
-            maxLength={CODE_LENGTH}
+            maxLength={codeLength}
             value={code}
             onChange={handleCodeInputChange}
-            style={hiddenInputStyle}
+            autoComplete={"one-time-code"}
             aria-label="Enter verification code"
             data-testid="verification-code"
           />

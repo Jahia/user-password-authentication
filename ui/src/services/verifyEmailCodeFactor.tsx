@@ -13,7 +13,7 @@ export default async function verifyEmailCodeFactor(
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      query: `
+      query: /* GraphQL */ `
                 mutation verifyEmailCodeFactor($code: String!) {
                     mfa {
                         factors {

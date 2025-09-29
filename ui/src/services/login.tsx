@@ -15,7 +15,7 @@ export default async function login(
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      query: `
+      query: /* GraphQL */ `
               mutation initiate($username: String!, $password: String!) {
                 mfa {
                     initiate(username: $username, password: $password) {

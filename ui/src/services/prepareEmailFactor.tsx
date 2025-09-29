@@ -12,7 +12,7 @@ export default async function prepareEmailFactor(
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      query: `
+      query: /* GraphQL */ `
                 mutation prepareFactor($factorType: String!) {
                     mfa {
                         prepareFactor(factorType: $factorType) {

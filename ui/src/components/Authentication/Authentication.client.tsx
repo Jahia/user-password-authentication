@@ -20,22 +20,20 @@ export default function ({
 
   return (
     <ApiRootContext value={apiRoot}>
-      <div>
-        {step === Step.LOGIN && (
-          <LoginForm
-            additionalAction={additionalActionLogin}
-            onSuccess={() => {
-              setStep(Step.VERIFY);
-            }}
-          />
-        )}
-        {step === Step.VERIFY && (
-          <EmailCodeVerificationForm onSuccess={() => setStep(Step.COMPLETE)} />
-        )}
-        {step === Step.COMPLETE && (
-          <div data-testid="success-message">Authentication Successful!</div>
-        )}
-      </div>
+      {step === Step.LOGIN && (
+        <LoginForm
+          additionalAction={additionalActionLogin}
+          onSuccess={() => {
+            setStep(Step.VERIFY);
+          }}
+        />
+      )}
+      {step === Step.VERIFY && (
+        <EmailCodeVerificationForm onSuccess={() => setStep(Step.COMPLETE)} />
+      )}
+      {step === Step.COMPLETE && (
+        <div data-testid="success-message">Authentication Successful!</div>
+      )}
     </ApiRootContext>
   );
 }

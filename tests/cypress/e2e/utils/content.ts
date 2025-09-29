@@ -1,4 +1,4 @@
-import {addNode, createSite, deleteSite, publishAndWaitJobEnding} from '@jahia/cypress';
+import {addNode, createSite, deleteSite, enableModule, publishAndWaitJobEnding} from '@jahia/cypress';
 import {JContent} from '@jahia/jcontent-cypress/dist/page-object/jcontent';
 import 'cypress-iframe';
 
@@ -12,8 +12,9 @@ export function createSiteWithLoginPage(siteKey:string, loginPageName: string) {
     createSite(siteKey, {
         locale: 'en',
         serverName: 'localhost',
-        templateSet: 'jahia-multi-factor-authentication-ui'
+        templateSet: 'jahia-multi-factor-authentication-test-module'
     });
+    enableModule('jahia-multi-factor-authentication-ui', siteKey);
     addNode({
         parentPathOrId: `/sites/${siteKey}`,
         name: loginPageName,

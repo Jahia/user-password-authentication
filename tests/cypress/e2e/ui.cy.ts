@@ -76,7 +76,7 @@ describe('Tests for the UI module', () => {
     });
 });
 const triggerRedirectToLoginPage = () => {
-    cy.visit('/jahia/dashboard', {failOnStatusCode: false});
+    cy.visit('/jahia', {failOnStatusCode: false});
     cy.url().should('contain', `/sites/${SITE_KEY}/myLoginPage.html`);
 };
 
