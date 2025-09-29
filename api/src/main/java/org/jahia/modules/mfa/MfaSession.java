@@ -3,6 +3,7 @@ package org.jahia.modules.mfa;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -12,15 +13,17 @@ import java.util.Set;
  */
 public class MfaSession implements Serializable {
     private final String userId;
-    private final String sessionId; // TODO what's the intention of storing the session id here? as the MfaSession is istelf stored in session...
+    private final Locale userPreferredLanguage;
+    private final String siteKey;
     private MfaSessionState state;
     private final Map<String, MfaFactorState> factorStates;
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public MfaSession(String userId, String sessionId) {
+    public MfaSession(String userId, String siteKey, Locale userPreferredLanguage) {
         this.userId = userId;
-        this.sessionId = sessionId;
+        this.userPreferredLanguage = userPreferredLanguage;
+        this.siteKey = siteKey;
         this.state = MfaSessionState.NOT_STARTED;
         this.factorStates = new HashMap<>();
         this.createdAt = LocalDateTime.now();
@@ -33,8 +36,8 @@ public class MfaSession implements Serializable {
         return userId;
     }
 
-    public String getSessionId() {
-        return sessionId;
+    public String getSiteKey() {
+        return siteKey;
     }
 
     public MfaSessionState getState() {
@@ -52,6 +55,10 @@ public class MfaSession implements Serializable {
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+
+    public Locale getUserPreferredLanguage() {
+        return userPreferredLanguage;
     }
 
     // ===== FACTOR STATE MANAGEMENT =====

@@ -1,6 +1,10 @@
 <jnt = 'http://www.jahia.org/jahia/nt/1.0'>
 <jmix = 'http://www.jahia.org/jahia/mix/1.0'>
-
 <mfa = 'http://www.jahia.org/jahia/multi-factor-authentication/1.0'>
+
+// Mixin to indicate that a user account has been suspended following multiple failed multi-factor authentication attempts.
 [mfa:suspendedUser] mixin
  - mfa:suspendedSince (date) mandatory
+
+// Node type intended for a single content node within the module; used to render the HTML for the email code.
+[mfa:mailCode] > jnt:content, jmix:droppableContent, jmix:studioOnly, jmix:mainResource

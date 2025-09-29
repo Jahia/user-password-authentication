@@ -1,6 +1,7 @@
 package org.jahia.modules.mfa;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.Serializable;
 import java.util.List;
 
@@ -17,13 +18,14 @@ public interface MfaService {
 
     /**
      * Initiates MFA authentication for a user with username/password.
+     * @param siteKey is optional and can be null
      */
-    MfaSession initiateMfa(String username, String password, HttpServletRequest request);
+    MfaSession initiateMfa(String username, String password, String siteKey, HttpServletRequest request);
 
     /**
      * Prepares a specific MFA factor for verification.
      */
-    MfaSession prepareFactor(String factorType, HttpServletRequest request);
+    MfaSession prepareFactor(String factorType, HttpServletRequest request, HttpServletResponse response);
 
     /**
      * Verifies a specific MFA factor with the provided verification data.
