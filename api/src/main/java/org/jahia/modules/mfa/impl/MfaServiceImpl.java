@@ -163,8 +163,7 @@ public class MfaServiceImpl implements MfaService {
             }
             PreparationContext preparationContext = new PreparationContext(session, user, request, response);
             Object preparationResult = provider.prepare(preparationContext);
-            // Store in cache to prevent same user to generate a new preparationResult for the current factor.
-            factorStartCache.put(cacheKey, now);
+            // TODO: why is the prepare result stored in the session independently, could be part of the MfaSession ?
             request.getSession().setAttribute(getAttributeKey(factorType), preparationResult);
             session.markFactorPrepared(provider.getFactorType());
             logger.info("Factor {} preparation completed for user: {}", factorType, session.getUserId());
