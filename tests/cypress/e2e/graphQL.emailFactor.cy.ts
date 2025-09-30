@@ -20,10 +20,12 @@ interface TestUser {
     username: () => string;
     password: string;
     email: string;
+    preferredLanguage?: string;
 }
 
 const TEST_USER: TestUser = {username: () => globalUsername, password: 'password', email: 'email@example.com'};
 const TEST_USER_NO_EMAIL: TestUser = {username: () => 'test_mfa_user_without_email', password: 'password', email: ''};
+const TEST_USER_I18N: TestUser = {username: () => 'test_mfa_user_frenchy', password: 'password', email: 'frenchy@example.com', preferredLanguage: 'fr'};
 const SPECIAL_USERS: Array<TestUser> = [
     {username: () => 'user_test', password: 'Maçif42', email: 'email1@example.com'},
     {username: () => 'رانيا', password: 'password', email: 'email2@example.com'},
@@ -35,7 +37,7 @@ const VERSION_VAR = '_JAHIA_VERSION_';
 describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', () => {
     before(() => {
         // Create special users first as they are not needed for each test
-        [TEST_USER_NO_EMAIL, ...SPECIAL_USERS].forEach(user => createUserForMFA(user.username(), user.password, user.email));
+        [TEST_USER_NO_EMAIL, TEST_USER_I18N, ...SPECIAL_USERS].forEach(user => createUserForMFA(user.username(), user.password, user.email, user.preferredLanguage));
         installMFAConfig('fake.yml');
 
         // Store the Jahia version in an environment variable to be used in tests
@@ -81,7 +83,7 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
 
         // STEP 3: Verify the email code factor
         cy.log('3- verification using the code received by email');
-        getVerificationCode(user.email).then(code => {
+        getVerificationCode(user.email, user.preferredLanguage).then(code => {
             cy.log('Verification code received by email: ' + code);
             verifyEmailCodeFactor(code);
             assertIsLoggedIn(user.username());
@@ -90,6 +92,10 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
 
     it(`Should be authenticated when correct credentials and code are provided: ${TEST_USER.username()}`, () => {
         validatePositiveMFAFlow(TEST_USER);
+    });
+
+    it(`Should receive i18n mail based on user preferred language: ${TEST_USER_I18N.username()}`, () => {
+        validatePositiveMFAFlow(TEST_USER_I18N);
     });
 
     // Tests with users having special characters in username and/or password.
