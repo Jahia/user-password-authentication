@@ -48,7 +48,7 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
         logger.info("Initializing MFA mail code factor provider...");
         Bundle currentBundle = bundleContext.getBundle();
         String moduleId = BundleUtils.getModuleId(currentBundle);
-        this.mailCodeContentPath = "/modules/" + moduleId +  "/" + BundleUtils.getModuleVersion(currentBundle) + "/contents/mfaMailCode";
+        this.mailCodeContentPath = String.format("/modules/%s/%s/contents/mfaMailCode", moduleId, BundleUtils.getModuleVersion(currentBundle));
         this.resourceBundleName = "resources." + moduleId;
     }
 
@@ -123,7 +123,7 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
 
     private String generateMailContent(MfaSession mfaSession, HttpServletRequest currentRequest, HttpServletResponse currentResponse, String code) throws MfaException {
         // will be "guest" at this stage, and it's sounds logical to render the mail code as guest user, for caching purpose.
-        JahiaUser user = JCRSessionFactory.getInstance().getCurrentUser();;
+        JahiaUser user = JCRSessionFactory.getInstance().getCurrentUser();
         try {
             return  JCRTemplate.getInstance().doExecuteWithSystemSessionAsUser(user, Constants.LIVE_WORKSPACE, mfaSession.getUserPreferredLanguage(), session -> {
                 // The current request may have been done over GraphQL, the contextPath will be: "/modules" which will break every links

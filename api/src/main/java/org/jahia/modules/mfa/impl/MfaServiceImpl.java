@@ -113,8 +113,7 @@ public class MfaServiceImpl implements MfaService {
         logger.info("Initiating MFA for user: {}", username);
 
         // Todo - site user check ?
-        boolean siteUser = false;
-        JCRUserNode user = AuthHelper.lookupUserFromCredentials(username, password, siteUser ? siteKey : null);
+        JCRUserNode user = AuthHelper.lookupUserFromCredentials(username, password, null);
         if (user == null) {
             logger.warn("Invalid credentials for user: {}", username);
             throw new IllegalArgumentException("Invalid username or password");
