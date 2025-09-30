@@ -1,5 +1,5 @@
 const VERIFICATION_CODE_SUBJECT = {
-    en: 'Authentication Code',
+    en: 'Authentication Code'
 };
 
 /**
@@ -17,7 +17,7 @@ export function deleteAllEmails() {
  * @returns a Cypress chainable that yields the 6-digit verification code as a string.
  * @throws Error if no 6-digit code is found in the email body.
  */
-export function getVerificationCode(email: string, locale: string = 'en'): Cypress.Chainable<string> {
+export function getVerificationCode(email: string, locale = 'en'): Cypress.Chainable<string> {
     return cy.mailpitHasEmailsBySearch('Subject:' + VERIFICATION_CODE_SUBJECT[locale] + ' to:' + email, undefined, undefined, {
         timeout: 5000,
         interval: 500

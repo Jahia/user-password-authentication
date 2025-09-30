@@ -22,7 +22,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="x-apple-disable-message-reformatting" />
-    <title>Authentication Code</title>
+    <title><fmt:message key="jahia-mfa.mail.title"/></title>
     <style type="text/css">
         /* Reset styles */
         body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
@@ -148,6 +148,7 @@
                 <!-- Footer -->
                 <div class="footer">
                     <p style="margin-top: 10px;">
+                        <%-- This is how to build proper external URL: --%>
                         <img src="<c:url value="${url.server}${url.context}${url.currentModule}/img/poweredByJahia.png"/>" alt="Powered by Jahia">
                     </p>
                 </div>
