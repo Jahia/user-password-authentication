@@ -1,5 +1,6 @@
 const VERIFICATION_CODE_SUBJECT = {
-    en: 'Authentication Code'
+    en: 'Authentication Code',
+    fr: 'Code d\'authentification'
 };
 
 /**
@@ -29,6 +30,12 @@ export function getVerificationCode(email: string, locale = 'en'): Cypress.Chain
         .then(result => result.messages[0])
         .mailpitGetMailHTMlBody()
         .then(htmlBody => {
+            // Check that the HTML body contains the correct locale-specific
+            const titleMatch = htmlBody.match(/<h1 class="title">([^<]+)<\/h1>/);
+            if (!titleMatch || titleMatch[1] !== VERIFICATION_CODE_SUBJECT[locale]) {
+                throw new Error(`HTML body title does not match expected locale subject. Expected: "${VERIFICATION_CODE_SUBJECT[locale]}", Found: "${titleMatch ? titleMatch[1] : 'No title found'}"`);
+            }
+
             const match = htmlBody.match(/<p class="code">(\d{6})<\/p>/);
             if (match && match.length > 1) {
                 return match[1];

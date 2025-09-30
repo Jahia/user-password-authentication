@@ -5,8 +5,9 @@ import {addUserToGroup, createUser, deleteUser, getUserPath} from '@jahia/cypres
  * @param userName the username to create
  * @param password the password associated to this username to create
  * @param email (optional) the user's email address
+ * @param preferredLanguage (optional) the user's preferred language, defaults to 'en'
  */
-export const createUserForMFA = (userName: string, password: string, email:string = undefined): void => {
+export const createUserForMFA = (userName: string, password: string, email:string = undefined, preferredLanguage = 'en'): void => {
     // Delete the user that may already exist
     getUserPath(userName).then(response => {
         if (response?.data?.admin?.userAdmin?.user) {
@@ -15,7 +16,7 @@ export const createUserForMFA = (userName: string, password: string, email:strin
         }
     });
     const properties = [
-        {name: 'preferredLanguage', value: 'en'},
+        {name: 'preferredLanguage', value: preferredLanguage},
         {name: 'j:firstName', value: ''},
         {name: 'j:lastName', value: ''}
     ];
@@ -49,7 +50,7 @@ export const assertIsLoggedIn = (username: string) => {
     cy.visit('/jahia/dashboard');
     cy.waitUntil(() => {
         return cy.get('body').then($body => {
-            return $body.text().includes(`Welcome ${username} to Jahia 8`);
+            return $body.text().includes(`${username}`);
         });
     }, {
         errorMsg: `Welcome message for ${username} not found`,
