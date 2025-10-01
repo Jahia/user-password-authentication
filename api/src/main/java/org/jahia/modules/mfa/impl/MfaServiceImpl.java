@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.jcr.RepositoryException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.Serializable;
 import java.util.*;
@@ -108,21 +109,26 @@ public class MfaServiceImpl implements MfaService {
     }
 
     @Override
-    public MfaSession initiateMfa(String username, String password, HttpServletRequest request) {
+    public MfaSession initiateMfa(String username, String password, String siteKey, HttpServletRequest request) {
         logger.info("Initiating MFA for user: {}", username);
 
-        String site = null; // TODO - handle site users
-
-        JCRUserNode user = AuthHelper.lookupUserFromCredentials(username, password, site);
+        // Todo - site user check ?
+        JCRUserNode user = AuthHelper.lookupUserFromCredentials(username, password, null);
         if (user == null) {
             logger.warn("Invalid credentials for user: {}", username);
             throw new IllegalArgumentException("Invalid username or password");
         }
 
         HttpSession httpSession = request.getSession(true);
-        MfaSession mfaSession = new MfaSession(username, httpSession.getId());
+        Locale userLocale;
+        try {
+            userLocale = user.hasProperty("preferredLanguage") ?
+                    new Locale(user.getPropertyAsString("preferredLanguage")) : Locale.ENGLISH;
+        } catch (RepositoryException e) {
+            throw new IllegalStateException(e);
+        }
+        MfaSession mfaSession = new MfaSession(username, userLocale, siteKey);
         mfaSession.setState(MfaSessionState.IN_PROGRESS);
-
         httpSession.setAttribute(MFA_SESSION_KEY, mfaSession);
 
         logger.info("MFA session created for user: {}", username);
@@ -130,7 +136,7 @@ public class MfaServiceImpl implements MfaService {
     }
 
     @Override
-    public MfaSession prepareFactor(String factorType, HttpServletRequest request) {
+    public MfaSession prepareFactor(String factorType, HttpServletRequest request, HttpServletResponse response) {
         MfaSession session = getMfaSession(request);
         if (session == null) {
             throw new IllegalStateException("No active MFA session found");
@@ -155,7 +161,7 @@ public class MfaServiceImpl implements MfaService {
             if (startedPrepareTime != null) {
                 throw new MfaException(String.format("The factor %s already generated for user %s, wait %ds before generating a new one", factorType, user.getDisplayableName(), mfaConfigurationService.getFactorStartRateLimitSeconds() - (now - startedPrepareTime) / 1000 ));
             }
-            PreparationContext preparationContext = new PreparationContext(user, request);
+            PreparationContext preparationContext = new PreparationContext(session, user, request, response);
             Object preparationResult = provider.prepare(preparationContext);
             // Store in cache to prevent same user to generate a new preparationResult for the current factor.
             factorStartCache.put(cacheKey, now);

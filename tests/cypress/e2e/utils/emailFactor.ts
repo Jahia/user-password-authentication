@@ -1,4 +1,7 @@
-const VERIFICATION_CODE_SUBJECT = 'Validation code';
+const VERIFICATION_CODE_SUBJECT = {
+    en: 'Authentication Code',
+    fr: 'Code d\'authentification'
+};
 
 /**
  * Deletes all emails from the mail inbox using Mailpit.
@@ -9,13 +12,14 @@ export function deleteAllEmails() {
 
 /**
  * Retrieves the 6-digit verification code sent to the specified email address.
- * Waits for the email to arrive, then extracts the code from the email body.
+ * Waits for the email to arrive, then extracts the code from the HTML email body.
  * @param email the recipient email address to search for the verification code.
+ * @param locale the locale to determine the email subject. Defaults to 'en'.
  * @returns a Cypress chainable that yields the 6-digit verification code as a string.
  * @throws Error if no 6-digit code is found in the email body.
  */
-export function getVerificationCode(email: string) {
-    return cy.mailpitHasEmailsBySearch('Subject:' + VERIFICATION_CODE_SUBJECT + ' to:' + email, undefined, undefined, {
+export function getVerificationCode(email: string, locale = 'en'): Cypress.Chainable<string> {
+    return cy.mailpitHasEmailsBySearch('Subject:' + VERIFICATION_CODE_SUBJECT[locale] + ' to:' + email, undefined, undefined, {
         timeout: 5000,
         interval: 500
     })
@@ -24,14 +28,20 @@ export function getVerificationCode(email: string) {
             expect(result).to.have.property('messages').and.to.be.an('array').and.to.have.length(1);
         })
         .then(result => result.messages[0])
-        .mailpitGetMailTextBody()
-        .then(body => {
-            const match = body.match(/\d{6}/);
-            if (match && match.length > 0) {
-                return match[0];
+        .mailpitGetMailHTMlBody()
+        .then(htmlBody => {
+            // Check that the HTML body contains the correct locale-specific
+            const titleMatch = htmlBody.match(/<h1 class="title">([^<]+)<\/h1>/);
+            if (!titleMatch || titleMatch[1] !== VERIFICATION_CODE_SUBJECT[locale]) {
+                throw new Error(`HTML body title does not match expected locale subject. Expected: "${VERIFICATION_CODE_SUBJECT[locale]}", Found: "${titleMatch ? titleMatch[1] : 'No title found'}"`);
             }
 
-            throw new Error('No 6-digit verification code found in email body');
+            const match = htmlBody.match(/<p class="code">(\d{6})<\/p>/);
+            if (match && match.length > 1) {
+                return match[1];
+            }
+
+            throw new Error('No 6-digit verification code found in email HTML body');
         });
 }
 

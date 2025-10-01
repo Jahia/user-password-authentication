@@ -5,8 +5,9 @@ import {addUserToGroup, createUser, deleteUser, getUserPath} from '@jahia/cypres
  * @param username the username to create
  * @param password the password associated with this username to create
  * @param email (optional) the user's email address
+ * @param preferredLanguage (optional) the user's preferred language, defaults to 'en'
  */
-export const createUserForMFA = (username: string, password: string, email:string = undefined): void => {
+export const createUserForMFA = (username: string, password: string, email:string = undefined, preferredLanguage = 'en'): void => {
     // Delete the user that may already exist
     getUserPath(username).then(response => {
         if (response?.data?.admin?.userAdmin?.user) {
@@ -15,7 +16,7 @@ export const createUserForMFA = (username: string, password: string, email:strin
         }
     });
     const properties = [
-        {name: 'preferredLanguage', value: 'en'},
+        {name: 'preferredLanguage', value: preferredLanguage},
         {name: 'j:firstName', value: ''},
         {name: 'j:lastName', value: ''}
     ];
@@ -29,7 +30,7 @@ export const createUserForMFA = (username: string, password: string, email:strin
 };
 
 /**
- * Asserts the current user is not logged in by ensuring the user gets redirected to the login page when accessing the Dashboard
+ * Asserts the current user is not logged in by checking if the currentUser GraphQL query fails
  */
 export const assertIsNotLoggedIn = () => {
     // TODO find a more efficient way
@@ -44,7 +45,16 @@ export const assertIsNotLoggedIn = () => {
  * @param username
  */
 export const assertIsLoggedIn = (username: string) => {
-    // TODO find a more efficient way
-    cy.visit('/jahia/dashboard', {timeout: 30000});
-    cy.contains('p', `Welcome ${username} to Jahia 8`);
+    // TODO find better way to ensure the user is logged in
+    // TODO: consider develop a custom apollo client able to reuse the current session cookie
+    cy.visit('/jahia/dashboard');
+    cy.waitUntil(() => {
+        return cy.get('body').then($body => {
+            return $body.text().includes(`${username}`);
+        });
+    }, {
+        errorMsg: `Welcome message for ${username} not found`,
+        timeout: 10000,
+        interval: 1000
+    });
 };

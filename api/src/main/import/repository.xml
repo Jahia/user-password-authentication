@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<content xmlns:j="http://www.jahia.org/jahia/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0">
+    <modules jcr:primaryType="jnt:modules">
+        <jahia-multi-factor-authentication-api j:dependencies="" jcr:primaryType="jnt:module">
+            <files jcr:primaryType="jnt:folder"/>
+            <contents jcr:primaryType="jnt:contentFolder">
+                <mfaMailCode jcr:primaryType="mfa:mailCode"/>
+            </contents>
+            <templates jcr:primaryType="jnt:templatesFolder">
+                <files jcr:primaryType="jnt:folder"/>
+                <contents jcr:primaryType="jnt:contentFolder"/>
+                <base jcr:primaryType="jnt:template">
+                    <mailCodeTemplate jcr:primaryType="jnt:contentTemplate"
+                                         j:applyOn="mfa:mailCode"
+                                         j:view="mailCodeView"
+                                         j:hiddenTemplate="true"
+                                         j:priority="1"/>
+                </base>
+            </templates>
+        </jahia-multi-factor-authentication-api>
+    </modules>
+</content>
