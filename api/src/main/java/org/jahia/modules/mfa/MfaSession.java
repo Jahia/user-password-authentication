@@ -20,7 +20,7 @@ public class MfaSession implements Serializable {
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public MfaSession(String userId, String siteKey, Locale userPreferredLanguage) {
+    public MfaSession(String userId, Locale userPreferredLanguage, String siteKey) {
         this.userId = userId;
         this.userPreferredLanguage = userPreferredLanguage;
         this.siteKey = siteKey;

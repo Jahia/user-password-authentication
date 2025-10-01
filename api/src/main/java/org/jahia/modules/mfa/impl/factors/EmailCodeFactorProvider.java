@@ -36,6 +36,7 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
     private static final Logger logger = LoggerFactory.getLogger(EmailCodeFactorProvider.class);
     private static final int EMAIL_CODE_LENGTH = 6;
     public static final String FACTOR_TYPE = "email_code";
+    public static final String MAIL_CODE_TEMPLATE_NAME = "mailCodeTemplate";
     private static final SecureRandom random = new SecureRandom();
 
     private RenderService renderService;
@@ -141,7 +142,7 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
 
                     // Build a resource from the mail code content node
                     JCRNodeWrapper mailCodeContentNode = session.getNode(mailCodeContentPath);
-                    Resource resource = new Resource(mailCodeContentNode, "html", "mailCodeTemplate", Resource.CONFIGURATION_PAGE);
+                    Resource resource = new Resource(mailCodeContentNode, "html", MAIL_CODE_TEMPLATE_NAME, Resource.CONFIGURATION_PAGE);
                     localRenderContext.setMainResource(resource);
 
                     // Resolve site, use the one from the session if specified, otherwise use the module as site
@@ -165,6 +166,22 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
                 }
             });
         } catch (RepositoryException e) {
+            // print debug logs to help debugging the mail code template
+            logger.error("An error occurred while generating mail content for MFA mail code, enable debug log level to get help", e);
+            if (logger.isDebugEnabled()) {
+                String siteUuid = null;
+                if (mfaSession.getSiteKey() != null) {
+                    try {
+                        siteUuid = JCRTemplate.getInstance().doExecuteWithSystemSessionAsUser(user, Constants.LIVE_WORKSPACE, mfaSession.getUserPreferredLanguage(),
+                                session -> sitesService.getSiteByKey(mfaSession.getSiteKey(), session).getIdentifier());
+                    } catch (RepositoryException ex) {
+                        throw new MfaException("Error generating mail content for MFA mail code, unable to resolve site: " + mfaSession.getSiteKey(), e);
+                    }
+                }
+                logger.debug("In order to debug the HTML output of the mfa mail code verification template, " +
+                        "you can directly visit: {}", String.format("/cms/render/live/%s%s.%s.html%s", mfaSession.getUserPreferredLanguage(), mailCodeContentPath,
+                        MAIL_CODE_TEMPLATE_NAME, siteUuid != null ? "?jsite=" + siteUuid : ""));
+            }
             throw new MfaException("Error generating mail content for MFA mail code", e);
         }
     }

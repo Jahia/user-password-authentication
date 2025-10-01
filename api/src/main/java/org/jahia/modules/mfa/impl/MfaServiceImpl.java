@@ -127,7 +127,7 @@ public class MfaServiceImpl implements MfaService {
         } catch (RepositoryException e) {
             throw new IllegalStateException(e);
         }
-        MfaSession mfaSession = new MfaSession(username, siteKey, userLocale);
+        MfaSession mfaSession = new MfaSession(username, userLocale, siteKey);
         mfaSession.setState(MfaSessionState.IN_PROGRESS);
         httpSession.setAttribute(MFA_SESSION_KEY, mfaSession);
 
