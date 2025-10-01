@@ -7,6 +7,7 @@ import org.jahia.modules.mfa.*;
 import org.jahia.osgi.BundleUtils;
 import org.jahia.registries.ServicesRegistry;
 import org.jahia.services.content.*;
+import org.jahia.services.content.decorator.JCRSiteNode;
 import org.jahia.services.content.decorator.JCRUserNode;
 import org.jahia.services.mail.MailService;
 import org.jahia.services.render.*;
@@ -127,32 +128,34 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
         JahiaUser user = JCRSessionFactory.getInstance().getCurrentUser();
         try {
             return  JCRTemplate.getInstance().doExecuteWithSystemSessionAsUser(user, Constants.LIVE_WORKSPACE, mfaSession.getUserPreferredLanguage(), session -> {
-                // The current request may have been done over GraphQL, the contextPath will be: "/modules" which will break every links
-                // we first unwrap the request from GraphQL, if necessary.
-                HttpServletRequest theRequest = currentRequest instanceof HttpServletRequestWrapper ?
-                        (HttpServletRequest) ((HttpServletRequestWrapper) currentRequest).getRequest() : currentRequest;
 
-                RenderContext localRenderContext = new RenderContext(theRequest, currentResponse, session.getUser());
+                RenderContext localRenderContext = new RenderContext(unwrapRequest(currentRequest), currentResponse, session.getUser());
+                // Use live workspace to benefit from HTML cache capabilities of Jahia rendering engine
+                localRenderContext.setEditMode(false);
+                localRenderContext.setWorkspace(Constants.LIVE_WORKSPACE);
+                localRenderContext.setServletPath(Render.getRenderServletPath());
+
+                // Build a resource from the mail code content node
+                JCRNodeWrapper mailCodeContentNode = session.getNode(mailCodeContentPath);
+                Resource resource = new Resource(mailCodeContentNode, "html", MAIL_CODE_TEMPLATE_NAME, Resource.CONFIGURATION_PAGE);
+                localRenderContext.setMainResource(resource);
+
+                // Resolve site, use the one from the session if specified, otherwise use the module as site, this allows site template resolution.
+                JCRSiteNode resolvedSite = null;
+                if (mfaSession.getSiteKey() != null) {
+                    resolvedSite = sitesService.getSiteByKey(mfaSession.getSiteKey(), session);
+                    localRenderContext.setSite(resolvedSite);
+                } else {
+                    localRenderContext.setSite(mailCodeContentNode.getResolveSite());
+                }
+
+                if (logger.isDebugEnabled()) {
+                    logger.debug("In order to debug the HTML output of the mfa mail code verification template, " +
+                            "you can directly visit: {}", String.format("/cms/render/live/%s%s.%s.html%s", mfaSession.getUserPreferredLanguage(), mailCodeContentPath,
+                            MAIL_CODE_TEMPLATE_NAME, resolvedSite != null ? "?jsite=" + resolvedSite.getIdentifier() : ""));
+                }
 
                 try {
-                    // Use live workspace to benefit from HTML cache capabilities of Jahia rendering engine
-                    localRenderContext.setEditMode(false);
-                    localRenderContext.setWorkspace(Constants.LIVE_WORKSPACE);
-                    localRenderContext.setServletPath(Render.getRenderServletPath());
-
-                    // Build a resource from the mail code content node
-                    JCRNodeWrapper mailCodeContentNode = session.getNode(mailCodeContentPath);
-                    Resource resource = new Resource(mailCodeContentNode, "html", MAIL_CODE_TEMPLATE_NAME, Resource.CONFIGURATION_PAGE);
-                    localRenderContext.setMainResource(resource);
-
-                    // Resolve site, use the one from the session if specified, otherwise use the module as site
-                    // This allows site template resolution.
-                    if (mfaSession.getSiteKey() != null) {
-                        localRenderContext.setSite(sitesService.getSiteByKey(mfaSession.getSiteKey(), session));
-                    } else {
-                        localRenderContext.setSite(mailCodeContentNode.getResolveSite());
-                    }
-
                     String out = renderService.render(resource, localRenderContext);
                     if (StringUtils.isEmpty(out) || !out.contains("{{CODE}}")) {
                         // No output, no code placeholder, something went wrong with the rendering
@@ -160,29 +163,23 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
                     }
 
                     // Replace the {{CODE}} placeholder with the actual code, we do that after rendering to allow caching of the rendered content.
-                    return renderService.render(resource, localRenderContext).replace("{{CODE}}", code);
+                    return out.replace("{{CODE}}", code);
                 } catch (RenderException e) {
                     throw new RepositoryException(e);
                 }
             });
         } catch (RepositoryException e) {
-            // print debug logs to help debugging the mail code template
-            logger.error("An error occurred while generating mail content for MFA mail code, enable debug log level to get help", e);
-            if (logger.isDebugEnabled()) {
-                String siteUuid = null;
-                if (mfaSession.getSiteKey() != null) {
-                    try {
-                        siteUuid = JCRTemplate.getInstance().doExecuteWithSystemSessionAsUser(user, Constants.LIVE_WORKSPACE, mfaSession.getUserPreferredLanguage(),
-                                session -> sitesService.getSiteByKey(mfaSession.getSiteKey(), session).getIdentifier());
-                    } catch (RepositoryException ex) {
-                        throw new MfaException("Error generating mail content for MFA mail code, unable to resolve site: " + mfaSession.getSiteKey(), e);
-                    }
-                }
-                logger.debug("In order to debug the HTML output of the mfa mail code verification template, " +
-                        "you can directly visit: {}", String.format("/cms/render/live/%s%s.%s.html%s", mfaSession.getUserPreferredLanguage(), mailCodeContentPath,
-                        MAIL_CODE_TEMPLATE_NAME, siteUuid != null ? "?jsite=" + siteUuid : ""));
-            }
+            logger.error("An error occurred while generating mail content for MFA mail code, enable debug log level to get help");
             throw new MfaException("Error generating mail content for MFA mail code", e);
         }
+    }
+
+    private HttpServletRequest unwrapRequest(HttpServletRequest request) {
+        // Request may have been done over GraphQL, the contextPath will be: "/modules" which will break every links generated from Jahia render chain.
+        // It's possible to unwrap the request to get original request.
+        if (request instanceof HttpServletRequestWrapper) {
+            return (HttpServletRequest) ((HttpServletRequestWrapper) request).getRequest();
+        }
+        return request;
     }
 }
