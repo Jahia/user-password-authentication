@@ -1,0 +1,87 @@
+* {
+  max-width: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(133deg, #140933 0%, #00a0e3 100%);
+  line-height: 1.5;
+  padding-top: 0;
+}
+
+.card {
+  margin: 0 auto;
+  text-align: center;
+  background: #01021b;
+  width: 80%;
+  min-width: 300px;
+  max-width: 626px;
+  height: 80vh;
+  min-height: 400px;
+  max-height: 1200px;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: white;
+}
+
+.card main hr {
+  border: none;
+  border-top: 1px solid #333333;
+  width: 60%;
+  margin: 40px 0;
+}
+.card main .additionalAction {
+  color: white;
+  font-size: 14px;
+  justify-content: center;
+  > p {
+    color: rgba(253, 253, 253, 0.6);
+    margin-bottom: 8px;
+  }
+  > a {
+    color: white;
+  }
+}
+
+.card-header {
+  padding-top: 100px;
+}
+
+.card-footer {
+  color: rgba(253, 253, 253, 0.6);
+}
+
+main {
+  width: 80%;
+  height: 252px;
+  margin: 0 auto;
+}
+
+a {
+  color: #06a;
+}
+
+h2 {
+  font-size: 20px;
+  font-family: "Nunito Sans", serif;
+  font-weight: 600;
+  line-height: 24px;
+  word-wrap: break-word;
+}
+
+button[type="submit"] {
+  border-radius: 4px;
+  background: #00a0e3;
+  color: #fff;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 3rem;
+  padding: 8px 16px;
+}

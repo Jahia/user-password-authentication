@@ -2,17 +2,17 @@ import {addUserToGroup, createUser, deleteUser, getUserPath} from '@jahia/cypres
 
 /**
  * Creates a user for the needs of the MFA. It first deletes the user matching this username that may already exist.
- * @param userName the username to create
- * @param password the password associated to this username to create
+ * @param username the username to create
+ * @param password the password associated with this username to create
  * @param email (optional) the user's email address
  * @param preferredLanguage (optional) the user's preferred language, defaults to 'en'
  */
-export const createUserForMFA = (userName: string, password: string, email:string = undefined, preferredLanguage = 'en'): void => {
+export const createUserForMFA = (username: string, password: string, email:string = undefined, preferredLanguage = 'en'): void => {
     // Delete the user that may already exist
-    getUserPath(userName).then(response => {
+    getUserPath(username).then(response => {
         if (response?.data?.admin?.userAdmin?.user) {
-            cy.log('Deleting user ' + userName + ' before creating it...');
-            deleteUser(userName);
+            cy.log('Deleting user ' + username + ' before creating it...');
+            deleteUser(username);
         }
     });
     const properties = [
@@ -24,9 +24,9 @@ export const createUserForMFA = (userName: string, password: string, email:strin
         properties.push({name: 'j:email', value: email});
     }
 
-    createUser(userName, password, properties);
-    addUserToGroup(userName, 'privileged'); // Needed to access jahia/dashboard
-    cy.log('User ' + userName + ' created');
+    createUser(username, password, properties);
+    addUserToGroup(username, 'privileged'); // Needed to access jahia/dashboard
+    cy.log('User (username=' + username + ', password=' + password + ', email=' + email + ') created');
 };
 
 /**

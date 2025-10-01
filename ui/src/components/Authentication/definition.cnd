@@ -1,0 +1,4 @@
+[mfaui:authentication] > mfauimix:component, jnt:content
+ - additionalActionLoginText (string) i18n
+ - additionalActionLoginLinkURL (string)
+ - additionalActionLoginLinkLabel (string) i18n
