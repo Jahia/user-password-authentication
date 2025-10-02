@@ -7,9 +7,6 @@ import org.jahia.modules.mfa.*;
 import org.jahia.services.content.JCRPropertyWrapper;
 import org.jahia.services.content.JCRTemplate;
 import org.jahia.services.content.decorator.JCRUserNode;
-import org.jahia.services.render.RenderContext;
-import org.jahia.services.render.URLResolver;
-import org.jahia.services.render.URLResolverFactory;
 import org.jahia.services.sites.JahiaSitesService;
 import org.jahia.services.usermanager.JahiaUserManagerService;
 import org.osgi.service.component.annotations.*;
@@ -174,7 +171,7 @@ public class MfaServiceImpl implements MfaService {
             Long startedPrepareTime = factorStartCache.getIfPresent(cacheKey);
             long now = System.currentTimeMillis();
             if (startedPrepareTime != null) {
-                throw new MfaException(String.format("The factor %s already generated for user %s, wait %ds before generating a new one", factorType, user.getDisplayableName(), mfaConfigurationService.getFactorStartRateLimitSeconds() - (now - startedPrepareTime) / 1000 ));
+                throw new MfaException(String.format("The factor %s already generated for user %s, wait %ds before generating a new one", factorType, user.getDisplayableName(), mfaConfigurationService.getFactorStartRateLimitSeconds() - (now - startedPrepareTime) / 1000));
             }
             PreparationContext preparationContext = new PreparationContext(session, user, request, response);
             Object preparationResult = provider.prepare(preparationContext);
