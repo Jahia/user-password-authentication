@@ -45,6 +45,11 @@
     </modules>
 
     <properties>
+        <!-- Jahia-specific properties -->
+        <!-- TODO find a good naming -->
+        <jahia.artifact.id>${project.artifactId}</jahia.artifact.id> <!-- unique identifier. TODO should we include groupId? -->
+        <jahia.artifact.alias>mfa</jahia.artifact.alias> <!-- no need to be unique, used as a shorthand for the artifacts upload during the builds -->
+
         <jahia.plugin.version>6.9</jahia.plugin.version>
         <jahia-bom.version>8.2.3.0-SNAPSHOT</jahia-bom.version> <!-- should match ${project.parent.version} -->
         <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
