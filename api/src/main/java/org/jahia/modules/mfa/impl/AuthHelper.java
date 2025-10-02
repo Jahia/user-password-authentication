@@ -50,7 +50,7 @@ public class AuthHelper {
 
     // TODO partially duplicated from LoginEngineAuthValveImpl#getJcrUserNode(), to be refactored
     public static JCRUserNode lookupUserFromCredentials(String username, String password, String site) {
-        JCRUserNode theUser = JahiaUserManagerService.getInstance().lookupUser(username, site);
+        JCRUserNode theUser = JahiaUserManagerService.getInstance().lookupUser(username, site, true);
         if (theUser != null) {
             if (theUser.verifyPassword(password)) {
                 if (!theUser.isAccountLocked()) {

@@ -2,10 +2,15 @@ package org.jahia.modules.mfa.impl;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import org.jahia.exceptions.JahiaException;
 import org.jahia.modules.mfa.*;
 import org.jahia.services.content.JCRPropertyWrapper;
 import org.jahia.services.content.JCRTemplate;
 import org.jahia.services.content.decorator.JCRUserNode;
+import org.jahia.services.render.RenderContext;
+import org.jahia.services.render.URLResolver;
+import org.jahia.services.render.URLResolverFactory;
+import org.jahia.services.sites.JahiaSitesService;
 import org.jahia.services.usermanager.JahiaUserManagerService;
 import org.osgi.service.component.annotations.*;
 import org.slf4j.Logger;
@@ -33,6 +38,7 @@ public class MfaServiceImpl implements MfaService {
     private static final String TOO_MANY_FAILED_ATTEMPTS_MESSAGE = "Too many failed authentication attempts";
 
     private JahiaUserManagerService userManagerService;
+    private JahiaSitesService sitesService;
     private MfaFactorRegistry factorRegistry;
     private volatile MfaConfigurationService mfaConfigurationService;
     private volatile Cache<String, AuthFailuresDetails> failuresCache;
@@ -41,6 +47,11 @@ public class MfaServiceImpl implements MfaService {
     @Reference
     public void setUserManagerService(JahiaUserManagerService userManagerService) {
         this.userManagerService = userManagerService;
+    }
+
+    @Reference
+    public void setSitesService(JahiaSitesService sitesService) {
+        this.sitesService = sitesService;
     }
 
     @Reference
@@ -113,8 +124,9 @@ public class MfaServiceImpl implements MfaService {
     public MfaSession initiateMfa(String username, String password, String siteKey, HttpServletRequest request) {
         logger.info("Initiating MFA for user: {}", username);
 
-        // Todo - site user check ?
-        JCRUserNode user = AuthHelper.lookupUserFromCredentials(username, password, null);
+        String site = resolveSiteFromRequest(request);
+
+        JCRUserNode user = AuthHelper.lookupUserFromCredentials(username, password, site);
         if (user == null) {
             logger.warn("Invalid credentials for user: {}", username);
             throw new IllegalArgumentException("Invalid username or password");
@@ -149,7 +161,9 @@ public class MfaServiceImpl implements MfaService {
             return session;
         }
 
-        JCRUserNode user = userManagerService.lookupUser(session.getUserId());
+        String site = resolveSiteFromRequest(request);
+
+        JCRUserNode user = userManagerService.lookupUser(session.getUserId(), site, true);
         if (user == null) {
             session.markFactorPreparationFailed(factorType, "User not found");
             return session;
@@ -198,8 +212,9 @@ public class MfaServiceImpl implements MfaService {
             return session;
         }
 
+        String site = resolveSiteFromRequest(request);
         // TODO - reset mfa session if user is not found at this stage, better handling of user recheck during MFA steps
-        JCRUserNode user = userManagerService.lookupUser(session.getUserId());
+        JCRUserNode user = userManagerService.lookupUser(session.getUserId(), site, true);
         if (user == null) {
             session.markFactorVerificationFailed(factorType, "User not found");
             return session;
@@ -347,6 +362,18 @@ public class MfaServiceImpl implements MfaService {
         // For now, we require at least one factor to be completed
         // This can be made configurable later
         return !session.getCompletedFactors().isEmpty();
+    }
+
+    private String resolveSiteFromRequest(HttpServletRequest request) {
+        String site = null;
+        if (request != null) {
+            try {
+                site = sitesService.getSitenameByServerName(request.getServerName());
+            } catch (JahiaException e) {
+                logger.warn("Failed to resolve site for server name: {}", request.getServerName(), e);
+            }
+        }
+        return site;
     }
 
 
