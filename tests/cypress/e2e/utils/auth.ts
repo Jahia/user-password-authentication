@@ -41,8 +41,8 @@ export const assertIsNotLoggedIn = () => {
 };
 
 /**
- * Asserts the given user is logged by ensuring they can access the Jahia Dashboard
- * @param username
+ * Asserts the given user is logged by ensuring they can access the Jahia Dashboard and that they are not suspended.
+ * @param username the username to check
  */
 export const assertIsLoggedIn = (username: string) => {
     // TODO find better way to ensure the user is logged in
@@ -56,5 +56,44 @@ export const assertIsLoggedIn = (username: string) => {
         errorMsg: `Welcome message for ${username} not found`,
         timeout: 10000,
         interval: 1000
+    });
+    // Also ensure the user is not suspended
+    assertIsNotSuspended(username);
+};
+
+/**
+ * Asserts the given user is suspended by ensuring the JCR 'mfa:suspendedSince' property is set in their JCR user node
+ * @param username the username to check
+ */
+export const assertIsSuspended = (username: string) => {
+    cy.apollo({
+        queryFile: 'suspendedUserDetails.graphql',
+        variables: {
+            username: username
+        }
+    }).then(response => {
+        // Can't compare with actual JavaScript dates (or within a range) as the property is set in the backend and might differ by a few milliseconds
+        // expect(suspendedSince).to.be.within(rangeBegin, rangeEnd);
+        // so we just check that the property is defined
+        expect(response?.data?.admin?.userAdmin?.user?.property).to.not.be.undefined;
+        // And check the mixin is present
+        expect(response?.data?.admin?.userAdmin?.user?.node?.mixinTypes).to.be.a('array').and.have.length(1);
+        expect(response?.data?.admin?.userAdmin?.user?.node?.mixinTypes[0]?.name).to.eq('mfa:suspendedUser');
+    });
+};
+
+/**
+ * Asserts the given user is not suspended by ensuring the JCR 'mfa:suspendedSince' property is not set in their JCR user node
+ * @param username the username to check
+ */
+const assertIsNotSuspended = (username: string) => {
+    cy.apollo({
+        queryFile: 'suspendedUserDetails.graphql',
+        variables: {
+            username: username
+        }
+    }).then(response => {
+        expect(response?.data?.admin?.userAdmin?.user?.property, 'the mfa:suspendedUser property should not be set').to.be.null;
+        expect(response?.data?.admin?.userAdmin?.user?.node?.mixinTypes, 'the mfa:suspendedUser mixin should not exist on the user node').to.be.empty;
     });
 };
