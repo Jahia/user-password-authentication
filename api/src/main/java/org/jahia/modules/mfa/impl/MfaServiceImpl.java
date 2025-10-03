@@ -35,7 +35,6 @@ public class MfaServiceImpl implements MfaService {
     private static final String TOO_MANY_FAILED_ATTEMPTS_MESSAGE = "Too many failed authentication attempts";
 
     private JahiaUserManagerService userManagerService;
-    private JahiaSitesService sitesService;
     private MfaFactorRegistry factorRegistry;
     private volatile MfaConfigurationService mfaConfigurationService;
     private volatile Cache<String, AuthFailuresDetails> failuresCache;
@@ -44,11 +43,6 @@ public class MfaServiceImpl implements MfaService {
     @Reference
     public void setUserManagerService(JahiaUserManagerService userManagerService) {
         this.userManagerService = userManagerService;
-    }
-
-    @Reference
-    public void setSitesService(JahiaSitesService sitesService) {
-        this.sitesService = sitesService;
     }
 
     @Reference
