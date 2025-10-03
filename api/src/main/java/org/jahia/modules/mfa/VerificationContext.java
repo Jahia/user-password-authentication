@@ -14,6 +14,7 @@ public class VerificationContext {
     private final HttpServletRequest httpServletRequest; // TODO should we keep it?
     private final Serializable preparationResult;
     private final Serializable verificationData;
+    private final String siteKey;
 
     /**
      * Constructs a new VerificationContext.
@@ -23,11 +24,12 @@ public class VerificationContext {
      * @param preparationResult  the result from the preparation step
      * @param verificationData   the data provided for verification
      */
-    public VerificationContext(JCRUserNode user, HttpServletRequest httpServletRequest, Serializable preparationResult, Serializable verificationData) {
+    public VerificationContext(JCRUserNode user, HttpServletRequest httpServletRequest, Serializable preparationResult, Serializable verificationData, String siteKey) {
         this.user = user;
         this.httpServletRequest = httpServletRequest;
         this.preparationResult = preparationResult;
         this.verificationData = verificationData;
+        this.siteKey = siteKey;
     }
 
     /**
@@ -64,5 +66,14 @@ public class VerificationContext {
      */
     public Serializable getVerificationData() {
         return verificationData;
+    }
+
+    /**
+     * Returns the site key associated with this context.
+     *
+     * @return the site key as a String
+     */
+    public String getSiteKey() {
+        return siteKey;
     }
 }

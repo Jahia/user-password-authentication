@@ -121,9 +121,7 @@ public class MfaServiceImpl implements MfaService {
     public MfaSession initiateMfa(String username, String password, String siteKey, HttpServletRequest request) {
         logger.info("Initiating MFA for user: {}", username);
 
-        String site = resolveSiteFromRequest(request);
-
-        JCRUserNode user = AuthHelper.lookupUserFromCredentials(username, password, site);
+        JCRUserNode user = AuthHelper.lookupUserFromCredentials(username, password, siteKey);
         if (user == null) {
             logger.warn("Invalid credentials for user: {}", username);
             throw new IllegalArgumentException("Invalid username or password");
@@ -158,9 +156,7 @@ public class MfaServiceImpl implements MfaService {
             return session;
         }
 
-        String site = resolveSiteFromRequest(request);
-
-        JCRUserNode user = userManagerService.lookupUser(session.getUserId(), site, true);
+        JCRUserNode user = userManagerService.lookupUser(session.getUserId(), session.getSiteKey(), true);
         if (user == null) {
             session.markFactorPreparationFailed(factorType, "User not found");
             return session;
@@ -209,9 +205,8 @@ public class MfaServiceImpl implements MfaService {
             return session;
         }
 
-        String site = resolveSiteFromRequest(request);
         // TODO - reset mfa session if user is not found at this stage, better handling of user recheck during MFA steps
-        JCRUserNode user = userManagerService.lookupUser(session.getUserId(), site, true);
+        JCRUserNode user = userManagerService.lookupUser(session.getUserId(), session.getSiteKey(), true);
         if (user == null) {
             session.markFactorVerificationFailed(factorType, "User not found");
             return session;
@@ -230,7 +225,7 @@ public class MfaServiceImpl implements MfaService {
                 return session;
             }
             Serializable preparationResult = (Serializable) request.getSession().getAttribute(getAttributeKey(factorType));
-            VerificationContext verificationContext = new VerificationContext(user, request, preparationResult, verificationData);
+            VerificationContext verificationContext = new VerificationContext(user, request, preparationResult, verificationData, session.getSiteKey());
             if (provider.verify(verificationContext)) {
                 // Clear preparation result after successful verification
                 request.getSession().removeAttribute(getAttributeKey(factorType));
@@ -360,19 +355,6 @@ public class MfaServiceImpl implements MfaService {
         // This can be made configurable later
         return !session.getCompletedFactors().isEmpty();
     }
-
-    private String resolveSiteFromRequest(HttpServletRequest request) {
-        String site = null;
-        if (request != null) {
-            try {
-                site = sitesService.getSitenameByServerName(request.getServerName());
-            } catch (JahiaException e) {
-                logger.warn("Failed to resolve site for server name: {}", request.getServerName(), e);
-            }
-        }
-        return site;
-    }
-
 
     private static String getAttributeKey(String factorType) {
         return String.format("%s.preparationResult.%s", MfaServiceImpl.class.getSimpleName(), factorType);
