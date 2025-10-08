@@ -1,5 +1,9 @@
 - addMavenRepository: 'https://devtools.jahia.com/nexus/content/groups/public/@snapshots@noreleases@id=JahiaPublicSnapshots'
 - installBundle:
+    - 'mvn:org.jahia.modules/javascript-modules-engine' # the MFA UI module is a JavaScript module
+  autoStart: true
+  uninstallPreviousVersion: true
+- installBundle:
     - 'mvn:org.jahia.modules/jahia-multi-factor-authentication-api'
     - 'mvn:org.jahia.test/jahia-multi-factor-authentication-test-module'
     # LATEST is a Maven special "metaversion" that will always point to the latest version of the module, including snapshots
