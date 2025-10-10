@@ -3,12 +3,12 @@ import { useApiRoot } from "../../hooks/ApiRootContext";
 import { prepareEmailFactor, verifyEmailCodeFactor } from "../../services";
 import classes from "./component.module.css";
 import ErrorMessage from "./ErrorMessage.client";
-import type { AdditionalActionProps } from "./types";
-import AdditionalAction from "./AdditionalAction.client";
+import type { Props } from "./types";
 import clsx from "clsx";
 
 interface EmailCodeVerificationFormProps {
   onSuccess: () => void;
+  content: Props;
 }
 export default function EmailCodeVerificationForm(props: EmailCodeVerificationFormProps) {
   const [loading, setLoading] = useState(true);
@@ -104,13 +104,6 @@ export default function EmailCodeVerificationForm(props: EmailCodeVerificationFo
     </div>
   );
 
-  const resendCodeAdditionalAction: AdditionalActionProps = {
-    text: "Didn't receive the code?",
-    linkURL: handleResendCode,
-    linkLabel: "Resend code",
-    inProgress,
-  };
-
   return (
     <div>
       <h2>Two Factor Authentication</h2>
@@ -124,6 +117,7 @@ export default function EmailCodeVerificationForm(props: EmailCodeVerificationFo
       </div>
 
       <form onSubmit={handleSubmit}>
+        <label htmlFor={"verificationCode"}>{props.content.emailCodeVerificationFieldLabel}</label>
         <div
           className={classes.codeContainer}
           style={{ width: codeContainerWidth }}
@@ -132,6 +126,8 @@ export default function EmailCodeVerificationForm(props: EmailCodeVerificationFo
           <input
             className={classes.hiddenInput}
             ref={hiddenInputRef}
+            id={"verificationCode"}
+            name={"verificationCode"}
             type="text"
             inputMode="numeric"
             autoFocus
@@ -146,9 +142,21 @@ export default function EmailCodeVerificationForm(props: EmailCodeVerificationFo
         </div>
         <ErrorMessage message={error} />
         <button type="submit" disabled={inProgress} data-testid="verification-submit">
-          Verify
+          {props.content.emailCodeVerificationSubmitButtonLabel}
         </button>
-        <AdditionalAction props={resendCodeAdditionalAction} />
+        <hr />
+        <div className={"additionalAction"}>
+          {props.content.emailCodeVerificationAdditionalActionHtml && (
+            <div
+              dangerouslySetInnerHTML={{
+                __html: props.content.emailCodeVerificationAdditionalActionHtml,
+              }}
+            />
+          )}
+          <a href="#" onClick={handleResendCode}>
+            {props.content.emailCodeVerificationAdditionalActionResendLabel}
+          </a>
+        </div>
       </form>
     </div>
   );

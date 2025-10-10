@@ -16,18 +16,18 @@ export default async function login(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       query: /* GraphQL */ `
-              mutation initiate($username: String!, $password: String!) {
-                mfa {
-                    initiate(username: $username, password: $password) {
-                        success
-                        error
-                        sessionState
-                        requiredFactors
-                        completedFactors
-                    }
-                }
-              }
-            `,
+        mutation initiate($username: String!, $password: String!) {
+          mfa {
+            initiate(username: $username, password: $password) {
+              success
+              error
+              sessionState
+              requiredFactors
+              completedFactors
+            }
+          }
+        }
+      `,
       variables: { username, password },
     }),
   });

@@ -14,20 +14,20 @@ export default async function verifyEmailCodeFactor(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       query: /* GraphQL */ `
-                mutation verifyEmailCodeFactor($code: String!) {
-                    mfa {
-                        factors {
-                            verifyEmailCodeFactor(code: $code) {
-                                success
-                                error
-                                sessionState
-                                requiredFactors
-                                completedFactors
-                            }
-                        }
-                    }
-                }
-            `,
+        mutation verifyEmailCodeFactor($code: String!) {
+          mfa {
+            factors {
+              verifyEmailCodeFactor(code: $code) {
+                success
+                error
+                sessionState
+                requiredFactors
+                completedFactors
+              }
+            }
+          }
+        }
+      `,
       variables: { code },
     }),
   });
