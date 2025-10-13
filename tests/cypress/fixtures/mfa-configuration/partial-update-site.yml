@@ -1,0 +1,5 @@
+- editConfiguration: "org.jahia.modules.mfa"
+  properties:
+    enabled: "true"
+    loginUrl: "/sites/partial-update-site/myLoginPage.html"
+    enabledFactors: "email_code"

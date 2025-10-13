@@ -1,13 +1,11 @@
-import { type FormEvent, type MouseEvent, useState } from "react";
+import { type FormEvent, useState } from "react";
 import { login } from "../../services";
 import { useApiRoot } from "../../hooks/ApiRootContext.jsx";
-import classes from "./component.module.css";
 import ErrorMessage from "./ErrorMessage.client";
-import type { AdditionalActionProps } from "./types";
-import AdditionalAction from "./AdditionalAction.client";
+import type { Props } from "./types";
 
 interface LoginFormProps {
-  additionalAction?: AdditionalActionProps;
+  content: Props;
   onSuccess: (username: string) => void;
 }
 
@@ -33,41 +31,48 @@ export default function (props: LoginFormProps) {
       })
       .finally(() => setInProgress(false));
   };
-  const onForgotPassword = async (e: MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
-    console.log("forget password"); // TODO to implement
-  };
 
   return (
-    <form onSubmit={handleSubmit} className={classes.form}>
-      <label htmlFor={"username"}>Email</label>
-      <input
-        id={"username"}
-        name={"username"}
-        type="text"
-        autoComplete={"username"}
-        placeholder="Email"
-        data-testid="login-username"
-        onChange={(e) => setUsername(e.target.value)}
-      />
-      <label htmlFor={"password"}>Password</label>
-      <input
-        id={"password"}
-        name={"password"}
-        type="password"
-        autoComplete={"current-password"}
-        placeholder="Password"
-        data-testid="login-password"
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <a href="#" className={classes.forgotPassword} onClick={onForgotPassword}>
-        Forgot password ?
-      </a>
-      <ErrorMessage message={error} />
-      <button type="submit" disabled={inProgress} data-testid="login-submit">
-        Login
-      </button>
-      <AdditionalAction props={props.additionalAction} />
-    </form>
+    <>
+      <form onSubmit={handleSubmit}>
+        <label htmlFor={"username"}>{props.content.loginEmailFieldLabel}</label>
+        <input
+          id={"username"}
+          name={"username"}
+          type="text"
+          autoComplete={"username"}
+          placeholder="Email"
+          data-testid="login-username"
+          onChange={(e) => setUsername(e.target.value)}
+        />
+        <label htmlFor={"password"}>{props.content.loginPasswordFieldLabel}</label>
+        <input
+          id={"password"}
+          name={"password"}
+          type="password"
+          autoComplete={"current-password"}
+          placeholder="Password"
+          data-testid="login-password"
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        {props.content.loginBelowPasswordFieldHtml && (
+          <div
+            className={"belowPasswordField"}
+            dangerouslySetInnerHTML={{ __html: props.content.loginBelowPasswordFieldHtml }}
+          />
+        )}
+        <ErrorMessage message={error} />
+        <button type="submit" disabled={inProgress} data-testid="login-submit">
+          {props.content.loginSubmitButtonLabel}
+        </button>
+      </form>
+      <hr />
+      {props.content.loginAdditionalActionHtml && (
+        <div
+          className={"additionalAction"}
+          dangerouslySetInnerHTML={{ __html: props.content.loginAdditionalActionHtml }}
+        />
+      )}
+    </>
   );
 }

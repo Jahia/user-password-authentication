@@ -19,6 +19,12 @@ export default tseslint.config(
 
   // React
   eslintReact.configs["recommended-typescript"],
+  {
+    rules: {
+      // needed to render RichText components
+      "@eslint-react/dom/no-dangerously-set-innerhtml": "off",
+    },
+  },
 
   // Ignore the same files as .gitignore
   includeIgnoreFile(path.resolve(import.meta.dirname, ".gitignore")),

@@ -1,6 +1,12 @@
-import { buildEndpointUrl, Island, jahiaComponent } from "@jahia/javascript-modules-library";
+import {
+  buildEndpointUrl,
+  buildModuleFileUrl,
+  buildNodeUrl,
+  Island,
+  jahiaComponent,
+} from "@jahia/javascript-modules-library";
 import Authentication from "./Authentication.client.jsx";
-import type { AdditionalActionProps } from "./types";
+import type { Props } from "./types";
 
 jahiaComponent(
   {
@@ -8,31 +14,42 @@ jahiaComponent(
     displayName: "MFA Authentication Component",
     componentType: "view",
   },
-  ({
-    additionalActionLoginText,
-    additionalActionLoginLinkURL,
-    additionalActionLoginLinkLabel,
-  }: {
-    additionalActionLoginText?: string;
-    additionalActionLoginLinkURL?: string;
-    additionalActionLoginLinkLabel?: string;
-  }) => {
+  (props: Props) => {
     // the API root is generated server-side
     const apiRoot = buildEndpointUrl("/modules/graphql");
-    // for the login form, the details about the additional action are defined as JCR properties
-    const additionalActionLogin: AdditionalActionProps = {
-      text: additionalActionLoginText,
-      linkURL: additionalActionLoginLinkURL,
-      linkLabel: additionalActionLoginLinkLabel,
+    // pass the JCR props server-side -> client-side
+    const content: Props = {
+      loginEmailFieldLabel: props.loginEmailFieldLabel,
+      loginPasswordFieldLabel: props.loginPasswordFieldLabel,
+      loginSubmitButtonLabel: props.loginSubmitButtonLabel,
+      loginBelowPasswordFieldHtml: props.loginBelowPasswordFieldHtml,
+      loginAdditionalActionHtml: props.loginAdditionalActionHtml,
+      emailCodeVerificationFieldLabel: props.emailCodeVerificationFieldLabel,
+      emailCodeVerificationSubmitButtonLabel: props.emailCodeVerificationSubmitButtonLabel,
+      emailCodeVerificationAdditionalActionHtml: props.emailCodeVerificationAdditionalActionHtml,
+      emailCodeVerificationAdditionalActionResendLabel:
+        props.emailCodeVerificationAdditionalActionResendLabel,
     };
     return (
-      <Island
-        component={Authentication}
-        props={{
-          apiRoot,
-          additionalActionLogin,
-        }}
-      />
+      <>
+        <header>
+          <img
+            src={
+              props.logo ? buildNodeUrl(props.logo) : buildModuleFileUrl("static/default-logo.svg")
+            }
+            alt="Logo"
+          />
+        </header>
+        <main>
+          <Island
+            component={Authentication}
+            props={{
+              apiRoot,
+              content,
+            }}
+          />
+        </main>
+      </>
     );
   },
 );

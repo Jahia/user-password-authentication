@@ -11,15 +11,7 @@ jahiaComponent(
   ({ "jcr:title": title }, { renderContext }) => (
     <Layout title={title}>
       <div className={"card"}>
-        <div className={"card-header"}>
-          <Area name="card-header" />
-        </div>
-        <main>
-          <Area name="authentication" nodeType={"mfaui:authentication"} />
-        </main>
-        <div className={"card-footer"}>
-          <Area name="card-footer" />
-        </div>
+        <Area name="authentication" nodeType={"mfaui:authentication"} />
       </div>
       <AbsoluteArea name="footer" parent={renderContext.getSite()} nodeType="mfaui:footer" />
     </Layout>

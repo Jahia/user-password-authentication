@@ -1,6 +1,6 @@
 {
   "name": "jahia-multi-factor-authentication-ui",
-  "description": "Jahia MFA UI",
+  "description": "JavaScript module for MFA UI",
   "version": "1.0.0-SNAPSHOT",
   "type": "module",
   "files": [
@@ -50,6 +50,7 @@
     "yarn": ">=4.0.0"
   },
   "jahia": {
+    "name": "Jahia MFA UI",
     "module-dependencies": "default",
     "module-type": "module",
     "server": "dist/server/index.js",

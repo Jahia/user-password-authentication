@@ -13,18 +13,18 @@ export default async function prepareEmailFactor(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       query: /* GraphQL */ `
-                mutation prepareFactor($factorType: String!) {
-                    mfa {
-                        prepareFactor(factorType: $factorType) {
-                            success
-                            error
-                            sessionState
-                            requiredFactors
-                            completedFactors
-                        }
-                    }
-                }
-            `,
+        mutation prepareFactor($factorType: String!) {
+          mfa {
+            prepareFactor(factorType: $factorType) {
+              success
+              error
+              sessionState
+              requiredFactors
+              completedFactors
+            }
+          }
+        }
+      `,
       variables: { factorType: "email_code" },
     }),
   });

@@ -1,4 +1,11 @@
 [mfaui:authentication] > mfauimix:component, jnt:content
- - additionalActionLoginText (string) i18n
- - additionalActionLoginLinkURL (string)
- - additionalActionLoginLinkLabel (string) i18n
+ - logo (weakreference, picker[type='image']) < jmix:image
+ - loginEmailFieldLabel (string) = 'Email' i18n autocreated mandatory
+ - loginPasswordFieldLabel (string) = 'Password' i18n autocreated mandatory
+ - loginSubmitButtonLabel (string) = 'Login' i18n autocreated mandatory
+ - loginBelowPasswordFieldHtml (string,richtext) = '<a target="_blank" href="https://id.jahia.com/lost-password">Forgot password ?</a>' i18n autocreated
+ - loginAdditionalActionHtml (string,richtext) = '<p>Don\'t have a Jahia Cloud account?</p><a target="_blank" href="https://id.jahia.com/home/registration.html">Create an account</a>' i18n autocreated
+ - emailCodeVerificationFieldLabel (string) = 'Verification code' i18n autocreated mandatory
+ - emailCodeVerificationSubmitButtonLabel (string) = 'Verify' i18n autocreated mandatory
+ - emailCodeVerificationAdditionalActionHtml (string,richtext) = '<p>Didn\'t receive the code?</p>' i18n autocreated
+ - emailCodeVerificationAdditionalActionResendLabel (string) = 'Resend code' i18n autocreated mandatory
