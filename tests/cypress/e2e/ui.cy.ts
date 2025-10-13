@@ -10,7 +10,7 @@ import {
     generateWrongCode,
     getVerificationCode,
     installMFAConfig,
-    Props,
+    AuthenticationProps,
     updateSiteLoginPageProps,
     DEFAULT_LOGIN_EMAIL_FIELD_LABEL,
     DEFAULT_LOGIN_PASSWORD_FIELD_LABEL,
@@ -81,7 +81,7 @@ describe('Tests for the UI module', () => {
         installMFAConfig('full-update-site.yml');
 
         // Change all props:
-        const newProps :Props = {
+        const newProps :AuthenticationProps = {
             loginEmailFieldLabel: 'Custom email label',
             loginPasswordFieldLabel: 'Custom pwd label',
             loginSubmitButtonLabel: 'Custom login label',

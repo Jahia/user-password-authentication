@@ -45,17 +45,18 @@ export function createSiteWithLoginPage(siteKey: string, language = DEFAULT_LANG
     cy.login();
     JContent.visit(siteKey, language, `pages/${LOGIN_PAGE_NAME}`);
     cy.iframe('#page-builder-frame-1').within(() => {
-        cy.get('div[type="area"][areaType="mfaui:authentication"]').should('exist').scrollIntoView();
+        cy.get('div[type="area"][areaType="mfaui:authentication"]', {timeout: 20000}).should('exist');
     });
 
     publishAndWaitJobEnding(`/sites/${siteKey}`, [language]);
 }
 
 /**
- * JCR properties of the MFA Authentication page.
- * @see "mfaui:authentication" view
+ * JCR properties of the MFA Authentication Component.
+ *
+ * @see "mfaui:authentication" view (`ui/src/components/Authentication/default.server.tsx`)
  */
-export interface Props {
+export interface AuthenticationProps {
     loginEmailFieldLabel?: string;
     loginPasswordFieldLabel?: string;
     loginSubmitButtonLabel?: string;
@@ -72,11 +73,11 @@ export interface Props {
  * to update the specified properties and verifies the updates on completion.
  *
  * @param {string} siteKey - The key identifying the site where the login page properties are being updated.
- * @param {Props} props - An object representing the properties to be updated, with keys as property names and values as property values.
+ * @param {AuthenticationProps} props - An object representing the properties to be updated, with keys as property names and values as property values.
  * @param {string} [language=DEFAULT_LANGUAGE] - The language in which the properties should be updated. Defaults to a predefined default language.
  * @return {void} This function does not return a value but performs actions such as updating the site properties and validating the updates.
  */
-export function updateSiteLoginPageProps(siteKey: string, props: Props, language: string = DEFAULT_LANGUAGE): void {
+export function updateSiteLoginPageProps(siteKey: string, props: AuthenticationProps, language: string = DEFAULT_LANGUAGE): void {
     const propertyMutations = Object.entries(props)
         .map(([name, value], idx) => `
             mutate_${idx}: mutateProperty(name: "${name}") {
