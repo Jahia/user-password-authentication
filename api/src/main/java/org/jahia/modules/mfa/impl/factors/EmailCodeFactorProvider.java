@@ -26,6 +26,7 @@ import javax.jcr.RepositoryException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
+import java.net.URL;
 import java.security.SecureRandom;
 
 /**
@@ -127,7 +128,7 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
         // will be "guest" at this stage, and it's sounds logical to render the mail code as guest user, for caching purpose.
         JahiaUser user = JCRSessionFactory.getInstance().getCurrentUser();
         try {
-            return  JCRTemplate.getInstance().doExecuteWithSystemSessionAsUser(user, Constants.LIVE_WORKSPACE, mfaSession.getUserPreferredLanguage(), session -> {
+            return JCRTemplate.getInstance().doExecuteWithSystemSessionAsUser(user, Constants.LIVE_WORKSPACE, mfaSession.getUserPreferredLanguage(), session -> {
 
                 RenderContext localRenderContext = new RenderContext(unwrapRequest(currentRequest), currentResponse, session.getUser());
                 // Use live workspace to benefit from HTML cache capabilities of Jahia rendering engine
@@ -146,7 +147,17 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
                     resolvedSite = sitesService.getSiteByKey(mfaSession.getSiteKey(), session);
                     localRenderContext.setSite(resolvedSite);
                 } else {
-                    localRenderContext.setSite(mailCodeContentNode.getResolveSite());
+                    String serverName = resolveServerNameFromReferrer(currentRequest, session);
+                    if (serverName != null) {
+                        logger.warn("Server name '{}' has been resolved from Referrer header which may give inconsistent behaviour as the mail content is cached", serverName);
+                        localRenderContext.setSite(new JCRSiteNode(mailCodeContentNode.getResolveSite().getDecoratedNode()) {
+                            @Override
+                            public String getServerName() {
+                                // try to guess the server name from the page on which the GraphQL request is executed
+                                return serverName;
+                            }
+                        });
+                    }
                 }
 
                 if (logger.isDebugEnabled()) {
@@ -174,9 +185,32 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
         }
     }
 
+    private String resolveServerNameFromReferrer(HttpServletRequest currentRequest, JCRSessionWrapper session) {
+        try {
+            String referer = currentRequest.getHeader("Referer");
+            if (referer == null) {
+                return null;
+            }
+            URL url = new URL(referer);
+            String path = url.getPath();
+            if (path != null && path.startsWith("/sites/")) {
+                String[] pathParts = path.split("/");
+                if (pathParts.length >= 3) {
+                    String siteKey = pathParts[2]; // /sites/<site key>/...
+                    JCRSiteNode resolvedSite = sitesService.getSiteByKey(siteKey, session);
+                    return resolvedSite.getServerName();
+                }
+            }
+            return null;
+        } catch (Exception e) {
+            logger.debug("Failed to extract server name from referrer", e);
+            return null;
+        }
+    }
+
     private HttpServletRequest unwrapRequest(HttpServletRequest request) {
-        // Request may have been done over GraphQL, the contextPath will be: "/modules" which will break every links generated from Jahia render chain.
-        // It's possible to unwrap the request to get original request.
+        // Request may have been done over GraphQL, the contextPath will be: "/modules" which will break every link generated from Jahia render chain.
+        // It's possible to unwrap the request to get the original request.
         if (request instanceof HttpServletRequestWrapper) {
             return (HttpServletRequest) ((HttpServletRequestWrapper) request).getRequest();
         }
