@@ -45,7 +45,7 @@ export function createSiteWithLoginPage(siteKey: string, language = DEFAULT_LANG
     cy.login();
     JContent.visit(siteKey, language, `pages/${LOGIN_PAGE_NAME}`);
     cy.iframe('#page-builder-frame-1').within(() => {
-        cy.get('div[type="area"][areaType="mfaui:authentication"]').scrollIntoView();
+        cy.get('div[type="area"][areaType="mfaui:authentication"]').should('exist').scrollIntoView();
     });
 
     publishAndWaitJobEnding(`/sites/${siteKey}`, [language]);
