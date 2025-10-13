@@ -67,11 +67,12 @@ describe('Tests for the UI module', () => {
     it('Should have the correct default props (labels, HTMLs)', () => {
         // Login step:
         triggerRedirectToLoginPage(SITE_KEY);
-        assertLoginStepContentMatches(DEFAULT_LOGIN_EMAIL_FIELD_LABEL, DEFAULT_LOGIN_PASSWORD_FIELD_LABEL, DEFAULT_BELOW_PASSWORD_FIELD_HTML, DEFAULT_LOGIN_SUBMIT_BUTTON_LABEL, DEFAULT_LOGIN_ADDITIONAL_ACTION_HTML);
+        assertLoginStepContentMatches({emailLabel: DEFAULT_LOGIN_EMAIL_FIELD_LABEL, passwordLabel: DEFAULT_LOGIN_PASSWORD_FIELD_LABEL, belowPasswordFieldHtml: DEFAULT_BELOW_PASSWORD_FIELD_HTML, submitButtonLabel: DEFAULT_LOGIN_SUBMIT_BUTTON_LABEL, additionalActionHtml: DEFAULT_LOGIN_ADDITIONAL_ACTION_HTML});
         enterCredential(username, password);
 
         // Email factor step:
-        assertEmailCodeVerificationStepContentMatches(DEFAULT_EMAIL_CODE_VERIFICATION_FIELD_LABEL, DEFAULT_EMAIL_CODE_VERIFICATION_SUBMIT_BUTTON_LABEL, `<div>${DEFAULT_EMAIL_CODE_VERIFICATION_ADDITIONAL_ACTION_HTML}</div><a href="#">${DEFAULT_EMAIL_CODE_VERIFICATION_ADDITIONAL_ACTION_RESEND_LABEL}</a>`);
+        assertEmailCodeVerificationStepContentMatches({verificationCodeLabel: DEFAULT_EMAIL_CODE_VERIFICATION_FIELD_LABEL, submitButtonLabel: DEFAULT_EMAIL_CODE_VERIFICATION_SUBMIT_BUTTON_LABEL,
+            additionalActionHtml: `<div>${DEFAULT_EMAIL_CODE_VERIFICATION_ADDITIONAL_ACTION_HTML}</div><a href="#">${DEFAULT_EMAIL_CODE_VERIFICATION_ADDITIONAL_ACTION_RESEND_LABEL}</a>`});
     });
 
     it('Should have the correct props (labels, HTMLs) after a full update in English', () => {
@@ -95,12 +96,12 @@ describe('Tests for the UI module', () => {
 
         // Login step:
         triggerRedirectToLoginPage(siteKey);
-        assertLoginStepContentMatches(newProps.loginEmailFieldLabel, newProps.loginPasswordFieldLabel, newProps.loginBelowPasswordFieldHtml, newProps.loginSubmitButtonLabel, newProps.loginAdditionalActionHtml);
+        assertLoginStepContentMatches({emailLabel: newProps.loginEmailFieldLabel, passwordLabel: newProps.loginPasswordFieldLabel, belowPasswordFieldHtml: newProps.loginBelowPasswordFieldHtml, submitButtonLabel: newProps.loginSubmitButtonLabel, additionalActionHtml: newProps.loginAdditionalActionHtml});
         enterCredential(username, password);
 
         // Email factor step:
         const completeHtml = `<div>${newProps.emailCodeVerificationAdditionalActionHtml}</div><a href="#">${newProps.emailCodeVerificationAdditionalActionResendLabel}</a>`;
-        assertEmailCodeVerificationStepContentMatches(newProps.emailCodeVerificationFieldLabel, newProps.emailCodeVerificationSubmitButtonLabel, completeHtml);
+        assertEmailCodeVerificationStepContentMatches({verificationCodeLabel: newProps.emailCodeVerificationFieldLabel, submitButtonLabel: newProps.emailCodeVerificationSubmitButtonLabel, additionalActionHtml: completeHtml});
     });
 
     it('Should have the correct props (labels, HTMLs) after a partial update in English', () => {
@@ -118,11 +119,11 @@ describe('Tests for the UI module', () => {
 
         // Login step:
         triggerRedirectToLoginPage(siteKey);
-        assertLoginStepContentMatches(DEFAULT_LOGIN_EMAIL_FIELD_LABEL, newProps.loginPasswordFieldLabel, DEFAULT_BELOW_PASSWORD_FIELD_HTML, DEFAULT_LOGIN_SUBMIT_BUTTON_LABEL, newProps.loginAdditionalActionHtml);
+        assertLoginStepContentMatches({emailLabel: DEFAULT_LOGIN_EMAIL_FIELD_LABEL, passwordLabel: newProps.loginPasswordFieldLabel, belowPasswordFieldHtml: DEFAULT_BELOW_PASSWORD_FIELD_HTML, submitButtonLabel: DEFAULT_LOGIN_SUBMIT_BUTTON_LABEL, additionalActionHtml: newProps.loginAdditionalActionHtml});
         enterCredential(username, password);
 
         // Email factor step:
-        assertEmailCodeVerificationStepContentMatches(DEFAULT_EMAIL_CODE_VERIFICATION_FIELD_LABEL, newProps.emailCodeVerificationSubmitButtonLabel, `<div>${DEFAULT_EMAIL_CODE_VERIFICATION_ADDITIONAL_ACTION_HTML}</div><a href="#">${DEFAULT_EMAIL_CODE_VERIFICATION_ADDITIONAL_ACTION_RESEND_LABEL}</a>`);
+        assertEmailCodeVerificationStepContentMatches({verificationCodeLabel: DEFAULT_EMAIL_CODE_VERIFICATION_FIELD_LABEL, submitButtonLabel: newProps.emailCodeVerificationSubmitButtonLabel, additionalActionHtml: `<div>${DEFAULT_EMAIL_CODE_VERIFICATION_ADDITIONAL_ACTION_HTML}</div><a href="#">${DEFAULT_EMAIL_CODE_VERIFICATION_ADDITIONAL_ACTION_RESEND_LABEL}</a>`});
 
         deleteSite(siteKey);
     });
@@ -143,11 +144,11 @@ describe('Tests for the UI module', () => {
 
         // Login step:
         triggerRedirectToLoginPage(siteKey);
-        assertLoginStepContentMatches(DEFAULT_LOGIN_EMAIL_FIELD_LABEL, newProps.loginPasswordFieldLabel, DEFAULT_BELOW_PASSWORD_FIELD_HTML, DEFAULT_LOGIN_SUBMIT_BUTTON_LABEL, newProps.loginAdditionalActionHtml);
+        assertLoginStepContentMatches({emailLabel: DEFAULT_LOGIN_EMAIL_FIELD_LABEL, passwordLabel: newProps.loginPasswordFieldLabel, belowPasswordFieldHtml: DEFAULT_BELOW_PASSWORD_FIELD_HTML, submitButtonLabel: DEFAULT_LOGIN_SUBMIT_BUTTON_LABEL, additionalActionHtml: newProps.loginAdditionalActionHtml});
         enterCredential(username, password);
 
         // Email factor step:
-        assertEmailCodeVerificationStepContentMatches(DEFAULT_EMAIL_CODE_VERIFICATION_FIELD_LABEL, newProps.emailCodeVerificationSubmitButtonLabel, `<div>${DEFAULT_EMAIL_CODE_VERIFICATION_ADDITIONAL_ACTION_HTML}</div><a href="#">${DEFAULT_EMAIL_CODE_VERIFICATION_ADDITIONAL_ACTION_RESEND_LABEL}</a>`);
+        assertEmailCodeVerificationStepContentMatches({verificationCodeLabel: DEFAULT_EMAIL_CODE_VERIFICATION_FIELD_LABEL, submitButtonLabel: newProps.emailCodeVerificationSubmitButtonLabel, additionalActionHtml: `<div>${DEFAULT_EMAIL_CODE_VERIFICATION_ADDITIONAL_ACTION_HTML}</div><a href="#">${DEFAULT_EMAIL_CODE_VERIFICATION_ADDITIONAL_ACTION_RESEND_LABEL}</a>`});
 
         deleteSite(siteKey);
     });

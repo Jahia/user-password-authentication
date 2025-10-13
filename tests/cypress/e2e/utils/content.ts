@@ -99,7 +99,7 @@ export function updateSiteLoginPageProps(siteKey: string, props: Props, language
         mutation: query
     }).then(response => {
         // For each property, check that the value has been updated
-        Object.entries(props).forEach(([_, value], idx) => {
+        Object.entries(props).forEach(([, value], idx) => {
             cy.log('prop: ', value);
             console.log('value', value);
             expect(response?.data?.jcr?.mutateNode?.[`mutate_${idx}`]?.setValue).to.be.true;
@@ -109,7 +109,19 @@ export function updateSiteLoginPageProps(siteKey: string, props: Props, language
     cy.logout();
 }
 
-export function assertLoginStepContentMatches(emailLabel: string, passwordLabel: string, belowPasswordFieldHtml: string, submitButtonLabel: string, additionalActionHtml: string) {
+export function assertLoginStepContentMatches({
+    emailLabel,
+    passwordLabel,
+    belowPasswordFieldHtml,
+    submitButtonLabel,
+    additionalActionHtml
+}: {
+    emailLabel: string;
+    passwordLabel: string;
+    belowPasswordFieldHtml: string;
+    submitButtonLabel: string;
+    additionalActionHtml: string;
+}) {
     cy.get('form label[for="username"]').should('have.text', emailLabel);
     cy.get('form label[for="password"]').should('have.text', passwordLabel);
     cy.get('.belowPasswordField').should('have.html', belowPasswordFieldHtml);
@@ -117,7 +129,15 @@ export function assertLoginStepContentMatches(emailLabel: string, passwordLabel:
     cy.get('.additionalAction').should('have.html', additionalActionHtml);
 }
 
-export function assertEmailCodeVerificationStepContentMatches(verificationCodeLabel: string, submitButtonLabel: string, additionalActionHtml: string) {
+export function assertEmailCodeVerificationStepContentMatches({
+    verificationCodeLabel,
+    submitButtonLabel,
+    additionalActionHtml
+}: {
+    verificationCodeLabel: string;
+    submitButtonLabel: string;
+    additionalActionHtml: string
+}) {
     cy.get('form label[for="verificationCode"]').should('have.text', verificationCodeLabel);
     cy.get('form button[type="submit"]').should('have.text', submitButtonLabel);
     cy.get('.additionalAction').should('have.html', additionalActionHtml);
