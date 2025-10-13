@@ -1,5 +1,4 @@
 import {addNode, createSite, deleteSite, enableModule, publishAndWaitJobEnding} from '@jahia/cypress';
-import {JContent} from '@jahia/jcontent-cypress/dist/page-object/jcontent';
 import 'cypress-iframe';
 import gql from 'graphql-tag';
 
