@@ -40,14 +40,10 @@ export function createSiteWithLoginPage(siteKey: string, language = DEFAULT_LANG
         ]
     });
 
-    // Workaround: open JContent to trigger area creations
-    // then wait for the "mfaui:authentication" area to be created
+    // Workaround: open JContent edit iframe to trigger area creation
     cy.login();
-    JContent.visit(siteKey, language, `pages/${LOGIN_PAGE_NAME}`);
-    cy.iframe('#page-builder-frame-1').within(() => {
-        cy.get('div[type="area"][areaType="mfaui:authentication"]', {timeout: 20000}).should('exist');
-    });
-
+    cy.visit(`/cms/editframe/default/${language}/sites/${siteKey}/${LOGIN_PAGE_NAME}.html?redirect=false`);
+    cy.get('div[type="area"][areaType="mfaui:authentication"]').should('exist');
     publishAndWaitJobEnding(`/sites/${siteKey}`, [language]);
 }
 

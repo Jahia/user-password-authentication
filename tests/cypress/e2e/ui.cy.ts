@@ -102,6 +102,9 @@ describe('Tests for the UI module', () => {
         // Email factor step:
         const completeHtml = `<div>${newProps.emailCodeVerificationAdditionalActionHtml}</div><a href="#">${newProps.emailCodeVerificationAdditionalActionResendLabel}</a>`;
         assertEmailCodeVerificationStepContentMatches({verificationCodeLabel: newProps.emailCodeVerificationFieldLabel, submitButtonLabel: newProps.emailCodeVerificationSubmitButtonLabel, additionalActionHtml: completeHtml});
+
+        // Cleanup
+        deleteSite(siteKey);
     });
 
     it('Should have the correct props (labels, HTMLs) after a partial update in English', () => {
@@ -125,6 +128,7 @@ describe('Tests for the UI module', () => {
         // Email factor step:
         assertEmailCodeVerificationStepContentMatches({verificationCodeLabel: DEFAULT_EMAIL_CODE_VERIFICATION_FIELD_LABEL, submitButtonLabel: newProps.emailCodeVerificationSubmitButtonLabel, additionalActionHtml: `<div>${DEFAULT_EMAIL_CODE_VERIFICATION_ADDITIONAL_ACTION_HTML}</div><a href="#">${DEFAULT_EMAIL_CODE_VERIFICATION_ADDITIONAL_ACTION_RESEND_LABEL}</a>`});
 
+        // Cleanup
         deleteSite(siteKey);
     });
 
@@ -150,6 +154,7 @@ describe('Tests for the UI module', () => {
         // Email factor step:
         assertEmailCodeVerificationStepContentMatches({verificationCodeLabel: DEFAULT_EMAIL_CODE_VERIFICATION_FIELD_LABEL, submitButtonLabel: newProps.emailCodeVerificationSubmitButtonLabel, additionalActionHtml: `<div>${DEFAULT_EMAIL_CODE_VERIFICATION_ADDITIONAL_ACTION_HTML}</div><a href="#">${DEFAULT_EMAIL_CODE_VERIFICATION_ADDITIONAL_ACTION_RESEND_LABEL}</a>`});
 
+        // Cleanup
         deleteSite(siteKey);
     });
 
