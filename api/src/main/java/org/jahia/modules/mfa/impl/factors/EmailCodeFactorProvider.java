@@ -4,13 +4,21 @@ import org.apache.commons.lang3.StringUtils;
 import org.jahia.api.Constants;
 import org.jahia.bin.Render;
 import org.jahia.modules.mfa.*;
+import org.jahia.modules.mfa.impl.MfaConfigurationService;
 import org.jahia.osgi.BundleUtils;
 import org.jahia.registries.ServicesRegistry;
-import org.jahia.services.content.*;
+import org.jahia.services.content.JCRNodeWrapper;
+import org.jahia.services.content.JCRSessionFactory;
+import org.jahia.services.content.JCRSessionWrapper;
+import org.jahia.services.content.JCRTemplate;
 import org.jahia.services.content.decorator.JCRSiteNode;
 import org.jahia.services.content.decorator.JCRUserNode;
 import org.jahia.services.mail.MailService;
-import org.jahia.services.render.*;
+import org.jahia.services.render.RenderContext;
+import org.jahia.services.render.RenderException;
+import org.jahia.services.render.RenderService;
+import org.jahia.services.render.Resource;
+import org.jahia.services.sites.JahiaSite;
 import org.jahia.services.sites.JahiaSitesService;
 import org.jahia.services.usermanager.JahiaUser;
 import org.jahia.utils.i18n.Messages;
@@ -26,7 +34,6 @@ import javax.jcr.RepositoryException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
-import java.net.URL;
 import java.security.SecureRandom;
 
 /**
@@ -43,6 +50,7 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
 
     private RenderService renderService;
     private JahiaSitesService sitesService;
+    private MfaConfigurationService mfaConfigurationService;
     private String mailCodeContentPath;
     private String resourceBundleName;
 
@@ -63,6 +71,11 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
     @Reference
     public void setSitesService(JahiaSitesService sitesService) {
         this.sitesService = sitesService;
+    }
+
+    @Reference
+    public void setMfaConfigurationService(MfaConfigurationService mfaConfigurationService) {
+        this.mfaConfigurationService = mfaConfigurationService;
     }
 
     @Override
@@ -142,23 +155,8 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
                 localRenderContext.setMainResource(resource);
 
                 // Resolve site, use the one from the session if specified, otherwise use the module as site, this allows site template resolution.
-                JCRSiteNode resolvedSite = null;
-                if (mfaSession.getSiteKey() != null) {
-                    resolvedSite = sitesService.getSiteByKey(mfaSession.getSiteKey(), session);
-                    localRenderContext.setSite(resolvedSite);
-                } else {
-                    String serverName = resolveServerNameFromReferrer(currentRequest, session);
-                    if (serverName != null) {
-                        logger.warn("Server name '{}' has been resolved from Referrer header which may give inconsistent behaviour as the mail content is cached", serverName);
-                        localRenderContext.setSite(new JCRSiteNode(mailCodeContentNode.getResolveSite().getDecoratedNode()) {
-                            @Override
-                            public String getServerName() {
-                                // try to guess the server name from the page on which the GraphQL request is executed
-                                return serverName;
-                            }
-                        });
-                    }
-                }
+                JCRSiteNode resolvedSite = resolveSite(mfaSession, currentRequest, session, mailCodeContentNode);
+                localRenderContext.setSite(resolvedSite);
 
                 if (logger.isDebugEnabled()) {
                     logger.debug("In order to debug the HTML output of the mfa mail code verification template, " +
@@ -185,28 +183,52 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
         }
     }
 
-    private String resolveServerNameFromReferrer(HttpServletRequest currentRequest, JCRSessionWrapper session) {
-        try {
-            String referer = currentRequest.getHeader("Referer");
-            if (referer == null) {
-                return null;
-            }
-            URL url = new URL(referer);
-            String path = url.getPath();
-            if (path != null && path.startsWith("/sites/")) {
-                String[] pathParts = path.split("/");
-                if (pathParts.length >= 3) {
-                    String siteKey = pathParts[2]; // /sites/<site key>/...
-                    JCRSiteNode resolvedSite = sitesService.getSiteByKey(siteKey, session);
-                    return resolvedSite.getServerName();
-                }
-            }
-            return null;
-        } catch (Exception e) {
-            logger.debug("Failed to extract server name from referrer", e);
-            return null;
+    /**
+     * Resolves the site node for the {@link RenderContext} used during email generation.
+     * <p>
+     * When the MFA session contains a site key, that site is used directly. When no site key
+     * is specified in the MFA session, this method uses the MFA module itself as the site
+     * context to enable proper site template resolution during email content rendering.
+     * <p>
+     * In the latter case, the server name is determined using the following priority order:
+     * <ol>
+     *   <li>Use the server name from the HTTP request if it matches an existing site</li>
+     *   <li>Use the default site's server name (if a default site is configured)</li>
+     *   <li>Fall back to the system site's server name</li>
+     * </ol>
+     * <p>
+     *
+     * @param mfaSession          the MFA session containing the site key
+     * @param request             the current HTTP request
+     * @param session             the current JCR session used for repository interactions
+     * @param mailCodeContentNode the JCR node associated with the mail code's content
+     * @return the resolved site node for the given context
+     * @throws RepositoryException if an error occurs while accessing the repository
+     */
+    private JCRSiteNode resolveSite(MfaSession mfaSession, HttpServletRequest request, JCRSessionWrapper session, JCRNodeWrapper mailCodeContentNode) throws RepositoryException {
+        JCRSiteNode resolvedSite;
+        if (mfaSession.getSiteKey() != null) {
+            return sitesService.getSiteByKey(mfaSession.getSiteKey(), session);
         }
+        String serverName;
+        resolvedSite = sitesService.getSiteByServerName(request.getServerName(), session);
+        if (resolvedSite != null) {
+            serverName = resolvedSite.getServerName();
+        } else {
+            JahiaSite defaultSite = sitesService.getDefaultSite();
+            String siteNode = defaultSite == null ? "/sites/systemsite" : defaultSite.getJCRLocalPath();
+            resolvedSite = (JCRSiteNode) session.getNode(siteNode);
+            serverName = resolvedSite.getServerName();
+        }
+        resolvedSite = new JCRSiteNode(mailCodeContentNode.getResolveSite().getDecoratedNode()) {
+            @Override
+            public String getServerName() {
+                return serverName;
+            }
+        };
+        return resolvedSite;
     }
+
 
     private HttpServletRequest unwrapRequest(HttpServletRequest request) {
         // Request may have been done over GraphQL, the contextPath will be: "/modules" which will break every link generated from Jahia render chain.

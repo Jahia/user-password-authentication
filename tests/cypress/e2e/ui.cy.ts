@@ -135,7 +135,7 @@ describe('Tests for the UI module', () => {
     it('Should have the correct props (labels, HTMLs) after a partial update in lang not supported out of the box in Jahia (Spanish)', () => {
         const siteKey = 'multi-language-site';
         const language = 'es';
-        createSiteWithLoginPage(siteKey, language, 'jahiaServer');
+        createSiteWithLoginPage(siteKey, language);
         installMFAConfig('multi-language-site.yml');
 
         // Only change a few props:
