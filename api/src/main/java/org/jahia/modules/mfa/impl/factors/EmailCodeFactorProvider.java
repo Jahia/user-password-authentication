@@ -4,7 +4,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jahia.api.Constants;
 import org.jahia.bin.Render;
 import org.jahia.modules.mfa.*;
-import org.jahia.modules.mfa.impl.MfaConfigurationService;
 import org.jahia.osgi.BundleUtils;
 import org.jahia.registries.ServicesRegistry;
 import org.jahia.services.content.JCRNodeWrapper;
