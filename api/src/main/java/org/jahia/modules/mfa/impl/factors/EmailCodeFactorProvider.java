@@ -50,7 +50,6 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
 
     private RenderService renderService;
     private JahiaSitesService sitesService;
-    private MfaConfigurationService mfaConfigurationService;
     private String mailCodeContentPath;
     private String resourceBundleName;
 
@@ -71,11 +70,6 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
     @Reference
     public void setSitesService(JahiaSitesService sitesService) {
         this.sitesService = sitesService;
-    }
-
-    @Reference
-    public void setMfaConfigurationService(MfaConfigurationService mfaConfigurationService) {
-        this.mfaConfigurationService = mfaConfigurationService;
     }
 
     @Override

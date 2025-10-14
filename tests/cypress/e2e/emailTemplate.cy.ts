@@ -10,14 +10,15 @@ import {
 import {faker} from '@faker-js/faker';
 
 const SITE_KEY = 'email-template';
-const SERVER_NAME = 'jahiaServerName';
 
 describe('Tests for the email template', () => {
     let username: string;
     let password: string;
     let email: string;
+    let serverName: string;
     before(() => {
-        createSiteWithLoginPage(SITE_KEY, DEFAULT_LANGUAGE, SERVER_NAME);
+        serverName = URL.parse(Cypress.env('JAHIA_URL')).hostname;
+        createSiteWithLoginPage(SITE_KEY, DEFAULT_LANGUAGE, serverName);
     });
 
     beforeEach(() => {
@@ -43,7 +44,7 @@ describe('Tests for the email template', () => {
         cy.visit(`/sites/${SITE_KEY}/${LOGIN_PAGE_NAME}.html`);
         enterCredential(username, password);
         getEmailBody(email).then(body => {
-            expect(body).to.contain(`<img src="http://${SERVER_NAME}:8080/modules/jahia-multi-factor-authentication-api/img/poweredByJahia.png" alt="Powered by Jahia">`);
+            expect(body).to.contain(`<img src="${Cypress.env('JAHIA_URL')}/modules/jahia-multi-factor-authentication-api/img/poweredByJahia.png" alt="Powered by Jahia">`);
         });
     });
 });
