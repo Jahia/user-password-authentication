@@ -17,7 +17,7 @@ describe('Tests for the email template', () => {
     let email: string;
     let serverName: string;
     before(() => {
-        serverName = URL.parse(Cypress.env('JAHIA_URL')).hostname;
+        serverName = new URL(Cypress.env('JAHIA_URL')).hostname;
         createSiteWithLoginPage(SITE_KEY, DEFAULT_LANGUAGE, serverName);
     });
 
