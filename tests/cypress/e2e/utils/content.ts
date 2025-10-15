@@ -20,12 +20,13 @@ export const DEFAULT_EMAIL_CODE_VERIFICATION_ADDITIONAL_ACTION_RESEND_LABEL = 'R
  * Creates a new site with a login page. If a site matching this `siteKey` already exists, it is first deleted.
  * @param siteKey the site key to create
  * @param language site language
+ * @param serverName the server name to use for the site
  */
-export function createSiteWithLoginPage(siteKey: string, language = DEFAULT_LANGUAGE) {
+export function createSiteWithLoginPage(siteKey: string, language = DEFAULT_LANGUAGE, serverName = 'localhost') {
     deleteSite(siteKey);
     createSite(siteKey, {
         locale: language,
-        serverName: 'localhost',
+        serverName: serverName,
         templateSet: 'jahia-multi-factor-authentication-test-module'
     });
     enableModule('jahia-multi-factor-authentication-ui', siteKey);
@@ -95,9 +96,7 @@ export function updateSiteLoginPageProps(siteKey: string, props: AuthenticationP
         mutation: query
     }).then(response => {
         // For each property, check that the value has been updated
-        Object.entries(props).forEach(([, value], idx) => {
-            cy.log('prop: ', value);
-            console.log('value', value);
+        Object.entries(props).forEach((_, idx) => {
             expect(response?.data?.jcr?.mutateNode?.[`mutate_${idx}`]?.setValue).to.be.true;
         });
     });

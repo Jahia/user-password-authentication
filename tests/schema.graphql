@@ -3231,7 +3231,7 @@ type MfaMutation {
     "Access MFA factors specific mutations"
     factors: MfaFactorsMutation
     "Initiate MFA authentication"
-    initiate(password: String, username: String): MfaResponse
+    initiate(password: String, site: String, username: String): MfaResponse
     "Prepare a specific MFA factor"
     prepareFactor(factorType: String): MfaResponse
 }

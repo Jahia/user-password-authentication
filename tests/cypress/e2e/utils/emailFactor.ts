@@ -46,6 +46,28 @@ export function getVerificationCode(email: string, locale = 'en'): Cypress.Chain
 }
 
 /**
+ * Retrieves the HTML body content for a specific email.
+ * @param email the recipient email address to search for.
+ * @param subject the email subject to search for.
+ * @param locale the locale to determine the email subject. Defaults to 'en'.
+ * @returns a Cypress chainable that yields the HTML body content as a string.
+ */
+export function getEmailBody(email: string, subject?: string, locale = 'en'): Cypress.Chainable<string> {
+    const searchSubject = subject || VERIFICATION_CODE_SUBJECT[locale];
+
+    return cy.mailpitHasEmailsBySearch(`Subject:${searchSubject} to:${email}`, undefined, undefined, {
+        timeout: 5000,
+        interval: 500
+    })
+        .should(result => {
+            expect(result).to.have.property('total').and.to.be.greaterThan(0);
+            expect(result).to.have.property('messages').and.to.be.an('array').and.to.have.length.greaterThan(0);
+        })
+        .then(result => result.messages[0])
+        .mailpitGetMailHTMlBody();
+}
+
+/**
  * Verifies the email code factor with a provided email code.
  * Asserts the response based on whether an expected error is provided.
  * @param code The 6-digit verification code to verify.
