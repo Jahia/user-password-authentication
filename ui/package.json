@@ -51,7 +51,7 @@
   },
   "jahia": {
     "name": "Jahia MFA UI",
-    "module-dependencies": "default",
+    "module-dependencies": "default,jahia-multi-factor-authentication-api",
     "module-type": "module",
     "server": "dist/server/index.js",
     "static-resources": "/dist/client,/dist/assets,/locales,/images,/icons"

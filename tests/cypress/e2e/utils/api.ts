@@ -3,14 +3,16 @@
  *
  * @param username - The username to authenticate.
  * @param password - The password for the user.
+ * @param site  Optional. The site to authenticate against. The authentication is global if not specified.
  * @param expectedError - Optional. If provided, asserts that the error matches this value. If not provided, assumes it's a success
  */
-export function initiate(username: string, password: string, expectedError:string = undefined) {
+export function initiate(username: string, password: string, site: string = undefined, expectedError: string = undefined) {
     cy.apollo({
         queryFile: 'initiate.graphql',
         variables: {
             username: username,
-            password: password
+            password: password,
+            site: site
         }
     }).then(response => {
         if (expectedError) {

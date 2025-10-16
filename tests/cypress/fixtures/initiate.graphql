@@ -1,6 +1,6 @@
-mutation initiate($username: String!, $password: String!) {
+mutation initiate($username: String!, $password: String!, $site: String) {
     mfa {
-        initiate(username: $username, password: $password) {
+        initiate(username: $username, password: $password, site: $site) {
             success
             error
             sessionState

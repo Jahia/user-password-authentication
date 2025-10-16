@@ -1,9 +1,9 @@
-import {deleteUser, getJahiaVersion} from '@jahia/cypress';
+import {deleteSite, deleteUser, getJahiaVersion} from '@jahia/cypress';
 import {compare} from 'compare-versions';
 import {
     assertIsLoggedIn,
     assertIsNotLoggedIn,
-    assertIsSuspended,
+    assertIsSuspended, createSiteWithLoginPage,
     createUserForMFA,
     deleteAllEmails,
     generateWrongCode,
@@ -70,13 +70,14 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
     /**
      * Validates that a user can be authenticated using the email factor when correct credentials and code are provided
      * @param user The user object containing username, password and email
+     * @param site  Optional. The site to authenticate against. The authentication is global if not specified.
      * @note For readability sake, this function covers only happy-path steps without any negative assertions.
-     *       Negative scenarios are covered inline in separate test cases below.
+     *       Negative scenarios are covered inline in the separate test cases below.
      */
-    const validatePositiveMFAFlow = user => {
+    const validatePositiveMFAFlow = (user:TestUser, site: string = undefined) => {
         // STEP 1: Initiate the MFA process
         cy.log('1- initiate');
-        initiate(user.username(), user.password);
+        initiate(user.username(), user.password, site);
 
         // STEP 2: Prepare the email factor
         cy.log('2- prepare');
@@ -93,6 +94,13 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
 
     it(`Should be authenticated when correct credentials and code are provided: ${TEST_USER.username()}`, () => {
         validatePositiveMFAFlow(TEST_USER);
+    });
+
+    it.only(`Should be authenticated on a specific site when correct credentials and code are provided: ${TEST_USER.username()}`, () => {
+        const siteKey = faker.lorem.slug();
+        createSiteWithLoginPage(siteKey);
+        validatePositiveMFAFlow(TEST_USER, siteKey);
+        deleteSite(siteKey);
     });
 
     it(`Should receive i18n mail based on user preferred language: ${TEST_USER_I18N.username()}`, () => {

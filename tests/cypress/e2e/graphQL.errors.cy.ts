@@ -43,7 +43,7 @@ describe('Error scenarios common to all factors', () => {
 
     INVALID_CASES.forEach(({description, username, password}) => {
         it(`Should throw an error when ${description} is provided`, () => {
-            initiate(username, password, 'Invalid username or password');
+            initiate(username, password, undefined, 'Invalid username or password');
         });
     });
 
