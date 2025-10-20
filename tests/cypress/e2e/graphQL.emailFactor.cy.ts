@@ -3,15 +3,18 @@ import {compare} from 'compare-versions';
 import {
     assertIsLoggedIn,
     assertIsNotLoggedIn,
-    assertIsSuspended, createSiteWithLoginPage,
+    assertIsSuspended,
+    createSiteWithLoginPage,
     createUserForMFA,
     deleteAllEmails,
     generateWrongCode,
     getVerificationCode,
     initiate,
     installMFAConfig,
-    prepare,
-    verifyEmailCodeFactor
+    prepareEmailCodeFactor,
+    prepareEmailCodeFactorAndExpectError,
+    verifyEmailCodeFactor,
+    verifyEmailCodeFactorAndExpectError
 } from './utils';
 import {faker} from '@faker-js/faker';
 
@@ -81,7 +84,7 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
 
         // STEP 2: Prepare the email factor
         cy.log('2- prepare');
-        prepare('email_code');
+        prepareEmailCodeFactor();
 
         // STEP 3: Verify the email code factor
         cy.log('3- verification using the code received by email');
@@ -96,7 +99,7 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
         validatePositiveMFAFlow(TEST_USER);
     });
 
-    it.only(`Should be authenticated on a specific site when correct credentials and code are provided: ${TEST_USER.username()}`, () => {
+    it(`Should be authenticated on a specific site when correct credentials and code are provided: ${TEST_USER.username()}`, () => {
         const siteKey = faker.lorem.slug();
         createSiteWithLoginPage(siteKey);
         validatePositiveMFAFlow(TEST_USER, siteKey);
@@ -127,12 +130,14 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
         initiate(TEST_USER.username(), TEST_USER.password);
 
         cy.log('2- prepare');
-        prepare('email_code');
+        prepareEmailCodeFactor();
 
         cy.log('3- verification using a wrong code');
         getVerificationCode(TEST_USER.email).then(code => {
             const wrongCode = generateWrongCode(code);
-            verifyEmailCodeFactor(wrongCode, 'Invalid verification code');
+            verifyEmailCodeFactorAndExpectError(wrongCode, 'verify.verification_failed', {
+                factorType: value => expect(value).to.eq('email_code')
+            });
         });
     });
 
@@ -141,10 +146,10 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
         initiate(TEST_USER.username(), TEST_USER.password);
 
         cy.log('2- prepare');
-        prepare('email_code');
+        prepareEmailCodeFactor();
 
         cy.log('3- verification without a code');
-        verifyEmailCodeFactor('', 'Verification code is required');
+        verifyEmailCodeFactorAndExpectError('', 'factor.email_code.verification_code_required');
     });
 
     it('Should throw an error when the user does not have an email', () => {
@@ -152,12 +157,15 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
         initiate(TEST_USER_NO_EMAIL.username(), TEST_USER_NO_EMAIL.password);
 
         cy.log('2- prepare');
-        prepare('email_code', 'email_code', 'User does not have an email address configured');
+        prepareEmailCodeFactorAndExpectError('factor.email_code.email_not_configured_for_user', {
+            user: value => expect(value).to.eq(TEST_USER_NO_EMAIL.username())
+        });
     });
 
     it('Should throw an error when preparing without initiating the factor', () => {
         cy.log('2- prepare');
-        prepare('email_code', 'email_code', 'Failed to prepare factor: No active MFA session found');
+        // Prepare('email_code', 'email_code', 'Failed to prepare factor: No active MFA session found');
+        prepareEmailCodeFactorAndExpectError('no_active_session');
     });
 
     it('Should be locked when multiple wrong verification codes are entered in a row', () => {
@@ -172,26 +180,32 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
         initiate(TEST_USER.username(), TEST_USER.password);
 
         cy.log('2- prepare');
-        prepare('email_code');
+        prepareEmailCodeFactor();
 
         cy.log('3- verification using wrong codes');
         let wrongCode: string;
         getVerificationCode(TEST_USER.email).then(code => {
             wrongCode = generateWrongCode(code);
             cy.log('1st attempt: ' + wrongCode);
-            verifyEmailCodeFactor(wrongCode, 'Invalid verification code');
+            verifyEmailCodeFactorAndExpectError(wrongCode, 'verify.verification_failed', {
+                factorType: value => expect(value).to.eq('email_code')
+            });
             wrongCode = generateWrongCode(wrongCode);
             cy.log('2nd attempt: ' + wrongCode);
-            verifyEmailCodeFactor(wrongCode, 'Invalid verification code');
+            verifyEmailCodeFactorAndExpectError(wrongCode, 'verify.verification_failed', {
+                factorType: value => expect(value).to.eq('email_code')
+            });
             wrongCode = generateWrongCode(wrongCode);
             cy.log('3rd attempt: ' + wrongCode);
-            verifyEmailCodeFactor(wrongCode, 'Invalid verification code');
+            verifyEmailCodeFactorAndExpectError(wrongCode, 'verify.verification_failed', {
+                factorType: value => expect(value).to.eq('email_code')
+            });
             wrongCode = generateWrongCode(wrongCode);
             cy.log('4th attempt: ' + wrongCode);
-            verifyEmailCodeFactor(wrongCode, 'Too many failed authentication attempts');
+            verifyEmailCodeFactorAndExpectError(wrongCode, 'suspended_user');
             assertIsSuspended(TEST_USER.username());
             cy.log('Even the valid code is not accepted: ' + code);
-            verifyEmailCodeFactor(code, 'Too many failed authentication attempts');
+            verifyEmailCodeFactorAndExpectError(wrongCode, 'suspended_user');
             // Wait until the suspension expires
             // eslint-disable-next-line cypress/no-unnecessary-waiting
             cy.wait(6000);
@@ -212,30 +226,38 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
         initiate(TEST_USER.username(), TEST_USER.password);
 
         cy.log('2- prepare');
-        prepare('email_code');
+        prepareEmailCodeFactor();
 
         cy.log('3- verification using wrong codes');
         let wrongCode: string;
         getVerificationCode(TEST_USER.email).then(code => {
             wrongCode = generateWrongCode(code);
             cy.log('1st attempt: ' + wrongCode);
-            verifyEmailCodeFactor(wrongCode, 'Invalid verification code');
+            verifyEmailCodeFactorAndExpectError(wrongCode, 'verify.verification_failed', {
+                factorType: value => expect(value).to.eq('email_code')
+            });
             cy.log('wait 2 seconds to isolate the first attempt');
             // eslint-disable-next-line cypress/no-unnecessary-waiting
             cy.wait(2000);
             wrongCode = generateWrongCode(wrongCode);
             cy.log('2nd attempt: ' + wrongCode);
-            verifyEmailCodeFactor(wrongCode, 'Invalid verification code');
+            verifyEmailCodeFactorAndExpectError(wrongCode, 'verify.verification_failed', {
+                factorType: value => expect(value).to.eq('email_code')
+            });
             wrongCode = generateWrongCode(wrongCode);
             cy.log('3rd attempt: ' + wrongCode);
-            verifyEmailCodeFactor(wrongCode, 'Invalid verification code');
+            verifyEmailCodeFactorAndExpectError(wrongCode, 'verify.verification_failed', {
+                factorType: value => expect(value).to.eq('email_code')
+            });
             cy.log('wait until the first attempt is out of the authFailuresWindowSeconds');
             // eslint-disable-next-line cypress/no-unnecessary-waiting
             cy.wait(3000);
             wrongCode = generateWrongCode(wrongCode);
             cy.log('4th attempt: ' + wrongCode);
             // Should now be allowed to enter a new code
-            verifyEmailCodeFactor(wrongCode, 'Invalid verification code');
+            verifyEmailCodeFactorAndExpectError(wrongCode, 'verify.verification_failed', {
+                factorType: value => expect(value).to.eq('email_code')
+            });
         });
     });
 });

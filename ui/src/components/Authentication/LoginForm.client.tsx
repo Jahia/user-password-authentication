@@ -3,6 +3,7 @@ import { login } from "../../services";
 import { useApiRoot } from "../../hooks/ApiRootContext.jsx";
 import ErrorMessage from "./ErrorMessage.client";
 import type { Props } from "./types";
+import { tError } from "../../services/i18n";
 
 interface LoginFormProps {
   content: Props;
@@ -26,7 +27,7 @@ export default function (props: LoginFormProps) {
           props.onSuccess(username);
           setError("");
         } else {
-          setError(loginResult.error?.message || "Login failed");
+          setError(tError(loginResult.error));
         }
       })
       .finally(() => setInProgress(false));

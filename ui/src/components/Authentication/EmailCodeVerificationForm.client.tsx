@@ -5,6 +5,8 @@ import classes from "./component.module.css";
 import ErrorMessage from "./ErrorMessage.client";
 import type { Props } from "./types";
 import clsx from "clsx";
+import { tError } from "../../services/i18n";
+import { Trans } from "react-i18next";
 
 interface EmailCodeVerificationFormProps {
   onSuccess: () => void;
@@ -13,6 +15,7 @@ interface EmailCodeVerificationFormProps {
 export default function EmailCodeVerificationForm(props: EmailCodeVerificationFormProps) {
   const [loading, setLoading] = useState(true);
   const [code, setCode] = useState("");
+  const [maskedEmail, setMaskedEmail] = useState("");
   const [error, setError] = useState("");
   const [inProgress, setInProgress] = useState(false);
   const hiddenInputRef = useRef<HTMLInputElement>(null);
@@ -27,11 +30,9 @@ export default function EmailCodeVerificationForm(props: EmailCodeVerificationFo
       .then((result) => {
         if (result.success) {
           setError("");
+          setMaskedEmail(result.maskedEmail);
         } else {
-          setError(
-            result.error?.message ||
-              "An error occurred while sending the code. Please try again later.",
-          );
+          setError(tError(result.error));
         }
       })
       .finally(() => setLoading(false));
@@ -41,7 +42,6 @@ export default function EmailCodeVerificationForm(props: EmailCodeVerificationFo
     return <div>Loading...</div>;
   }
 
-  const emailMasked = "***email***";
   const codeSlots = code.padEnd(codeLength, " ").slice(0, codeLength).split("");
 
   const handleCodeInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -67,7 +67,7 @@ export default function EmailCodeVerificationForm(props: EmailCodeVerificationFo
           setError("");
           props.onSuccess();
         } else {
-          setError(r.error?.message || "Verification failed");
+          setError(tError(r.error));
         }
       })
       .finally(() => setInProgress(false));
@@ -79,11 +79,9 @@ export default function EmailCodeVerificationForm(props: EmailCodeVerificationFo
       .then((result) => {
         if (result.success) {
           setError("");
+          setMaskedEmail(result.maskedEmail);
         } else {
-          setError(
-            result.error?.message ||
-              "An error occurred while resending the code. Please try again later.",
-          );
+          setError(tError(result.error));
         }
       })
       .finally(() => setLoading(false));
@@ -107,14 +105,19 @@ export default function EmailCodeVerificationForm(props: EmailCodeVerificationFo
   return (
     <div>
       <h2>Two Factor Authentication</h2>
-      <div>
-        <span>
-          A verification code has been sent to{" "}
-          <span style={{ fontWeight: 700 }}>{emailMasked}</span>
-          <br />
-        </span>
-        <span>This code will be valid for 15 minutes.</span>
-      </div>
+      {error === "" && (
+        <div>
+          <Trans
+            i18nKey="factor.email_code.verification_code_has_been_sent"
+            components={{
+              mark: <span style={{ fontWeight: 700 }} />,
+            }}
+            values={{
+              maskedEmail: maskedEmail,
+            }}
+          />
+        </div>
+      )}
 
       <form onSubmit={handleSubmit}>
         <label htmlFor={"verificationCode"}>{props.content.emailCodeVerificationFieldLabel}</label>

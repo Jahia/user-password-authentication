@@ -19,6 +19,7 @@ public class MfaSession implements Serializable {
     private final Map<String, MfaFactorState> factorStates;
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Serializable preparationResult; // factor-specific preparation result
 
     public MfaSession(String userId, Locale userPreferredLanguage, String siteKey) {
         this.userId = userId;
@@ -61,6 +62,14 @@ public class MfaSession implements Serializable {
         return userPreferredLanguage;
     }
 
+    public Serializable getPreparationResult() {
+        return preparationResult;
+    }
+
+    public void setPreparationResult(Serializable preparationResult) {
+        this.preparationResult = preparationResult;
+    }
+
     // ===== FACTOR STATE MANAGEMENT =====
 
     /**
@@ -69,7 +78,6 @@ public class MfaSession implements Serializable {
     public void markFactorPrepared(String factorType) {
         MfaFactorState factorState = getOrCreateFactorState(factorType);
         factorState.setPrepared(true);
-        factorState.setPreparationError(null);
         setState(MfaSessionState.IN_PROGRESS);
         this.updatedAt = LocalDateTime.now();
     }
@@ -80,7 +88,6 @@ public class MfaSession implements Serializable {
     public void markFactorPreparationFailed(String factorType, String error) {
         MfaFactorState factorState = getOrCreateFactorState(factorType);
         factorState.setPrepared(false);
-        factorState.setPreparationError(error);
         setState(MfaSessionState.FAILED);
         this.updatedAt = LocalDateTime.now();
     }
@@ -129,14 +136,6 @@ public class MfaSession implements Serializable {
                 .filter(entry -> entry.getValue().isPrepared())
                 .map(Map.Entry::getKey)
                 .collect(java.util.stream.Collectors.toSet());
-    }
-
-    /**
-     * Gets the preparation error for a specific factor, if any.
-     */
-    public String getFactorPreparationError(String factorType) {
-        MfaFactorState factorState = factorStates.get(factorType);
-        return factorState != null ? factorState.getPreparationError() : null;
     }
 
     /**

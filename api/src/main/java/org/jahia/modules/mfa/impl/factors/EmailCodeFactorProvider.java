@@ -26,6 +26,7 @@ import javax.jcr.RepositoryException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
+import java.io.Serializable;
 import java.security.SecureRandom;
 
 /**
@@ -70,7 +71,7 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
     }
 
     @Override
-    public String prepare(PreparationContext preparationContext) throws MfaException {
+    public Serializable prepare(PreparationContext preparationContext) throws MfaException {
         JCRUserNode user = preparationContext.getUser();
         String emailAddress = getUserEmailAddress(user);
 
@@ -84,20 +85,37 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
         if (mailService.sendHtmlMessage(null, emailAddress, null, null, mailSubject, mailContent)) {
             logger.info("Validation code sent to user {} (email: {})", user.getName(), emailAddress);
         } else {
-            throw new MfaException(String.format("Failed to send validation code to user: %s", user.getName()));
+            throw new MfaException("factor.email_code.sending_validation_code_failed", "user", user.getName());
         }
-        return code;
+        String maskedEmail = getMaskedEmail(emailAddress);
+        return new PreparationResult(code, maskedEmail);
+    }
+
+    private static String getMaskedEmail(String emailAddress) {
+        String localPart = StringUtils.substringBefore(emailAddress, "@");
+        String domain = StringUtils.substringAfter(emailAddress, "@");
+        String maskedEmail;
+
+        if (localPart.length() <= 2) {
+            // For very short local parts, just show first char + asterisks
+            maskedEmail = localPart.charAt(0) + "***@" + domain;
+        } else {
+            // Show first and last char with asterisks in between
+            maskedEmail = localPart.charAt(0) + "***" + localPart.charAt(localPart.length() - 1) + "@" + domain;
+        }
+        return maskedEmail;
     }
 
     @Override
     public boolean verify(VerificationContext verificationContext) throws MfaException {
         String submittedCode = (String) verificationContext.getVerificationData();
         if (StringUtils.isEmpty(submittedCode)) {
-            throw new MfaException("Verification code is required");
+            throw new MfaException("factor.email_code.verification_code_required");
         }
-        String storedCode = (String) verificationContext.getPreparationResult();
+        PreparationResult preparationResult = (PreparationResult) verificationContext.getPreparationResult();
+        String storedCode = preparationResult.getCode();
         if (StringUtils.isEmpty(storedCode)) {
-            throw new MfaException("No verification code found. Please request a new code.");
+            throw new MfaException("factor.email_code.missing_prepared_code");
         }
         return StringUtils.equals(submittedCode, storedCode);
     }
@@ -115,10 +133,10 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
         try {
             email = user.hasProperty("j:email") ? user.getProperty("j:email").getString() : null;
         } catch (RepositoryException e) {
-            throw new MfaException(String.format("Failed to prepare email code factor for user: %s", user.getName()), e);
+            throw new MfaException("factor.email_code.preparation_failed", "user", user.getName());
         }
         if (email == null || email.trim().isEmpty()) {
-            throw new MfaException("User does not have an email address configured"); // TODO should we skip MFA in this case?
+            throw new MfaException("factor.email_code.email_not_configured_for_user", "user", user.getName()); // TODO should we skip MFA in this case?
         }
         return email;
     }
@@ -127,7 +145,7 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
         // will be "guest" at this stage, and it's sounds logical to render the mail code as guest user, for caching purpose.
         JahiaUser user = JCRSessionFactory.getInstance().getCurrentUser();
         try {
-            return  JCRTemplate.getInstance().doExecuteWithSystemSessionAsUser(user, Constants.LIVE_WORKSPACE, mfaSession.getUserPreferredLanguage(), session -> {
+            return JCRTemplate.getInstance().doExecuteWithSystemSessionAsUser(user, Constants.LIVE_WORKSPACE, mfaSession.getUserPreferredLanguage(), session -> {
 
                 RenderContext localRenderContext = new RenderContext(unwrapRequest(currentRequest), currentResponse, session.getUser());
                 // Use live workspace to benefit from HTML cache capabilities of Jahia rendering engine
@@ -170,7 +188,7 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
             });
         } catch (RepositoryException e) {
             logger.error("An error occurred while generating mail content for MFA mail code, enable debug log level to get help");
-            throw new MfaException("Error generating mail content for MFA mail code", e);
+            throw new MfaException("factor.email_code.generating_email_content_failed");
         }
     }
 
@@ -181,5 +199,30 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
             return (HttpServletRequest) ((HttpServletRequestWrapper) request).getRequest();
         }
         return request;
+    }
+
+    /**
+     * Preparation result for email code factor provider.
+     * <p>
+     * Contains the generated verification code and the masked email address.
+     * This is the response of the {@link #prepare(PreparationContext)} method
+     * and is then used during the {@link #verify(VerificationContext)} method.
+     */
+    public static class PreparationResult implements Serializable {
+        final String code;
+        final String maskedEmail;
+
+        public PreparationResult(String code, String maskedEmail) {
+            this.code = code;
+            this.maskedEmail = maskedEmail;
+        }
+
+        public String getCode() {
+            return code;
+        }
+
+        public String getMaskedEmail() {
+            return maskedEmail;
+        }
     }
 }

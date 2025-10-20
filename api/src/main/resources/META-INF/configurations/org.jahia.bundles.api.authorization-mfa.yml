@@ -5,7 +5,11 @@ mfa:
   - api: "graphql.Query.mfa"
   - api: "graphql.MfaQuery"
   - api: "graphql.MfaMutation"
-  - api: "graphql.MfaResponse"
+  - api: "graphql.MfaEmailCodeFactorPreparationResponse"
+  - api: "graphql.MfaEmailCodeFactorVerificationResponse"
+  - api: "graphql.MfaGenericResponse"
   - api: "graphql.MfaFactorsMutation"
+#  - api: "graphql.MfaError"
+#  - api: "graphql.MfaErrorArgument"
   auto_apply:
   - always: "true"

@@ -19,29 +19,35 @@ export function deleteAllEmails() {
  * @throws Error if no 6-digit code is found in the email body.
  */
 export function getVerificationCode(email: string, locale = 'en'): Cypress.Chainable<string> {
-    return cy.mailpitHasEmailsBySearch('Subject:' + VERIFICATION_CODE_SUBJECT[locale] + ' to:' + email, undefined, undefined, {
+    const subject = VERIFICATION_CODE_SUBJECT[locale];
+    const searchQuery = `Subject:${subject} to:${email}`;
+
+    return cy.mailpitHasEmailsBySearch(searchQuery, undefined, undefined, {
         timeout: 5000,
         interval: 500
     })
-        .should(result => {
+        .should('satisfy', result => {
+            return result && result.total > 0 && result.messages && result.messages.length > 0;
+        })
+        .then(result => {
             expect(result).to.have.property('total').and.to.be.greaterThan(0);
             expect(result).to.have.property('messages').and.to.be.an('array').and.to.have.length(1);
+            return result.messages[0];
         })
-        .then(result => result.messages[0])
         .mailpitGetMailHTMlBody()
         .then(htmlBody => {
-            // Check that the HTML body contains the correct locale-specific
+        // Check that the HTML body contains the correct locale-specific title
             const titleMatch = htmlBody.match(/<h1 class="title">([^<]+)<\/h1>/);
-            if (!titleMatch || titleMatch[1] !== VERIFICATION_CODE_SUBJECT[locale]) {
-                throw new Error(`HTML body title does not match expected locale subject. Expected: "${VERIFICATION_CODE_SUBJECT[locale]}", Found: "${titleMatch ? titleMatch[1] : 'No title found'}"`);
+            if (!titleMatch || titleMatch[1] !== subject) {
+                throw new Error(`HTML body title does not match expected locale subject. Expected: "${subject}", Found: "${titleMatch ? titleMatch[1] : 'No title found'}"`);
             }
 
             const match = htmlBody.match(/<p class="code">(\d{6})<\/p>/);
-            if (match && match.length > 1) {
-                return match[1];
+            if (!match || match.length <= 1) {
+                throw new Error('No 6-digit verification code found in email HTML body');
             }
 
-            throw new Error('No 6-digit verification code found in email HTML body');
+            return match[1];
         });
 }
 
@@ -69,31 +75,59 @@ export function getEmailBody(email: string, subject?: string, locale = 'en'): Cy
 
 /**
  * Verifies the email code factor with a provided email code.
- * Asserts the response based on whether an expected error is provided.
  * @param code The 6-digit verification code to verify.
- * @param expectedError Optional expected error message for negative test cases. If not provided, assumes it's a success
  */
-export function verifyEmailCodeFactor(code: string, expectedError: string = undefined) {
+export function verifyEmailCodeFactor(code: string) {
+    cy.log('Verifying email code factor and asserting success...');
     cy.apollo({
         queryFile: 'verifyEmailCodeFactor.graphql',
         variables: {
             code: code
         }
     }).then(response => {
-        if (expectedError) {
-            expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.success).false;
-            expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.error).eq(expectedError);
-            expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.sessionState).eq('in_progress');
-            expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.completedFactors).to.be.a('array').and.be.empty;
-        } else {
-            expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.success).true;
-            expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.sessionState).eq('completed');
-            expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.completedFactors).to.be.a('array').and.have.length(1);
-            expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.completedFactors[0]).eq('email_code');
-        }
-
+        cy.log('Response for verifyEmailCodeFactor():', JSON.stringify(response, null, 2));
+        expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.success).true;
+        expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.sessionState).eq('completed');
+        expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.completedFactors).to.be.a('array').and.have.length(1);
+        expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.completedFactors[0]).eq('email_code');
         expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.requiredFactors).a('array').and.have.length(1);
         expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.requiredFactors[0]).eq('email_code');
+        expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.error).to.be.null;
+    });
+}
+
+export function verifyEmailCodeFactorAndExpectError(
+    verificationCode: string,
+    errorCode: string,
+    argumentAssertions?: { [key: string]: (value: string) => void }
+) {
+    cy.log('Verifying email code factor and asserting failure...');
+    cy.apollo({
+        queryFile: 'verifyEmailCodeFactor.graphql',
+        variables: {
+            code: verificationCode
+        }
+    }).then(response => {
+        cy.log('Response for verifyEmailCodeFactorAndExpectError():', JSON.stringify(response, null, 2));
+        expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.success).false;
+        expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.sessionState).eq('failed');
+        expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.requiredFactors).a('array').and.have.length(1);
+        expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.requiredFactors[0]).eq('email_code');
+        expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.error?.code).eq(errorCode);
+
+        // Assert on error arguments if provided
+        if (argumentAssertions) {
+            const errorArguments = response?.data?.mfa?.factors?.verifyEmailCodeFactor?.error?.arguments;
+            expect(errorArguments).to.be.a('array');
+
+            Object.entries(argumentAssertions).forEach(([argName, assertion]) => {
+                const argument = errorArguments.find(arg => arg.name === argName);
+                expect(argument).to.exist;
+                assertion(argument.value);
+            });
+        } else {
+            expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.error?.arguments).to.be.empty;
+        }
     });
 }
 

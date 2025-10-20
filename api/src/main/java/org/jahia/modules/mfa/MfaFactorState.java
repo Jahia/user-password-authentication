@@ -9,7 +9,6 @@ import java.io.Serializable;
 public class MfaFactorState implements Serializable {
     private boolean prepared = false;
     private boolean completed = false;
-    private String preparationError;
     private String verificationError;
 
     public boolean isPrepared() {
@@ -26,14 +25,6 @@ public class MfaFactorState implements Serializable {
 
     public void setCompleted(boolean completed) {
         this.completed = completed;
-    }
-
-    public String getPreparationError() {
-        return preparationError;
-    }
-
-    public void setPreparationError(String preparationError) {
-        this.preparationError = preparationError;
     }
 
     public String getVerificationError() {

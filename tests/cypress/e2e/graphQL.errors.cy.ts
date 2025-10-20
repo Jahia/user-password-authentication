@@ -1,5 +1,11 @@
 import 'cypress-mailpit';
-import {createUserForMFA, initiate, installMFAConfig, prepare} from './utils';
+import {
+    createUserForMFA,
+    initiate, initiateAndExpectError,
+    installMFAConfig,
+    prepareEmailCodeFactor,
+    prepareEmailCodeFactorAndExpectError
+} from './utils';
 import {deleteUser} from '@jahia/cypress';
 
 const usr = 'test_mfa_user';
@@ -43,16 +49,8 @@ describe('Error scenarios common to all factors', () => {
 
     INVALID_CASES.forEach(({description, username, password}) => {
         it(`Should throw an error when ${description} is provided`, () => {
-            initiate(username, password, undefined, 'Invalid username or password');
+            initiateAndExpectError(username, password, 'authentication_failed');
         });
-    });
-
-    it('Should throw an error when an unregistered factor gets prepared', () => {
-        cy.log('1- initiate');
-        initiate(usr, pwd);
-
-        cy.log('2- prepare');
-        prepare('unknown_factor', 'email_code', 'Factor type not supported: unknown_factor');
     });
 
     it('Should throw an error when a factor is requested twice, then should pass after the timeout', () => {
@@ -60,15 +58,19 @@ describe('Error scenarios common to all factors', () => {
         initiate(usr, pwd);
 
         cy.log('2- prepare');
-        prepare('email_code');
+        prepareEmailCodeFactor();
 
         cy.log('3- prepare again');
-        prepare('email_code', 'email_code', `The factor email_code already generated for user ${usr}`);
+        prepareEmailCodeFactorAndExpectError('prepare.rate_limit_exceeded', {
+            nextRetryInSeconds: value => expect(parseInt(value, 10)).to.be.greaterThan(0),
+            factorType: value => expect(value).to.eq('email_code'),
+            user: value => expect(value).to.eq('test_mfa_user')
+        });
 
         cy.log('4- wait for end of timeout');
         // eslint-disable-next-line cypress/no-unnecessary-waiting
         cy.wait(3000);
         cy.log('5- prepare after timeout should pass');
-        prepare('email_code');
+        prepareEmailCodeFactor();
     });
 });
