@@ -3,23 +3,24 @@ import {
     assertEmailCodeVerificationStepContentMatches,
     assertIsLoggedIn,
     assertLoginStepContentMatches,
+    AuthenticationProps,
     createSiteWithLoginPage,
     createUserForMFA,
-    LOGIN_PAGE_NAME,
+    DEFAULT_BELOW_PASSWORD_FIELD_HTML,
+    DEFAULT_EMAIL_CODE_VERIFICATION_ADDITIONAL_ACTION_HTML,
+    DEFAULT_EMAIL_CODE_VERIFICATION_ADDITIONAL_ACTION_RESEND_LABEL,
+    DEFAULT_EMAIL_CODE_VERIFICATION_FIELD_LABEL,
+    DEFAULT_EMAIL_CODE_VERIFICATION_SUBMIT_BUTTON_LABEL,
+    DEFAULT_LOGIN_ADDITIONAL_ACTION_HTML,
+    DEFAULT_LOGIN_EMAIL_FIELD_LABEL,
+    DEFAULT_LOGIN_PASSWORD_FIELD_LABEL,
+    DEFAULT_LOGIN_SUBMIT_BUTTON_LABEL,
     deleteAllEmails,
     generateWrongCode,
     getVerificationCode,
     installMFAConfig,
-    AuthenticationProps,
-    updateSiteLoginPageProps,
-    DEFAULT_LOGIN_EMAIL_FIELD_LABEL,
-    DEFAULT_LOGIN_PASSWORD_FIELD_LABEL,
-    DEFAULT_BELOW_PASSWORD_FIELD_HTML,
-    DEFAULT_LOGIN_SUBMIT_BUTTON_LABEL,
-    DEFAULT_LOGIN_ADDITIONAL_ACTION_HTML,
-    DEFAULT_EMAIL_CODE_VERIFICATION_FIELD_LABEL,
-    DEFAULT_EMAIL_CODE_VERIFICATION_SUBMIT_BUTTON_LABEL, DEFAULT_EMAIL_CODE_VERIFICATION_ADDITIONAL_ACTION_HTML,
-    DEFAULT_EMAIL_CODE_VERIFICATION_ADDITIONAL_ACTION_RESEND_LABEL
+    LOGIN_PAGE_NAME,
+    updateSiteLoginPageProps
 } from './utils';
 import {faker} from '@faker-js/faker';
 
@@ -40,7 +41,6 @@ describe('Tests for the UI module', () => {
         email = faker.internet.email();
         createUserForMFA(username, password, email);
         deleteAllEmails(); // Sanity cleanup
-        cy.logout(); // Ensure to start with an unauthenticated session
     });
 
     afterEach(() => {
@@ -132,27 +132,53 @@ describe('Tests for the UI module', () => {
         deleteSite(siteKey);
     });
 
-    it('Should have the correct props (labels, HTMLs) after a partial update in lang not supported out of the box in Jahia (Spanish)', () => {
+    it('Should have the props (labels, HTMLs) matching the locale in the MFA URLs with multi-language site', () => {
         const siteKey = 'multi-language-site';
-        const language = 'es';
-        createSiteWithLoginPage(siteKey, language);
-        installMFAConfig('multi-language-site.yml');
+        const siteLanguage = 'es';
+        const additionalLanguage = 'cs'; // Czech
+        createSiteWithLoginPage(siteKey, [siteLanguage, additionalLanguage]);
 
-        // Only change a few props:
-        const newProps = {
+        const esProps = {
             loginPasswordFieldLabel: 'Password in spanish',
             loginAdditionalActionHtml: '<b>additional action in Spanish</b>',
             emailCodeVerificationSubmitButtonLabel: 'Verify code in Spanish'
         };
-        updateSiteLoginPageProps(siteKey, newProps, language);
+        updateSiteLoginPageProps(siteKey, esProps, siteLanguage);
+        // ALL properties have to be set for additional languages (the default values are only used for the default language)
+        const csProps = {
+            loginSubmitButtonLabel: 'Custom login label cs',
+            emailCodeVerificationSubmitButtonLabel: 'Verify code in Czech'
+        };
+        updateSiteLoginPageProps(siteKey, csProps, additionalLanguage);
 
-        // Login step:
+        // ----------
+        // test with default (Spanish) language
+        // ----------
+
+        installMFAConfig('multi-language-site-default.yml'); // URL is /sites/multi-language-site/myLoginPage.html
+
+        // // Login step:
+        cy.logout();
         triggerRedirectToLoginPage(siteKey);
-        assertLoginStepContentMatches({emailLabel: DEFAULT_LOGIN_EMAIL_FIELD_LABEL, passwordLabel: newProps.loginPasswordFieldLabel, belowPasswordFieldHtml: DEFAULT_BELOW_PASSWORD_FIELD_HTML, submitButtonLabel: DEFAULT_LOGIN_SUBMIT_BUTTON_LABEL, additionalActionHtml: newProps.loginAdditionalActionHtml});
+        assertLoginStepContentMatches({emailLabel: DEFAULT_LOGIN_EMAIL_FIELD_LABEL, passwordLabel: esProps.loginPasswordFieldLabel, belowPasswordFieldHtml: DEFAULT_BELOW_PASSWORD_FIELD_HTML, submitButtonLabel: DEFAULT_LOGIN_SUBMIT_BUTTON_LABEL, additionalActionHtml: esProps.loginAdditionalActionHtml});
         enterCredential(username, password);
 
         // Email factor step:
-        assertEmailCodeVerificationStepContentMatches({verificationCodeLabel: DEFAULT_EMAIL_CODE_VERIFICATION_FIELD_LABEL, submitButtonLabel: newProps.emailCodeVerificationSubmitButtonLabel, additionalActionHtml: `<div>${DEFAULT_EMAIL_CODE_VERIFICATION_ADDITIONAL_ACTION_HTML}</div><a href="#">${DEFAULT_EMAIL_CODE_VERIFICATION_ADDITIONAL_ACTION_RESEND_LABEL}</a>`});
+        assertEmailCodeVerificationStepContentMatches({verificationCodeLabel: DEFAULT_EMAIL_CODE_VERIFICATION_FIELD_LABEL, submitButtonLabel: esProps.emailCodeVerificationSubmitButtonLabel, additionalActionHtml: `<div>${DEFAULT_EMAIL_CODE_VERIFICATION_ADDITIONAL_ACTION_HTML}</div><a href="#">${DEFAULT_EMAIL_CODE_VERIFICATION_ADDITIONAL_ACTION_RESEND_LABEL}</a>`});
+
+        // ----------
+        // test with additional language (Czech)
+        // ----------
+
+        installMFAConfig('multi-language-site-czech.yml'); // URL is /cs/sites/multi-language-site/myLoginPage.html
+
+        // Login step:
+        triggerRedirectToLoginPage(siteKey, additionalLanguage);
+        assertLoginStepContentMatches({emailLabel: DEFAULT_LOGIN_EMAIL_FIELD_LABEL, passwordLabel: DEFAULT_LOGIN_PASSWORD_FIELD_LABEL, belowPasswordFieldHtml: DEFAULT_BELOW_PASSWORD_FIELD_HTML, submitButtonLabel: csProps.loginSubmitButtonLabel, additionalActionHtml: DEFAULT_LOGIN_ADDITIONAL_ACTION_HTML});
+        enterCredential(username, password);
+
+        // Email factor step:
+        assertEmailCodeVerificationStepContentMatches({verificationCodeLabel: DEFAULT_EMAIL_CODE_VERIFICATION_FIELD_LABEL, submitButtonLabel: csProps.emailCodeVerificationSubmitButtonLabel, additionalActionHtml: `<div>${DEFAULT_EMAIL_CODE_VERIFICATION_ADDITIONAL_ACTION_HTML}</div><a href="#">${DEFAULT_EMAIL_CODE_VERIFICATION_ADDITIONAL_ACTION_RESEND_LABEL}</a>`});
 
         // Cleanup
         deleteSite(siteKey);
@@ -195,9 +221,10 @@ describe('Tests for the UI module', () => {
     });
 });
 
-const triggerRedirectToLoginPage = (siteKey: string) => {
+const triggerRedirectToLoginPage = (siteKey: string, language:string = undefined) => {
+    cy.logout(); // Ensure to start with an unauthenticated session
     cy.visit('/jahia', {failOnStatusCode: false});
-    cy.url().should('contain', `/sites/${siteKey}/${LOGIN_PAGE_NAME}.html`);
+    cy.url().should('contain', `${language ? '/' + language : ''}/sites/${siteKey}/${LOGIN_PAGE_NAME}.html`);
 };
 
 const enterCredential = (username: string, password: string) => {
