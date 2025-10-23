@@ -181,7 +181,20 @@ describe('Tests for the UI module', () => {
             );
         });
     });
+    it('Should redirect to the provided redirect page', () => {
+        cy.visit(`/sites/${SITE_KEY}/${LOGIN_PAGE_NAME}.html?redirect=%2Fcms%2Frender%2Flive%2Fen%2Fsites%2F${SITE_KEY}%2Fhome.html%3Fparam%3Dtest`);
+        enterCredential(username, password);
+        selectEmailFactor();
+        getVerificationCode(email).then(code => {
+            cy.log('Verification code received by email: ' + code);
+            enterVerificationCode(code);
+            cy.url({timeout: 15000}).should('contain', `/cms/render/live/en/sites/${SITE_KEY}/home.html`);
+            cy.url({timeout: 15000}).should('match', /\?param=test$/);
+            cy.url({timeout: 15000}).should('not.contain', `${LOGIN_PAGE_NAME}.html`);
+        });
+    });
 });
+
 const triggerRedirectToLoginPage = (siteKey: string) => {
     cy.visit('/jahia', {failOnStatusCode: false});
     cy.url().should('contain', `/sites/${siteKey}/${LOGIN_PAGE_NAME}.html`);
