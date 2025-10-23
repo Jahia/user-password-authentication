@@ -190,7 +190,7 @@ describe('Tests for the UI module', () => {
             enterVerificationCode(code);
             cy.url({timeout: 15000}).should('contain', `/cms/render/live/en/sites/${SITE_KEY}/home.html`);
             cy.url({timeout: 15000}).should('match', /\?param=test$/);
-            cy.url({timeout: 15000}).should('not.contain', 'myLoginPage.html');
+            cy.url({timeout: 15000}).should('not.contain', `${LOGIN_PAGE_NAME}.html`);
         });
     });
 });
