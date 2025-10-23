@@ -177,7 +177,7 @@ describe('Tests for the UI module', () => {
             enterVerificationCode(wrongCode);
             cy.get('[data-testid="error-message"]').should(
                 'contain',
-                'Invalid verification code'
+                'Unable to verify the email_code factor'
             );
         });
     });

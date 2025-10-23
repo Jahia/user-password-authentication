@@ -3218,22 +3218,68 @@ type Metadata {
     lastPublishedBy: String
 }
 
+"Email code factor preparation result"
+type MfaEmailCodeFactorPreparationResponse {
+    "List of completed MFA factors"
+    completedFactors: [String]
+    "Error details when the operation failed"
+    error: MfaError
+    "masked email the verification code has been sent to"
+    maskedEmail: String
+    "List of required MFA factors"
+    requiredFactors: [String]
+    "Current MFA session state"
+    sessionState: String
+    "Operation success status"
+    success: Boolean
+}
+
+"Error that may occur during an MFA operation"
+type MfaError {
+    "Optional arguments of the error that can be used to generate the i18n error message"
+    arguments: [MfaErrorArgument]
+    "Error code that can be used to load i18n error message"
+    code: String
+}
+
+"Error argument that may occur during an MFA operation"
+type MfaErrorArgument {
+    "Name of the error argument"
+    name: String
+    "Value of the error argument"
+    value: String
+}
+
 "MFA state-modifying operations"
 type MfaFactorsMutation {
+    "Prepare the email code factor"
+    prepareEmailCodeFactor: MfaEmailCodeFactorPreparationResponse
     "Verify email code factor"
-    verifyEmailCodeFactor(code: String): MfaResponse
+    verifyEmailCodeFactor(code: String): MfaGenericResponse
+}
+
+"Generic response for MFA operations"
+type MfaGenericResponse {
+    "List of completed MFA factors"
+    completedFactors: [String]
+    "Error details when the operation failed"
+    error: MfaError
+    "List of required MFA factors"
+    requiredFactors: [String]
+    "Current MFA session state"
+    sessionState: String
+    "Operation success status"
+    success: Boolean
 }
 
 "MFA state-modifying operations"
 type MfaMutation {
     "Clear current MFA session"
-    clear: MfaResponse
+    clear: MfaGenericResponse
     "Access MFA factors specific mutations"
     factors: MfaFactorsMutation
     "Initiate MFA authentication"
-    initiate(password: String, site: String, username: String): MfaResponse
-    "Prepare a specific MFA factor"
-    prepareFactor(factorType: String): MfaResponse
+    initiate(password: String, site: String, username: String): MfaGenericResponse
 }
 
 "MFA read-only operations"
@@ -3243,21 +3289,7 @@ type MfaQuery {
     "Check if MFA is enabled"
     enabled: Boolean
     "Get current MFA session status"
-    sessionStatus: MfaResponse
-}
-
-"Response for MFA operations"
-type MfaResponse {
-    "List of completed MFA factors"
-    completedFactors: [String]
-    "Error message if operation failed"
-    error: String
-    "List of required MFA factors"
-    requiredFactors: [String]
-    "Current MFA session state"
-    sessionState: String
-    "Operation success status"
-    success: Boolean
+    sessionStatus: MfaGenericResponse
 }
 
 "Root mutation type"

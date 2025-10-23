@@ -1,8 +1,12 @@
-mutation verifyEmailCodeFactor($code: String!) {
+mutation prepareEmailCodeFactor {
     mfa {
         factors {
-            verifyEmailCodeFactor(code: $code) {
+            prepareEmailCodeFactor {
                 success
+                maskedEmail
+                sessionState
+                requiredFactors
+                completedFactors
                 error {
                     code
                     arguments {
@@ -10,9 +14,6 @@ mutation verifyEmailCodeFactor($code: String!) {
                         value
                     }
                 }
-                sessionState
-                requiredFactors
-                completedFactors
             }
         }
     }

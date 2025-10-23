@@ -1,10 +1,14 @@
-export interface LoginResult {
-  success: boolean;
-  error?: {
+interface LoginResultSuccess {
+  success: true;
+}
+interface LoginResultError {
+  success: false;
+  error: {
     code: string;
-    message: string;
+    arguments: Array<{ name: string; value: string }>;
   };
 }
+export type LoginResult = LoginResultSuccess | LoginResultError;
 
 export default async function login(
   apiRoot: string,
@@ -20,10 +24,13 @@ export default async function login(
           mfa {
             initiate(username: $username, password: $password) {
               success
-              error
-              sessionState
-              requiredFactors
-              completedFactors
+              error {
+                code
+                arguments {
+                  name
+                  value
+                }
+              }
             }
           }
         }
@@ -38,8 +45,8 @@ export default async function login(
     return {
       success: false,
       error: {
-        code: result?.data?.mfa?.initiate?.error || "UNKNOWN_ERROR", // TODO we should probably introduce error codes
-        message: result?.data?.mfa?.initiate?.error || "Login failed",
+        code: result?.data?.mfa?.initiate?.error?.code || "unexpected_error",
+        arguments: result?.data?.mfa?.initiate?.error?.arguments || [],
       },
     };
   }

@@ -7,7 +7,7 @@ import {
     getEmailBody,
     initiate,
     installMFAConfig,
-    prepare
+    prepareEmailCodeFactor
 } from './utils';
 import {faker} from '@faker-js/faker';
 
@@ -38,7 +38,7 @@ describe('Tests for the email template', () => {
 
         // WHEN: Initiating the MFA process
         initiate(username, password, siteKey);
-        prepare('email_code');
+        prepareEmailCodeFactor();
 
         // THEN: The email body should be as expected
         getEmailBody(email).then(body => {
@@ -59,7 +59,7 @@ describe('Tests for the email template', () => {
 
         // WHEN: Initiating the MFA process
         initiate(username, password, siteKey);
-        prepare('email_code');
+        prepareEmailCodeFactor();
 
         // THEN: The email body should contain the correct server name in the URL attributes
         getEmailBody(email).then(body => {

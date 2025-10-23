@@ -1,10 +1,17 @@
-export interface PrepareEmailFactorResult {
-  success: boolean;
-  error?: {
+interface PrepareEmailFactorResultSuccess {
+  success: true;
+  maskedEmail: string;
+}
+interface PrepareEmailFactorResultError {
+  success: false;
+  error: {
     code: string;
-    message: string;
+    arguments: Array<{ name: string; value: string }>;
   };
 }
+export type PrepareEmailFactorResult =
+  | PrepareEmailFactorResultSuccess
+  | PrepareEmailFactorResultError;
 export default async function prepareEmailFactor(
   apiRoot: string,
 ): Promise<PrepareEmailFactorResult> {
@@ -13,30 +20,38 @@ export default async function prepareEmailFactor(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       query: /* GraphQL */ `
-        mutation prepareFactor($factorType: String!) {
+        mutation prepareEmailCodeFactor {
           mfa {
-            prepareFactor(factorType: $factorType) {
-              success
-              error
-              sessionState
-              requiredFactors
-              completedFactors
+            factors {
+              prepareEmailCodeFactor {
+                success
+                maskedEmail
+                error {
+                  code
+                  arguments {
+                    name
+                    value
+                  }
+                }
+              }
             }
           }
         }
       `,
-      variables: { factorType: "email_code" },
     }),
   });
   const result = await response.json();
-  if (result?.data?.mfa?.prepareFactor?.success === true) {
-    return { success: true };
+  if (result?.data?.mfa?.factors?.prepareEmailCodeFactor?.success === true) {
+    return {
+      success: true,
+      maskedEmail: result?.data?.mfa?.factors?.prepareEmailCodeFactor?.maskedEmail,
+    };
   } else {
     return {
       success: false,
       error: {
-        code: result?.data?.mfa?.prepareFactor?.error || "UNKNOWN_ERROR", // TODO we should probably introduce error codes
-        message: result?.data?.mfa?.prepareFactor?.error || "Code verification failed",
+        code: result?.data?.mfa?.factors?.prepareEmailCodeFactor?.error?.code || "unexpected_error",
+        arguments: result?.data?.mfa?.factors?.prepareEmailCodeFactor?.error?.arguments || [],
       },
     };
   }

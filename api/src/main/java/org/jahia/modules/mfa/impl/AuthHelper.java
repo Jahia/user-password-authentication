@@ -38,7 +38,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import java.io.IOException;
 import java.util.Locale;
 
 public class AuthHelper {
@@ -72,7 +71,7 @@ public class AuthHelper {
     }
 
     // TODO partially duplicated from LoginEngineAuthValveImpl (see if we can refactor or probably complete with missing features, like login event)
-    public static void authenticateUser(HttpServletRequest req, JCRUserNode validatedUserNode) throws IOException {
+    public static void authenticateUser(HttpServletRequest req, JCRUserNode validatedUserNode) {
         if (validatedUserNode == null) {
             throw new IllegalArgumentException("validatedUserNode cannot be null");
         }
@@ -81,7 +80,7 @@ public class AuthHelper {
         JCRSessionFactory sessionFactory = JCRSessionFactory.getInstance();
 
         if (userManagerService == null || sessionFactory == null) {
-            throw new IOException("Required services are not available");
+            throw new IllegalStateException("Required services are not available");
         }
 
         try {
@@ -89,7 +88,7 @@ public class AuthHelper {
 
             JCRUserNode theUser = userManagerService.lookupUserByPath(validatedUserNode.getPath());
             if (theUser == null) {
-                throw new IOException("User not found: " + validatedUserNode.getPath());
+                throw new IllegalArgumentException(String.format("User '%s' not found", validatedUserNode.getPath()));
             }
 
             JahiaUser jahiaUser = theUser.getJahiaUser();
@@ -138,12 +137,7 @@ public class AuthHelper {
             } catch (Exception fallbackException) {
                 logger.error("Failed to set guest user as fallback", fallbackException);
             }
-
-            if (e instanceof IOException) {
-                throw e;
-            } else {
-                throw new IOException("Authentication failed", e);
-            }
+            throw new IllegalStateException(String.format("Unable to authenticate the user : %s", validatedUserNode.getPath()), e);
         }
     }
 }

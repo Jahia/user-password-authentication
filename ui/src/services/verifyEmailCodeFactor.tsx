@@ -1,14 +1,19 @@
-export interface CodeVerificationResult {
-  success: boolean;
-  error?: {
+interface VerifyEmailFactorResultSuccess {
+  success: true;
+}
+interface VerifyEmailFactorResultError {
+  success: false;
+  error: {
     code: string;
-    message: string;
+    arguments: Array<{ name: string; value: string }>;
   };
 }
+export type VerifyEmailFactorResult = VerifyEmailFactorResultSuccess | VerifyEmailFactorResultError;
+
 export default async function verifyEmailCodeFactor(
   apiRoot: string,
   code: string,
-): Promise<CodeVerificationResult> {
+): Promise<VerifyEmailFactorResult> {
   const response = await fetch(apiRoot, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -19,10 +24,13 @@ export default async function verifyEmailCodeFactor(
             factors {
               verifyEmailCodeFactor(code: $code) {
                 success
-                error
-                sessionState
-                requiredFactors
-                completedFactors
+                error {
+                  code
+                  arguments {
+                    name
+                    value
+                  }
+                }
               }
             }
           }
@@ -38,9 +46,8 @@ export default async function verifyEmailCodeFactor(
     return {
       success: false,
       error: {
-        code: result?.data?.mfa?.factors?.verifyEmailCodeFactor?.error || "UNKNOWN_ERROR", // TODO we should probably introduce error codes
-        message:
-          result?.data?.mfa?.factors?.verifyEmailCodeFactor?.error || "Code verification failed",
+        code: result?.data?.mfa?.factors?.verifyEmailCodeFactor?.error?.code || "unexpected_error",
+        arguments: result?.data?.mfa?.factors?.verifyEmailCodeFactor?.error?.arguments || [],
       },
     };
   }

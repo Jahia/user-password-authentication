@@ -30,7 +30,6 @@ public class MfaServiceImpl implements MfaService {
     private static final String MFA_SESSION_KEY = "mfa_session";
     private static final String MFA_SUSPENDED_USER_MIXIN = "mfa:suspendedUser";
     private static final String MFA_SUSPENDED_SINCE_PROP = "mfa:suspendedSince";
-    private static final String TOO_MANY_FAILED_ATTEMPTS_MESSAGE = "Too many failed authentication attempts";
 
     private JahiaUserManagerService userManagerService;
     private MfaFactorRegistry factorRegistry;
@@ -110,14 +109,14 @@ public class MfaServiceImpl implements MfaService {
     }
 
     @Override
-    public MfaSession initiateMfa(String username, String password, String siteKey, HttpServletRequest request) {
+    public MfaSession initiateMfa(String username, String password, String siteKey, HttpServletRequest request) throws MfaException {
         logger.info("Initiating MFA for user: {}", username);
 
         // Todo - site user check ?
         JCRUserNode user = AuthHelper.lookupUserFromCredentials(username, password, null);
         if (user == null) {
             logger.warn("Invalid credentials for user: {}", username);
-            throw new IllegalArgumentException("Invalid username or password");
+            throw new MfaException("authentication_failed");
         }
 
         HttpSession httpSession = request.getSession(true);
@@ -137,10 +136,10 @@ public class MfaServiceImpl implements MfaService {
     }
 
     @Override
-    public MfaSession prepareFactor(String factorType, HttpServletRequest request, HttpServletResponse response) {
+    public MfaSession prepareFactor(String factorType, HttpServletRequest request, HttpServletResponse response) throws MfaException {
         MfaSession session = getMfaSession(request);
         if (session == null) {
-            throw new IllegalStateException("No active MFA session found");
+            throw new MfaException("no_active_session");
         }
 
         MfaFactorProvider provider = factorRegistry.lookupProvider(factorType);
@@ -160,31 +159,29 @@ public class MfaServiceImpl implements MfaService {
             Long startedPrepareTime = factorStartCache.getIfPresent(cacheKey);
             long now = System.currentTimeMillis();
             if (startedPrepareTime != null) {
-                throw new MfaException(String.format("The factor %s already generated for user %s, wait %ds before generating a new one", factorType, user.getDisplayableName(), mfaConfigurationService.getFactorStartRateLimitSeconds() - (now - startedPrepareTime) / 1000 ));
+                long nextRetryInSeconds = mfaConfigurationService.getFactorStartRateLimitSeconds() - (now - startedPrepareTime) / 1000;
+                throw new MfaException("prepare.rate_limit_exceeded", "nextRetryInSeconds", String.valueOf(nextRetryInSeconds), "factorType", factorType, "user", user.getName());
             }
             PreparationContext preparationContext = new PreparationContext(session, user, request, response);
-            Object preparationResult = provider.prepare(preparationContext);
+            Serializable preparationResult = provider.prepare(preparationContext);
+            session.setPreparationResult(preparationResult);
             // Store in cache to prevent same user to generate a new preparationResult for the current factor.
             factorStartCache.put(cacheKey, now);
             request.getSession().setAttribute(getAttributeKey(factorType), preparationResult);
             session.markFactorPrepared(provider.getFactorType());
             logger.info("Factor {} preparation completed for user: {}", factorType, session.getUserId());
-        } catch (MfaException mfaException) {
-            session.markFactorPreparationFailed(factorType, mfaException.getMessage());
-            logger.error("Factor {} preparation failed for user: {}", factorType, session.getUserId(), mfaException.getCause());
         } catch (Exception e) {
-            session.markFactorPreparationFailed(factorType, "Preparation failed: " + e.getMessage());
-            logger.error("Factor {} preparation failed for user: {}", factorType, session.getUserId(), e);
+            session.markFactorPreparationFailed(factorType, e.getMessage());
+            throw e;
         }
-
         return session;
     }
 
     @Override
-    public MfaSession verifyFactor(String factorType, HttpServletRequest request, Serializable verificationData) {
+    public MfaSession verifyFactor(String factorType, HttpServletRequest request, Serializable verificationData) throws MfaException {
         MfaSession session = getMfaSession(request);
         if (session == null) {
-            throw new IllegalStateException("No active MFA session found");
+            throw new MfaException("no_active_session");
         }
 
         if (!session.isFactorPrepared(factorType)) {
@@ -207,15 +204,12 @@ public class MfaServiceImpl implements MfaService {
 
         try {
             if (isUserSuspended(user.getPath())) {
-                logger.warn("User {} is suspended", user.getIdentifier());
-                session.markFactorVerificationFailed(factorType, TOO_MANY_FAILED_ATTEMPTS_MESSAGE);
-                return session;
-
+                logger.warn("User {} is suspended", user.getPath());
+                throw new MfaException("suspended_user");
             }
             if (hasReachedAuthFailuresCountLimit(user.getPath(), provider)) {
                 suspendUserInJCR(user.getPath());
-                session.markFactorVerificationFailed(factorType, TOO_MANY_FAILED_ATTEMPTS_MESSAGE);
-                return session;
+                throw new MfaException("suspended_user");
             }
             Serializable preparationResult = (Serializable) request.getSession().getAttribute(getAttributeKey(factorType));
             VerificationContext verificationContext = new VerificationContext(user, request, preparationResult, verificationData);
@@ -228,7 +222,7 @@ public class MfaServiceImpl implements MfaService {
                 logger.info("Factor {} verified successfully for user: {}", factorType, session.getUserId());
             } else {
                 trackFailure(user.getPath(), provider);
-                session.markFactorVerificationFailed(factorType, "Invalid verification code"); // TODO more generic
+                throw new MfaException("verify.verification_failed", "factorType", factorType);
             }
             if (isAllRequiredFactorsCompleted(session)) {
                 session.setState(MfaSessionState.COMPLETED);
@@ -236,12 +230,9 @@ public class MfaServiceImpl implements MfaService {
                 AuthHelper.authenticateUser(request, user);
                 failuresCache.invalidate(user.getPath()); // clear any failure attempts for that user
             }
-        } catch (MfaException mfaException) {
-            session.markFactorVerificationFailed(factorType, mfaException.getMessage());
-            logger.error("Factor {} verification failed for user: {}", factorType, session.getUserId(), mfaException.getCause());
         } catch (Exception e) {
-            session.markFactorVerificationFailed(factorType, "Verification failed: " + e.getMessage());
-            logger.error("Factor {} verification failed for user: {}", factorType, session.getUserId(), e);
+            session.markFactorVerificationFailed(factorType, e.getMessage());
+            throw e;
         }
 
         return session;
@@ -270,7 +261,8 @@ public class MfaServiceImpl implements MfaService {
                 return false;
             });
         } catch (RepositoryException e) {
-            throw new MfaException("Failed to check if the user is suspended", e);
+            logger.warn("Failed to check if user {} is suspended", userPath, e);
+            throw new MfaException("failed_to_check_if_user_suspended");
         }
     }
 
@@ -288,7 +280,8 @@ public class MfaServiceImpl implements MfaService {
                 return null;
             });
         } catch (RepositoryException e) {
-            throw new MfaException("Failed to mark user as suspended", e);
+            logger.warn("Failed to mark user {} as suspended", userPath, e);
+            throw new MfaException("failed_to_mark_user_as_suspended");
         }
         failuresCache.invalidate(userPath); // no need to track failures anymore
     }

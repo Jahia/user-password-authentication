@@ -18,19 +18,25 @@ public interface MfaService {
 
     /**
      * Initiates MFA authentication for a user with username/password.
+     *
      * @param siteKey is optional and can be null
+     * @throws MfaException if an error occurs during MFA initialization
      */
-    MfaSession initiateMfa(String username, String password, String siteKey, HttpServletRequest request);
+    MfaSession initiateMfa(String username, String password, String siteKey, HttpServletRequest request) throws MfaException;
 
     /**
      * Prepares a specific MFA factor for verification.
+     *
+     * @throws MfaException if an error occurs during MFA preparation
      */
-    MfaSession prepareFactor(String factorType, HttpServletRequest request, HttpServletResponse response);
+    MfaSession prepareFactor(String factorType, HttpServletRequest request, HttpServletResponse response) throws MfaException;
 
     /**
      * Verifies a specific MFA factor with the provided verification data.
+     *
+     * @throws MfaException if an error occurs during MFA verification
      */
-    MfaSession verifyFactor(String factorType, HttpServletRequest request, Serializable verificationData);
+    MfaSession verifyFactor(String factorType, HttpServletRequest request, Serializable verificationData) throws MfaException;
 
     /**
      * Gets the current MFA session for the request.
