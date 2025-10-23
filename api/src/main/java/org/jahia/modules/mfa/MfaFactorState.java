@@ -4,12 +4,11 @@ import java.io.Serializable;
 
 /**
  * Represents the state of a single MFA factor within a session.
- * Tracks preparation status, completion status, errors, and associated data.
+ * Tracks preparation and completion statuses.
  */
 public class MfaFactorState implements Serializable {
     private boolean prepared = false;
     private boolean completed = false;
-    private String verificationError;
 
     public boolean isPrepared() {
         return prepared;
@@ -27,11 +26,4 @@ public class MfaFactorState implements Serializable {
         this.completed = completed;
     }
 
-    public String getVerificationError() {
-        return verificationError;
-    }
-
-    public void setVerificationError(String verificationError) {
-        this.verificationError = verificationError;
-    }
 }
