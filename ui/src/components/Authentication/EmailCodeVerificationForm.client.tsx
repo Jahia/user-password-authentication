@@ -109,7 +109,9 @@ export default function EmailCodeVerificationForm(props: EmailCodeVerificationFo
 
   return (
     <div>
-      <h2>Two Factor Authentication</h2>
+      <h2>
+        <Trans i18nKey="header.title" />
+      </h2>
       {error === "" && (
         <div>
           <Trans
