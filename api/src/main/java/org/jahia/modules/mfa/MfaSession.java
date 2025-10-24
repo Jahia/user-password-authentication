@@ -85,7 +85,7 @@ public class MfaSession implements Serializable {
     /**
      * Marks a factor preparation as failed.
      */
-    public void markFactorPreparationFailed(String factorType, String error) {
+    public void markFactorPreparationFailed(String factorType) {
         MfaFactorState factorState = getOrCreateFactorState(factorType);
         factorState.setPrepared(false);
         setState(MfaSessionState.FAILED);
@@ -98,17 +98,15 @@ public class MfaSession implements Serializable {
     public void markFactorCompleted(String factorType) {
         MfaFactorState factorState = getOrCreateFactorState(factorType);
         factorState.setCompleted(true);
-        factorState.setVerificationError(null);
         this.updatedAt = LocalDateTime.now();
     }
 
     /**
      * Marks a factor verification as failed.
      */
-    public void markFactorVerificationFailed(String factorType, String error) {
+    public void markFactorVerificationFailed(String factorType) {
         MfaFactorState factorState = getOrCreateFactorState(factorType);
         factorState.setCompleted(false);
-        factorState.setVerificationError(error);
         this.updatedAt = LocalDateTime.now();
     }
 
@@ -117,11 +115,6 @@ public class MfaSession implements Serializable {
     public boolean isFactorPrepared(String factorType) {
         MfaFactorState factorState = factorStates.get(factorType);
         return factorState != null && factorState.isPrepared();
-    }
-
-    public boolean isFactorCompleted(String factorType) {
-        MfaFactorState factorState = factorStates.get(factorType);
-        return factorState != null && factorState.isCompleted();
     }
 
     public Set<String> getCompletedFactors() {
@@ -136,14 +129,6 @@ public class MfaSession implements Serializable {
                 .filter(entry -> entry.getValue().isPrepared())
                 .map(Map.Entry::getKey)
                 .collect(java.util.stream.Collectors.toSet());
-    }
-
-    /**
-     * Gets the verification error for a specific factor, if any.
-     */
-    public String getFactorVerificationError(String factorType) {
-        MfaFactorState factorState = factorStates.get(factorType);
-        return factorState != null ? factorState.getVerificationError() : null;
     }
 
     // ===== PRIVATE HELPERS =====

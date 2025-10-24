@@ -168,6 +168,13 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
         prepareEmailCodeFactorAndExpectError('no_active_session');
     });
 
+    it('Should throw an error when verifying without preparing the factor', () => {
+        initiate(TEST_USER.username(), TEST_USER.password);
+        verifyEmailCodeFactorAndExpectError('123456', 'verify.factor_not_prepared', {
+            factorType: value => expect(value).to.eq('email_code')
+        });
+    });
+
     it('Should be locked when multiple wrong verification codes are entered in a row', () => {
         cy.log('0- installing the MFA configuration');
         // Config is:

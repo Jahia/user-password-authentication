@@ -142,19 +142,11 @@ public class MfaServiceImpl implements MfaService {
             throw new MfaException("no_active_session");
         }
 
-        MfaFactorProvider provider = factorRegistry.lookupProvider(factorType);
-        if (provider == null) {
-            session.markFactorPreparationFailed(factorType, "Factor type not supported: " + factorType);
-            return session;
-        }
-
-        JCRUserNode user = userManagerService.lookupUser(session.getUserId());
-        if (user == null) {
-            session.markFactorPreparationFailed(factorType, "User not found");
-            return session;
-        }
-
         try {
+            MfaFactorProvider provider = resolveProvider(factorType);
+
+            JCRUserNode user = resolveUser(session);
+
             String cacheKey = getCacheKey(user, provider);
             Long startedPrepareTime = factorStartCache.getIfPresent(cacheKey);
             long now = System.currentTimeMillis();
@@ -171,7 +163,7 @@ public class MfaServiceImpl implements MfaService {
             session.markFactorPrepared(provider.getFactorType());
             logger.info("Factor {} preparation completed for user: {}", factorType, session.getUserId());
         } catch (Exception e) {
-            session.markFactorPreparationFailed(factorType, e.getMessage());
+            session.markFactorPreparationFailed(factorType);
             throw e;
         }
         return session;
@@ -184,25 +176,16 @@ public class MfaServiceImpl implements MfaService {
             throw new MfaException("no_active_session");
         }
 
-        if (!session.isFactorPrepared(factorType)) {
-            session.markFactorVerificationFailed(factorType, "Factor not prepared");
-            return session;
-        }
-
-        MfaFactorProvider provider = factorRegistry.lookupProvider(factorType);
-        if (provider == null) {
-            session.markFactorVerificationFailed(factorType, "Factor type not supported: " + factorType);
-            return session;
-        }
-
-        // TODO - reset mfa session if user is not found at this stage, better handling of user recheck during MFA steps
-        JCRUserNode user = userManagerService.lookupUser(session.getUserId());
-        if (user == null) {
-            session.markFactorVerificationFailed(factorType, "User not found");
-            return session;
-        }
-
         try {
+            if (!session.isFactorPrepared(factorType)) {
+                throw new MfaException("verify.factor_not_prepared", "factorType", factorType);
+            }
+
+            MfaFactorProvider provider = resolveProvider(factorType);
+
+            // TODO - reset mfa session if user is not found at this stage, better handling of user recheck during MFA steps
+            JCRUserNode user = resolveUser(session);
+
             if (isUserSuspended(user.getPath())) {
                 logger.warn("User {} is suspended", user.getPath());
                 throw new MfaException("suspended_user");
@@ -231,11 +214,27 @@ public class MfaServiceImpl implements MfaService {
                 failuresCache.invalidate(user.getPath()); // clear any failure attempts for that user
             }
         } catch (Exception e) {
-            session.markFactorVerificationFailed(factorType, e.getMessage());
+            session.markFactorVerificationFailed(factorType);
             throw e;
         }
 
         return session;
+    }
+
+    private MfaFactorProvider resolveProvider(String factorType) throws MfaException {
+        MfaFactorProvider provider = factorRegistry.lookupProvider(factorType);
+        if (provider == null) {
+            throw new MfaException("factor_type_not_supported", "factorType", factorType);
+        }
+        return provider;
+    }
+
+    private JCRUserNode resolveUser(MfaSession session) throws MfaException {
+        JCRUserNode user = userManagerService.lookupUser(session.getUserId());
+        if (user == null) {
+            throw new MfaException("user_not_found");
+        }
+        return user;
     }
 
     private boolean isUserSuspended(String userPath) throws MfaException {
