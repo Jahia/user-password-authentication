@@ -118,6 +118,7 @@ public class MfaServiceImpl implements MfaService {
             logger.warn("Invalid credentials for user: {}", username);
             throw new MfaException("authentication_failed");
         }
+        validateUserNotSuspended(user);
 
         HttpSession httpSession = request.getSession(true);
         Locale userLocale;
@@ -144,8 +145,8 @@ public class MfaServiceImpl implements MfaService {
 
         try {
             MfaFactorProvider provider = resolveProvider(factorType);
-
             JCRUserNode user = resolveUser(session);
+            validateUserCanAuthenticate(user, provider);
 
             String cacheKey = getCacheKey(user, provider);
             Long startedPrepareTime = factorStartCache.getIfPresent(cacheKey);
@@ -182,18 +183,10 @@ public class MfaServiceImpl implements MfaService {
             }
 
             MfaFactorProvider provider = resolveProvider(factorType);
-
             // TODO - reset mfa session if user is not found at this stage, better handling of user recheck during MFA steps
             JCRUserNode user = resolveUser(session);
+            validateUserCanAuthenticate(user, provider);
 
-            if (isUserSuspended(user.getPath())) {
-                logger.warn("User {} is suspended", user.getPath());
-                throw new MfaException("suspended_user");
-            }
-            if (hasReachedAuthFailuresCountLimit(user.getPath(), provider)) {
-                suspendUserInJCR(user.getPath());
-                throw new MfaException("suspended_user");
-            }
             Serializable preparationResult = (Serializable) request.getSession().getAttribute(getAttributeKey(factorType));
             VerificationContext verificationContext = new VerificationContext(user, request, preparationResult, verificationData);
             if (provider.verify(verificationContext)) {
@@ -235,6 +228,21 @@ public class MfaServiceImpl implements MfaService {
             throw new MfaException("user_not_found");
         }
         return user;
+    }
+
+    private void validateUserCanAuthenticate(JCRUserNode user, MfaFactorProvider provider) throws MfaException {
+        validateUserNotSuspended(user);
+        if (hasReachedAuthFailuresCountLimit(user.getPath(), provider)) {
+            suspendUserInJCR(user.getPath());
+            throw new MfaException("suspended_user");
+        }
+    }
+
+    private void validateUserNotSuspended(JCRUserNode user) throws MfaException {
+        if (isUserSuspended(user.getPath())) {
+            logger.warn("User {} is suspended", user.getPath());
+            throw new MfaException("suspended_user");
+        }
     }
 
     private boolean isUserSuspended(String userPath) throws MfaException {
