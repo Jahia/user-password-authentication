@@ -7,6 +7,7 @@ import type { Props } from "./types";
 import clsx from "clsx";
 import { tError } from "../../services/i18n";
 import { Trans } from "react-i18next";
+import { t } from "i18next";
 
 interface EmailCodeVerificationFormProps {
   onSuccess: () => void;
@@ -39,7 +40,11 @@ export default function EmailCodeVerificationForm(props: EmailCodeVerificationFo
   }, []);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div>
+        <Trans i18nKey="verify.loading" />
+      </div>
+    );
   }
 
   const codeSlots = code.padEnd(codeLength, " ").slice(0, codeLength).split("");
@@ -58,7 +63,7 @@ export default function EmailCodeVerificationForm(props: EmailCodeVerificationFo
     e.preventDefault();
     setInProgress(true);
     if (code.length < codeLength) {
-      setError(`Please enter the ${codeLength}-digit code.`);
+      setError(t("verify.code_too_short", { codeLength: codeLength }));
       return;
     }
     verifyEmailCodeFactor(apiRoot, code)
