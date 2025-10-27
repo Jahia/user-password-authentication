@@ -1,0 +1,23 @@
+mutation verifyCustomFactor($number: Int!) {
+    mfa {
+        factors {
+            custom {
+                verify(number: $number) {
+                    session {
+                        state
+                        completedFactors
+                        requiredFactors
+                    }
+                    error {
+                        code
+                        arguments {
+                            name
+                            value
+                        }
+                    }
+
+                }
+            }
+        }
+    }
+}

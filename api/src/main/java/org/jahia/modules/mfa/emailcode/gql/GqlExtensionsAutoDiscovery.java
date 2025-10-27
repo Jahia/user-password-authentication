@@ -1,12 +1,9 @@
-package org.jahia.modules.mfa.impl.gql.extensions;
+package org.jahia.modules.mfa.emailcode.gql;
 
 import org.jahia.modules.graphql.provider.dxm.DXGraphQLExtensionsProvider;
 import org.osgi.service.component.annotations.Component;
 
-/**
- * Html filtering graphql extension entry point
- */
 @Component(immediate = true)
-public class GqlMfaExtensionsProvider implements DXGraphQLExtensionsProvider {
+public class GqlExtensionsAutoDiscovery implements DXGraphQLExtensionsProvider {
     // Auto discovered
 }

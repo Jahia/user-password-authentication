@@ -3218,20 +3218,38 @@ type Metadata {
     lastPublishedBy: String
 }
 
+type MfaCustomFactorMutation {
+    "Prepare the custom factor"
+    prepare: MfaCustomFactorPreparationResponse
+    "Verify the custom factor"
+    verify(number: Int): MfaGenericResponse
+}
+
+"Custom factor preparation result"
+type MfaCustomFactorPreparationResponse {
+    "Error details when the operation fails"
+    error: MfaError
+    otherInfo: String
+    "Details about the MFA session when the operation succeeds"
+    session: MfaSession
+}
+
+"Access to the mutation operations of the email code factor"
+type MfaEmailCodeFactorMutation {
+    "Prepare the email code factor"
+    prepare: MfaEmailCodeFactorPreparationResponse
+    "Verify email code factor"
+    verify(code: String): MfaGenericResponse
+}
+
 "Email code factor preparation result"
 type MfaEmailCodeFactorPreparationResponse {
-    "List of completed MFA factors"
-    completedFactors: [String]
-    "Error details when the operation failed"
+    "Error details when the operation fails"
     error: MfaError
     "masked email the verification code has been sent to"
     maskedEmail: String
-    "List of required MFA factors"
-    requiredFactors: [String]
-    "Current MFA session state"
-    sessionState: String
-    "Operation success status"
-    success: Boolean
+    "Details about the MFA session when the operation succeeds"
+    session: MfaSession
 }
 
 "Error that may occur during an MFA operation"
@@ -3250,26 +3268,22 @@ type MfaErrorArgument {
     value: String
 }
 
-"MFA state-modifying operations"
+"Access MFA factors specific mutations"
 type MfaFactorsMutation {
-    "Prepare the email code factor"
-    prepareEmailCodeFactor: MfaEmailCodeFactorPreparationResponse
-    "Verify email code factor"
-    verifyEmailCodeFactor(code: String): MfaGenericResponse
+    custom: MfaCustomFactorMutation
+    emailCode: MfaEmailCodeFactorMutation
+    "Prepare the custom factor"
+    prepare: MfaCustomFactorPreparationResponse
+    "Verify the custom factor"
+    verify(number: Int): MfaGenericResponse
 }
 
 "Generic response for MFA operations"
 type MfaGenericResponse {
-    "List of completed MFA factors"
-    completedFactors: [String]
-    "Error details when the operation failed"
+    "Error details when the operation fails"
     error: MfaError
-    "List of required MFA factors"
-    requiredFactors: [String]
-    "Current MFA session state"
-    sessionState: String
-    "Operation success status"
-    success: Boolean
+    "Details about the MFA session when the operation succeeds"
+    session: MfaSession
 }
 
 "MFA state-modifying operations"
@@ -3290,6 +3304,16 @@ type MfaQuery {
     enabled: Boolean
     "Get current MFA session status"
     sessionStatus: MfaGenericResponse
+}
+
+"Details about the current MFA session"
+type MfaSession {
+    "List of completed MFA factors"
+    completedFactors: [String]
+    "List of required MFA factors"
+    requiredFactors: [String]
+    "state of the session"
+    state: MfaSessionState
 }
 
 "Root mutation type"
@@ -4314,6 +4338,19 @@ enum LoadInterval {
     FIVE
     "ONE"
     ONE
+}
+
+enum MfaSessionState {
+    "The session has been successfully completed."
+    COMPLETED
+    "The session has failed."
+    FAILED
+    "The session has been successfully initiated, but no factors have been prepared or verified yet."
+    INITIATED
+    "All required factors have been prepared."
+    PREPARED
+    "At least one factor has been prepared, but not all required factors have been fully prepared yet."
+    PREPARING
 }
 
 enum MulticriteriaEvaluation {

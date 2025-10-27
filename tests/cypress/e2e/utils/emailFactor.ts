@@ -1,3 +1,5 @@
+import {SessionState} from './api';
+
 const VERIFICATION_CODE_SUBJECT = {
     en: 'Authentication Code',
     fr: 'Code d\'authentification'
@@ -74,25 +76,74 @@ export function getEmailBody(email: string, subject?: string, locale = 'en'): Cy
 }
 
 /**
+ * Prepares an MFA factor and asserts the response is successful.
+ *
+ */
+export function prepareEmailCodeFactor() {
+    cy.log('Preparing email code factor and asserting success...');
+    cy.apollo({
+        queryFile: 'emailCode/prepare.graphql'
+    }).then(response => {
+        cy.log('Response for prepareEmailCodeFactor():', JSON.stringify(response, null, 2));
+        expect(response?.data?.mfa?.factors?.emailCode?.prepare?.session?.state).to.eq(SessionState.PREPARED);
+        expect(response?.data?.mfa?.factors?.emailCode?.prepare?.session?.requiredFactors).to.be.a('array').and.have.length(1);
+        expect(response?.data?.mfa?.factors?.emailCode?.prepare?.session?.requiredFactors[0]).to.eq('email_code');
+        expect(response?.data?.mfa?.factors?.emailCode?.prepare?.error).to.be.null;
+    });
+}
+
+/**
+ * Prepares the email code factor and asserts that the operation fails with the specified error code.
+ *
+ * @param {string} errorCode - The expected error code to verify in the operation response.
+ * @param {Object.<string, function>} [argumentAssertions] - Optional assertions for error arguments, where the key is the argument name and the value is a function to validate the argument's value.
+ */
+export function prepareEmailCodeFactorAndExpectError(
+    errorCode: string,
+    argumentAssertions?: { [key: string]: (value: string) => void }
+) {
+    cy.log('Preparing email code factor and asserting failure...');
+    cy.apollo({
+        queryFile: 'emailCode/prepare.graphql'
+    }).then(response => {
+        cy.log('Response for prepareEmailCodeFactorAndExpectError():', JSON.stringify(response, null, 2));
+        expect(response?.data?.mfa?.factors?.emailCode?.prepare?.error?.code).to.contain(errorCode);
+
+        // Assert on error arguments if provided
+        if (argumentAssertions) {
+            const errorArguments = response?.data?.mfa?.factors?.emailCode?.prepare?.error?.arguments;
+            expect(errorArguments).to.be.a('array');
+
+            Object.entries(argumentAssertions).forEach(([argName, assertion]) => {
+                const argument = errorArguments.find(arg => arg.name === argName);
+                expect(argument).to.exist;
+                assertion(argument.value);
+            });
+        } else {
+            expect(response?.data?.mfa?.factors?.emailCode?.prepare?.error?.arguments).to.be.empty;
+        }
+    });
+}
+
+/**
  * Verifies the email code factor with a provided email code.
  * @param code The 6-digit verification code to verify.
  */
 export function verifyEmailCodeFactor(code: string) {
     cy.log('Verifying email code factor and asserting success...');
     cy.apollo({
-        queryFile: 'verifyEmailCodeFactor.graphql',
+        queryFile: 'emailCode/verify.graphql',
         variables: {
             code: code
         }
     }).then(response => {
         cy.log('Response for verifyEmailCodeFactor():', JSON.stringify(response, null, 2));
-        expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.success).true;
-        expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.sessionState).eq('completed');
-        expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.completedFactors).to.be.a('array').and.have.length(1);
-        expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.completedFactors[0]).eq('email_code');
-        expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.requiredFactors).a('array').and.have.length(1);
-        expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.requiredFactors[0]).eq('email_code');
-        expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.error).to.be.null;
+        expect(response?.data?.mfa?.factors?.emailCode?.verify?.session?.state).eq(SessionState.COMPLETED);
+        expect(response?.data?.mfa?.factors?.emailCode?.verify?.session?.completedFactors).to.be.a('array').and.have.length(1);
+        expect(response?.data?.mfa?.factors?.emailCode?.verify?.session?.completedFactors[0]).eq('email_code');
+        expect(response?.data?.mfa?.factors?.emailCode?.verify?.session?.requiredFactors).a('array').and.have.length(1);
+        expect(response?.data?.mfa?.factors?.emailCode?.verify?.session?.requiredFactors[0]).eq('email_code');
+        expect(response?.data?.mfa?.factors?.emailCode?.verify?.error).to.be.null;
     });
 }
 
@@ -103,21 +154,17 @@ export function verifyEmailCodeFactorAndExpectError(
 ) {
     cy.log('Verifying email code factor and asserting failure...');
     cy.apollo({
-        queryFile: 'verifyEmailCodeFactor.graphql',
+        queryFile: 'emailCode/verify.graphql',
         variables: {
             code: verificationCode
         }
     }).then(response => {
         cy.log('Response for verifyEmailCodeFactorAndExpectError():', JSON.stringify(response, null, 2));
-        expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.success).false;
-        expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.sessionState).eq('failed');
-        expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.requiredFactors).a('array').and.have.length(1);
-        expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.requiredFactors[0]).eq('email_code');
-        expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.error?.code).eq(errorCode);
+        expect(response?.data?.mfa?.factors?.emailCode?.verify?.error?.code).eq(errorCode);
 
         // Assert on error arguments if provided
         if (argumentAssertions) {
-            const errorArguments = response?.data?.mfa?.factors?.verifyEmailCodeFactor?.error?.arguments;
+            const errorArguments = response?.data?.mfa?.factors?.emailCode?.verify?.error?.arguments;
             expect(errorArguments).to.be.a('array');
 
             Object.entries(argumentAssertions).forEach(([argName, assertion]) => {
@@ -126,7 +173,7 @@ export function verifyEmailCodeFactorAndExpectError(
                 assertion(argument.value);
             });
         } else {
-            expect(response?.data?.mfa?.factors?.verifyEmailCodeFactor?.error?.arguments).to.be.empty;
+            expect(response?.data?.mfa?.factors?.emailCode?.verify?.error?.arguments).to.be.empty;
         }
     });
 }
@@ -147,3 +194,4 @@ export const generateWrongCode = (validCode: string) => {
     const newLastDigit = (lastDigit + 1) % 10;
     return validCode.slice(0, 5) + newLastDigit.toString();
 };
+

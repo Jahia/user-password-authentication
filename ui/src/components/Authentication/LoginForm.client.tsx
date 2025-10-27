@@ -1,5 +1,5 @@
 import { type FormEvent, useState } from "react";
-import { login } from "../../services";
+import { initiate } from "../../services";
 import { useApiRoot } from "../../hooks/ApiRootContext.jsx";
 import ErrorMessage from "./ErrorMessage.client";
 import type { Props } from "./types";
@@ -22,7 +22,7 @@ export default function (props: LoginFormProps) {
     e.preventDefault();
     setInProgress(true);
 
-    login(apiRoot, username, password)
+    initiate(apiRoot, username, password)
       .then((result) => {
         if (result.success) {
           props.onSuccess(username);

@@ -10,8 +10,10 @@ import java.io.Serializable;
  * Provides access to the user, HTTP request, preparation result, and verification data.
  */
 public class VerificationContext {
+    // TODO store the MfaSession here?
     private final JCRUserNode user;
     private final HttpServletRequest httpServletRequest; // TODO should we keep it?
+    // TODO add response?
     private final Serializable preparationResult;
     private final Serializable verificationData;
 

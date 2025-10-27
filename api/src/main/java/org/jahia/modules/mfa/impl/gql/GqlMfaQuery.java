@@ -23,12 +23,12 @@ import org.jahia.modules.graphql.provider.dxm.osgi.annotations.GraphQLOsgiServic
 import org.jahia.modules.graphql.provider.dxm.util.ContextUtil;
 import org.jahia.modules.mfa.MfaService;
 import org.jahia.modules.mfa.MfaSession;
-import org.jahia.modules.mfa.MfaSessionState;
+import org.jahia.modules.mfa.gql.GqlMfaGenericResponse;
+import org.jahia.modules.mfa.gql.GqlMfaGenericResponse;
 import org.jahia.modules.mfa.impl.MfaConfigurationService;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
 import java.util.List;
 
 @GraphQLName("MfaQuery")
@@ -68,31 +68,14 @@ public class GqlMfaQuery {
     @GraphQLName("sessionStatus")
     @GraphQLDescription("Get current MFA session status")
     public GqlMfaGenericResponse sessionStatus(DataFetchingEnvironment environment) {
-        GqlMfaGenericResponse response = new GqlMfaGenericResponse();
-        response.setRequiredFactors(mfaService.getAvailableFactors());
         try {
             HttpServletRequest httpServletRequest = ContextUtil.getHttpServletRequest(environment.getGraphQlContext());
 
             MfaSession session = mfaService.getMfaSession(httpServletRequest);
-
-            if (session == null) {
-                response.setSuccess(true);
-                response.setSessionState(MfaSessionState.NOT_STARTED.getValue());
-                response.setRequiredFactors(List.of());
-                response.setCompletedFactors(List.of());
-                return response;
-            }
-
-            // Build response from service data directly in GraphQL layer
-            response.setSuccess(true);
-            response.setSessionState(session.getState().getValue());
-
-            response.setCompletedFactors(new ArrayList<>(session.getCompletedFactors()));
-
-            return response;
+            return new GqlMfaGenericResponse(session);
 
         } catch (Exception e) {
-            return GqlMfaGenericResponse.buildErrorResponse(e);
+            return new GqlMfaGenericResponse(e);
         }
     }
 }

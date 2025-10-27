@@ -1,4 +1,4 @@
-package org.jahia.modules.mfa.impl.factors;
+package org.jahia.modules.mfa.emailcode;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jahia.api.Constants;

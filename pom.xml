@@ -39,6 +39,7 @@
     <modules>
         <module>api</module>
         <module>test-module</module>
+        <module>test-module-custom-factor</module>
         <module>test-module-custom-mail-code-template</module>
         <module>ui</module>
     </modules>
