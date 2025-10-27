@@ -152,7 +152,7 @@ public class MfaServiceImpl implements MfaService {
             long now = System.currentTimeMillis();
             if (startedPrepareTime != null) {
                 long nextRetryInSeconds = mfaConfigurationService.getFactorStartRateLimitSeconds() - (now - startedPrepareTime) / 1000;
-                throw new MfaException("prepare.rate_limit_exceeded", "nextRetryInSeconds", String.valueOf(nextRetryInSeconds), "factorType", factorType, "user", user.getName());
+                throw new MfaPreparationRateLimitException(factorType, user, nextRetryInSeconds);
             }
             PreparationContext preparationContext = new PreparationContext(session, user, request, response);
             Serializable preparationResult = provider.prepare(preparationContext);
@@ -162,6 +162,10 @@ public class MfaServiceImpl implements MfaService {
             request.getSession().setAttribute(getAttributeKey(factorType), preparationResult);
             session.markFactorPrepared(provider.getFactorType());
             logger.info("Factor {} preparation completed for user: {}", factorType, session.getUserId());
+        } catch (MfaPreparationRateLimitException preparationRateLimitException) {
+            // the session is not mark as failed in this specific case
+            logger.debug("Preparation rate limit exceeded for the factor {} for user: {}", factorType, session.getUserId());
+            throw preparationRateLimitException;
         } catch (Exception e) {
             session.markFactorPreparationFailed(factorType);
             throw e;
