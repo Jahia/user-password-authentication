@@ -1,29 +1,25 @@
 import {deleteSite, deleteUser} from '@jahia/cypress';
+import {faker} from '@faker-js/faker';
+import {LoginStep, EmailFactorStep} from './pages';
 import {
-    assertEmailCodeVerificationStepContentMatches,
     assertIsLoggedIn,
-    assertLoginStepContentMatches,
     createSiteWithLoginPage,
     createUserForMFA,
-    LOGIN_PAGE_NAME,
     deleteAllEmails,
     generateWrongCode,
     getVerificationCode,
     installMFAConfig,
     AuthenticationProps,
     updateSiteLoginPageProps,
-    DEFAULT_LOGIN_EMAIL_FIELD_LABEL,
-    DEFAULT_LOGIN_PASSWORD_FIELD_LABEL,
-    DEFAULT_BELOW_PASSWORD_FIELD_HTML,
-    DEFAULT_LOGIN_SUBMIT_BUTTON_LABEL,
-    DEFAULT_LOGIN_ADDITIONAL_ACTION_HTML,
-    DEFAULT_EMAIL_CODE_VERIFICATION_FIELD_LABEL,
-    DEFAULT_EMAIL_CODE_VERIFICATION_SUBMIT_BUTTON_LABEL, DEFAULT_EMAIL_CODE_VERIFICATION_ADDITIONAL_ACTION_HTML,
-    DEFAULT_EMAIL_CODE_VERIFICATION_ADDITIONAL_ACTION_RESEND_LABEL
+    I18N
 } from './utils';
-import {faker} from '@faker-js/faker';
 
 const SITE_KEY = 'sample-ui';
+const I18N_LOCALES = I18N.locales[I18N.defaultLanguage];
+const I18N_LABELS = I18N.labels[I18N.defaultLanguage];
+const FACTOR_TYPE = 'email_code';
+const CODE_LENGTH = 6;
+const COUNTDOWN_TO_REDIRECT = 5;
 
 describe('Tests for the UI module', () => {
     let username: string;
@@ -53,26 +49,36 @@ describe('Tests for the UI module', () => {
     });
 
     it('Should be authenticated when following all the MFA steps', () => {
-        triggerRedirectToLoginPage(SITE_KEY);
-        enterCredential(username, password);
-        selectEmailFactor();
+        LoginStep.triggerRedirect(SITE_KEY);
+        LoginStep.login(username, password);
+        LoginStep.selectEmailCodeFactor();
         getVerificationCode(email).then(code => {
             cy.log('Verification code received by email: ' + code);
-            enterVerificationCode(code);
-            assertIsSuccessMessageDisplayed();
+            EmailFactorStep.submitVerificationCode(code);
+            EmailFactorStep.assertSuccessMessage(I18N_LOCALES['complete.successful']);
             assertIsLoggedIn(username);
         });
     });
 
     it('Should have the correct default props (labels, HTMLs)', () => {
         // Login step:
-        triggerRedirectToLoginPage(SITE_KEY);
-        assertLoginStepContentMatches({emailLabel: DEFAULT_LOGIN_EMAIL_FIELD_LABEL, passwordLabel: DEFAULT_LOGIN_PASSWORD_FIELD_LABEL, belowPasswordFieldHtml: DEFAULT_BELOW_PASSWORD_FIELD_HTML, submitButtonLabel: DEFAULT_LOGIN_SUBMIT_BUTTON_LABEL, additionalActionHtml: DEFAULT_LOGIN_ADDITIONAL_ACTION_HTML});
-        enterCredential(username, password);
+        LoginStep.triggerRedirect(SITE_KEY);
+        LoginStep.assertContentMatches({
+            emailLabel: I18N_LABELS.loginEmailLabel,
+            passwordLabel: I18N_LABELS.loginPasswordLabel,
+            belowPasswordFieldHtml: I18N_LABELS.loginBelowPasswordFieldHTML,
+            submitButtonLabel: I18N_LABELS.loginSubmitButtonLabel,
+            additionalActionHtml: I18N_LABELS.loginAdditionalActionHTML
+        });
+        LoginStep.login(username, password);
 
         // Email factor step:
-        assertEmailCodeVerificationStepContentMatches({verificationCodeLabel: DEFAULT_EMAIL_CODE_VERIFICATION_FIELD_LABEL, submitButtonLabel: DEFAULT_EMAIL_CODE_VERIFICATION_SUBMIT_BUTTON_LABEL,
-            additionalActionHtml: `<div>${DEFAULT_EMAIL_CODE_VERIFICATION_ADDITIONAL_ACTION_HTML}</div><a href="#">${DEFAULT_EMAIL_CODE_VERIFICATION_ADDITIONAL_ACTION_RESEND_LABEL}</a>`});
+        EmailFactorStep.assertHeaderTitleMatches();
+        EmailFactorStep.assertContentMatches({
+            verificationCodeLabel: I18N_LABELS.emailCodeVerificationLabel,
+            submitButtonLabel: I18N_LABELS.emailCodeVerificationSubmitButtonLabel,
+            additionalActionHtml: `<div>${I18N_LABELS.emailCodeVerificationAdditionalActionHTML}</div><a href="#">${I18N_LABELS.emailCodeVerificationAdditionalActionResendLabel}</a>`
+        });
     });
 
     it('Should have the correct props (labels, HTMLs) after a full update in English', () => {
@@ -95,13 +101,22 @@ describe('Tests for the UI module', () => {
         updateSiteLoginPageProps(siteKey, newProps);
 
         // Login step:
-        triggerRedirectToLoginPage(siteKey);
-        assertLoginStepContentMatches({emailLabel: newProps.loginEmailFieldLabel, passwordLabel: newProps.loginPasswordFieldLabel, belowPasswordFieldHtml: newProps.loginBelowPasswordFieldHtml, submitButtonLabel: newProps.loginSubmitButtonLabel, additionalActionHtml: newProps.loginAdditionalActionHtml});
-        enterCredential(username, password);
+        LoginStep.triggerRedirect(siteKey);
+        LoginStep.assertContentMatches({
+            emailLabel: newProps.loginEmailFieldLabel,
+            passwordLabel: newProps.loginPasswordFieldLabel,
+            belowPasswordFieldHtml: newProps.loginBelowPasswordFieldHtml,
+            submitButtonLabel: newProps.loginSubmitButtonLabel,
+            additionalActionHtml: newProps.loginAdditionalActionHtml
+        });
+        LoginStep.login(username, password);
 
         // Email factor step:
-        const completeHtml = `<div>${newProps.emailCodeVerificationAdditionalActionHtml}</div><a href="#">${newProps.emailCodeVerificationAdditionalActionResendLabel}</a>`;
-        assertEmailCodeVerificationStepContentMatches({verificationCodeLabel: newProps.emailCodeVerificationFieldLabel, submitButtonLabel: newProps.emailCodeVerificationSubmitButtonLabel, additionalActionHtml: completeHtml});
+        EmailFactorStep.assertContentMatches({
+            verificationCodeLabel: newProps.emailCodeVerificationFieldLabel,
+            submitButtonLabel: newProps.emailCodeVerificationSubmitButtonLabel,
+            additionalActionHtml: `<div>${newProps.emailCodeVerificationAdditionalActionHtml}</div><a href="#">${newProps.emailCodeVerificationAdditionalActionResendLabel}</a>`
+        });
 
         // Cleanup
         deleteSite(siteKey);
@@ -121,12 +136,22 @@ describe('Tests for the UI module', () => {
         updateSiteLoginPageProps(siteKey, newProps);
 
         // Login step:
-        triggerRedirectToLoginPage(siteKey);
-        assertLoginStepContentMatches({emailLabel: DEFAULT_LOGIN_EMAIL_FIELD_LABEL, passwordLabel: newProps.loginPasswordFieldLabel, belowPasswordFieldHtml: DEFAULT_BELOW_PASSWORD_FIELD_HTML, submitButtonLabel: DEFAULT_LOGIN_SUBMIT_BUTTON_LABEL, additionalActionHtml: newProps.loginAdditionalActionHtml});
-        enterCredential(username, password);
+        LoginStep.triggerRedirect(siteKey);
+        LoginStep.assertContentMatches({
+            emailLabel: I18N_LABELS.loginEmailLabel,
+            passwordLabel: newProps.loginPasswordFieldLabel,
+            belowPasswordFieldHtml: I18N_LABELS.loginBelowPasswordFieldHTML,
+            submitButtonLabel: I18N_LABELS.loginSubmitButtonLabel,
+            additionalActionHtml: newProps.loginAdditionalActionHtml
+        });
+        LoginStep.login(username, password);
 
         // Email factor step:
-        assertEmailCodeVerificationStepContentMatches({verificationCodeLabel: DEFAULT_EMAIL_CODE_VERIFICATION_FIELD_LABEL, submitButtonLabel: newProps.emailCodeVerificationSubmitButtonLabel, additionalActionHtml: `<div>${DEFAULT_EMAIL_CODE_VERIFICATION_ADDITIONAL_ACTION_HTML}</div><a href="#">${DEFAULT_EMAIL_CODE_VERIFICATION_ADDITIONAL_ACTION_RESEND_LABEL}</a>`});
+        EmailFactorStep.assertContentMatches({
+            verificationCodeLabel: I18N_LABELS.emailCodeVerificationLabel,
+            submitButtonLabel: newProps.emailCodeVerificationSubmitButtonLabel,
+            additionalActionHtml: `<div>${I18N_LABELS.emailCodeVerificationAdditionalActionHTML}</div><a href="#">${I18N_LABELS.emailCodeVerificationAdditionalActionResendLabel}</a>`
+        });
 
         // Cleanup
         deleteSite(siteKey);
@@ -147,79 +172,237 @@ describe('Tests for the UI module', () => {
         updateSiteLoginPageProps(siteKey, newProps, language);
 
         // Login step:
-        triggerRedirectToLoginPage(siteKey);
-        assertLoginStepContentMatches({emailLabel: DEFAULT_LOGIN_EMAIL_FIELD_LABEL, passwordLabel: newProps.loginPasswordFieldLabel, belowPasswordFieldHtml: DEFAULT_BELOW_PASSWORD_FIELD_HTML, submitButtonLabel: DEFAULT_LOGIN_SUBMIT_BUTTON_LABEL, additionalActionHtml: newProps.loginAdditionalActionHtml});
-        enterCredential(username, password);
+        LoginStep.triggerRedirect(siteKey);
+        LoginStep.assertContentMatches({
+            emailLabel: I18N_LABELS.loginEmailLabel,
+            passwordLabel: newProps.loginPasswordFieldLabel,
+            belowPasswordFieldHtml: I18N_LABELS.loginBelowPasswordFieldHTML,
+            submitButtonLabel: I18N_LABELS.loginSubmitButtonLabel,
+            additionalActionHtml: newProps.loginAdditionalActionHtml
+        });
+        LoginStep.login(username, password);
 
         // Email factor step:
-        assertEmailCodeVerificationStepContentMatches({verificationCodeLabel: DEFAULT_EMAIL_CODE_VERIFICATION_FIELD_LABEL, submitButtonLabel: newProps.emailCodeVerificationSubmitButtonLabel, additionalActionHtml: `<div>${DEFAULT_EMAIL_CODE_VERIFICATION_ADDITIONAL_ACTION_HTML}</div><a href="#">${DEFAULT_EMAIL_CODE_VERIFICATION_ADDITIONAL_ACTION_RESEND_LABEL}</a>`});
+        EmailFactorStep.assertHeaderTitleMatches();
+        EmailFactorStep.assertContentMatches({
+            verificationCodeLabel: I18N_LABELS.emailCodeVerificationLabel,
+            submitButtonLabel: newProps.emailCodeVerificationSubmitButtonLabel,
+            additionalActionHtml: `<div>${I18N_LABELS.emailCodeVerificationAdditionalActionHTML}</div><a href="#">${I18N_LABELS.emailCodeVerificationAdditionalActionResendLabel}</a>`
+        });
+        EmailFactorStep.assertVerificationCodeSentMessage(email);
 
         // Cleanup
         deleteSite(siteKey);
     });
 
     it('Should display an error when an invalid password is entered', () => {
-        triggerRedirectToLoginPage(SITE_KEY);
-        enterCredential(username, 'invalidPassword');
-        cy.get('[data-testid="error-message"]').should(
-            'contain',
-            'Invalid username or password'
-        );
+        LoginStep.triggerRedirect(SITE_KEY);
+        LoginStep.login(username, 'invalidPassword');
+        LoginStep.assertErrorMessage(I18N_LOCALES.authentication_failed);
+    });
+
+    it('Should display an error when an invalid username is entered', () => {
+        LoginStep.triggerRedirect(SITE_KEY);
+        LoginStep.login('invalidUsername', password);
+        LoginStep.assertErrorMessage(I18N_LOCALES.authentication_failed);
     });
 
     it('Should display an error when an invalid verification code is entered', () => {
-        triggerRedirectToLoginPage(SITE_KEY);
-        enterCredential(username, password);
-        selectEmailFactor();
+        LoginStep.triggerRedirect(SITE_KEY);
+        LoginStep.login(username, password);
+        LoginStep.selectEmailCodeFactor();
         cy.log('Entering an invalid verification code');
         getVerificationCode(email).then(code => {
             const wrongCode = generateWrongCode(code);
-            enterVerificationCode(wrongCode);
-            cy.get('[data-testid="error-message"]').should(
-                'contain',
-                'Unable to verify the email_code factor'
-            );
+            EmailFactorStep.submitVerificationCode(wrongCode);
+            EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.verification_failed'].replace('{{factorType}}', FACTOR_TYPE));
         });
     });
-    it('Should redirect to the provided redirect page', () => {
-        cy.visit(`/sites/${SITE_KEY}/${LOGIN_PAGE_NAME}.html?redirect=%2Fcms%2Frender%2Flive%2Fen%2Fsites%2F${SITE_KEY}%2Fhome.html%3Fparam%3Dtest`);
-        enterCredential(username, password);
-        selectEmailFactor();
+
+    // Blocked by https://github.com/Jahia/jahia-multi-factor-authentication/issues/41
+    it('Should display an error when an empty verification code is submitted and authenticate afterwards', () => {
+        LoginStep.triggerRedirect(SITE_KEY);
+        LoginStep.login(username, password);
+        LoginStep.selectEmailCodeFactor();
+        cy.log('Entering an empty verification code');
+        getVerificationCode(email).then(code => {
+            EmailFactorStep.submitVerificationCode('');
+            EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.code_too_short'].replace('{{codeLength}}', CODE_LENGTH.toString()));
+
+            // Now enter the correct code
+            EmailFactorStep.submitVerificationCode(code);
+            EmailFactorStep.assertSuccessMessage(I18N_LOCALES['complete.successful']);
+            assertIsLoggedIn(username);
+        });
+    });
+
+    // Blocked by https://github.com/Jahia/jahia-multi-factor-authentication/issues/41
+    it('Should display an error when an incomplete (short) verification code is entered and authenticate afterwards', () => {
+        LoginStep.triggerRedirect(SITE_KEY);
+        LoginStep.login(username, password);
+        LoginStep.selectEmailCodeFactor();
+        cy.log('Entering an incomplete (short) verification code');
+        getVerificationCode(email).then(code => {
+            const shortCode = '1234'; // Short code
+            EmailFactorStep.submitVerificationCode(shortCode);
+            EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.code_too_short'].replace('{{codeLength}}', CODE_LENGTH.toString()));
+
+            // Now enter the correct code
+            EmailFactorStep.submitVerificationCode(code);
+            EmailFactorStep.assertSuccessMessage(I18N_LOCALES['complete.successful']);
+            assertIsLoggedIn(username);
+        });
+    });
+
+    it('Should automatically redirect to the provided redirect page', () => {
+        cy.visit(`/sites/${SITE_KEY}/${LoginStep.PAGE_NAME}.html?redirect=%2Fcms%2Frender%2Flive%2Fen%2Fsites%2F${SITE_KEY}%2Fhome.html%3Fparam%3Dtest`);
+        LoginStep.login(username, password);
+        LoginStep.selectEmailCodeFactor();
         getVerificationCode(email).then(code => {
             cy.log('Verification code received by email: ' + code);
-            enterVerificationCode(code);
+            EmailFactorStep.submitVerificationCode(code);
             cy.url({timeout: 15000}).should('contain', `/cms/render/live/en/sites/${SITE_KEY}/home.html`);
             cy.url({timeout: 15000}).should('match', /\?param=test$/);
-            cy.url({timeout: 15000}).should('not.contain', `${LOGIN_PAGE_NAME}.html`);
+            cy.url({timeout: 15000}).should('not.contain', `${LoginStep.PAGE_NAME}.html`);
+        });
+    });
+
+    it('Should be able to redirect to the provided redirect page using "Go now" button', () => {
+        cy.visit(`/sites/${SITE_KEY}/${LoginStep.PAGE_NAME}.html?redirect=%2Fcms%2Frender%2Flive%2Fen%2Fsites%2F${SITE_KEY}%2Fhome.html%3Fparam%3Dtest`);
+        LoginStep.login(username, password);
+        LoginStep.selectEmailCodeFactor();
+        getVerificationCode(email).then(code => {
+            cy.log('Verification code received by email: ' + code);
+            EmailFactorStep.submitVerificationCode(code);
+
+            // BLOCKED by https://github.com/Jahia/jahia-multi-factor-authentication/pull/54
+            EmailFactorStep.assertRedirectUrlMessage(`/cms/render/live/en/sites/${SITE_KEY}/home.html?param=test`);
+
+            EmailFactorStep.assertCountdownMessage(COUNTDOWN_TO_REDIRECT);
+            EmailFactorStep.clickRedirectNowButton();
+
+            cy.url({timeout: 15000}).should('contain', `/cms/render/live/en/sites/${SITE_KEY}/home.html`);
+            cy.url({timeout: 15000}).should('match', /\?param=test$/);
+            cy.url({timeout: 15000}).should('not.contain', `${LoginStep.PAGE_NAME}.html`);
+        });
+    });
+
+    it('Should display an error when re-sending code to early, and successfully authenticate afterwards', () => {
+        LoginStep.triggerRedirect(SITE_KEY);
+        LoginStep.login(username, password);
+        LoginStep.selectEmailCodeFactor();
+        getVerificationCode(email).then(code => {
+            cy.log('Verification code received by email: ' + code);
+            EmailFactorStep.assertVerificationCodeSentMessage(email);
+
+            // // Test the resend action: 'prepare.rate_limit_exceeded' error is expected
+            EmailFactorStep.resendCode();
+            EmailFactorStep.assertErrorMessage(
+                I18N_LOCALES['prepare.rate_limit_exceeded']
+                    .replace('{{factorType}}', FACTOR_TYPE)
+                    .replace('{{user}}', username)
+                    .replace('{{nextRetryInSeconds}}', '3')
+            );
+
+            // Wait for 1 second and re-try once again: 'prepare.rate_limit_exceeded' error is expected
+            // eslint-disable-next-line cypress/no-unnecessary-waiting
+            cy.wait(1000);
+            EmailFactorStep.resendCode();
+            EmailFactorStep.assertErrorMessage(
+                I18N_LOCALES['prepare.rate_limit_exceeded']
+                    .replace('{{factorType}}', FACTOR_TYPE)
+                    .replace('{{user}}', username)
+                    .replace('{{nextRetryInSeconds}}', '2')
+            );
+
+            // eslint-disable-next-line cypress/no-unnecessary-waiting
+            cy.wait(1000);
+            // Finally submit the initially received code
+            EmailFactorStep.submitVerificationCode(code);
+            EmailFactorStep.assertSuccessMessage(I18N_LOCALES['complete.successful']);
+            assertIsLoggedIn(username);
+        });
+    });
+
+    it('Should authenticate when using new re-sent code', () => {
+        LoginStep.triggerRedirect(SITE_KEY);
+        LoginStep.login(username, password);
+        LoginStep.selectEmailCodeFactor();
+
+        getVerificationCode(email).then(firstCode => {
+            cy.log('Verification code received by email: ' + firstCode);
+            deleteAllEmails();
+
+            // Wait for 3 second and ask for a new code
+            // eslint-disable-next-line cypress/no-unnecessary-waiting
+            cy.wait(3000);
+            EmailFactorStep.resendCode();
+            EmailFactorStep.assertVerificationCodeSentMessage(email);
+
+            getVerificationCode(email).then(secondCode => {
+                cy.log('New verification code received by email: ' + secondCode);
+                expect(secondCode).to.not.equal(firstCode);
+
+                // First enter the old code to check it fails
+                EmailFactorStep.submitVerificationCode(firstCode);
+                EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.verification_failed'].replace('{{factorType}}', FACTOR_TYPE));
+
+                // Now enter the correct code
+                EmailFactorStep.submitVerificationCode(secondCode);
+                EmailFactorStep.assertSuccessMessage(I18N_LOCALES['complete.successful']);
+                assertIsLoggedIn(username);
+            });
+        });
+    });
+
+    it('Should authenticate with new session when the flow is restarted', () => {
+        LoginStep.triggerRedirect(SITE_KEY);
+        LoginStep.login(username, password);
+        LoginStep.selectEmailCodeFactor();
+
+        getVerificationCode(email).then(firstCode => {
+            cy.log('Verification code received by email: ' + firstCode);
+            deleteAllEmails();
+
+            // eslint-disable-next-line cypress/no-unnecessary-waiting
+            cy.wait(1000);
+
+            // Re-start the flow from the beginning
+            LoginStep.triggerRedirect(SITE_KEY);
+            LoginStep.login(username, password);
+            LoginStep.selectEmailCodeFactor();
+
+            // User is still rate-limited even when re-starting the flow
+            EmailFactorStep.assertErrorMessage(
+                I18N_LOCALES['prepare.rate_limit_exceeded']
+                    .replace('{{factorType}}', FACTOR_TYPE)
+                    .replace('{{user}}', username)
+                    .replace('{{nextRetryInSeconds}}', '2')
+            );
+
+            // Wait for the rate-limit to expire
+            // eslint-disable-next-line cypress/no-unnecessary-waiting
+            cy.wait(2000);
+
+            // Re-start the flow from the beginning
+            LoginStep.triggerRedirect(SITE_KEY);
+            LoginStep.login(username, password);
+            LoginStep.selectEmailCodeFactor();
+            getVerificationCode(email).then(secondCode => {
+                cy.log('Verification code received by email: ' + secondCode);
+
+                cy.log('New verification code received by email: ' + secondCode);
+                expect(secondCode).to.not.equal(firstCode);
+
+                // First enter the old code to check it fails
+                EmailFactorStep.submitVerificationCode(firstCode);
+                EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.verification_failed'].replace('{{factorType}}', FACTOR_TYPE));
+
+                // Now enter the correct code
+                EmailFactorStep.submitVerificationCode(secondCode);
+                EmailFactorStep.assertSuccessMessage(I18N_LOCALES['complete.successful']);
+                assertIsLoggedIn(username);
+            });
         });
     });
 });
-
-const triggerRedirectToLoginPage = (siteKey: string) => {
-    cy.visit('/jahia', {failOnStatusCode: false});
-    cy.url().should('contain', `/sites/${siteKey}/${LOGIN_PAGE_NAME}.html`);
-};
-
-const enterCredential = (username: string, password: string) => {
-    cy.log(String('Entering credentials: ' + username + ' / ' + password));
-    cy.get('[data-testid="login-username"]').type(username);
-    cy.get('[data-testid="login-password"]').type(password);
-    cy.get('[data-testid="login-submit"]').click();
-};
-
-const selectEmailFactor = () => {
-    cy.log('Selecting the email factor');
-    // Not supported yet, skipping for now
-    // TODO once we add the support for selecting the email factor from the list of available factors
-    //   cy.get('[data-testid="available-factors"]').should('be.visible');
-    //   cy.get('[data-testid="email_code-select-factor-button"]').click();
-};
-
-const enterVerificationCode = (code: string) => {
-    cy.get('[data-testid="verification-code"]').type(code);
-    cy.get('[data-testid="verification-submit"]').click();
-};
-
-const assertIsSuccessMessageDisplayed = () => {
-    cy.get('[data-testid="success-message"]').should('be.visible');
-};
