@@ -1,56 +1,53 @@
 import 'cypress-mailpit';
 import {
     createUserForMFA,
-    initiate, initiateAndExpectError,
+    deleteAllEmails,
+    generateWrongCode,
+    getVerificationCode,
+    initiate,
+    initiateAndExpectError,
     installMFAConfig,
     prepareEmailCodeFactor,
-    prepareEmailCodeFactorAndExpectError
+    prepareEmailCodeFactorAndExpectError,
+    verifyEmailCodeFactorAndExpectError
 } from './utils';
 import {deleteUser} from '@jahia/cypress';
-
-const usr = 'test_mfa_user';
-const pwd = 'password';
-const email = 'testmfauser@example.com';
+import {faker} from '@faker-js/faker';
 
 describe('Error scenarios common to all factors', () => {
-    before(() => {
+    let usr;
+    let pwd;
+    let email;
+
+    beforeEach(() => {
+        installMFAConfig('fake.yml'); // Tests might change the MFA config
+        usr = faker.internet.username();
+        pwd = faker.internet.password();
+        email = faker.internet.email();
         createUserForMFA(usr, pwd, email);
-        installMFAConfig('fake.yml');
+        deleteAllEmails(); // Sanity cleanup
+        cy.logout(); // Ensure to start with an unauthenticated session
     });
 
-    after(() => {
+    afterEach(() => {
         deleteUser(usr);
-        installMFAConfig('disabled.yml');
+        deleteAllEmails();
     });
 
-    // Invalid cases for the test user to be checked
-    const INVALID_CASES = [
-        {
-            description: 'invalid username',
-            username: 'unknownUser',
-            password: pwd
-        },
-        {
-            description: 'invalid password',
-            username: usr,
-            password: 'myPassword'
-        },
-        {
-            description: 'empty username',
-            username: '',
-            password: pwd
-        },
-        {
-            description: 'empty password',
-            username: usr,
-            password: ''
-        }
-    ];
+    it('Should throw an error when an invalid username is provided', () => {
+        initiateAndExpectError('unknownUser', pwd, 'authentication_failed');
+    });
 
-    INVALID_CASES.forEach(({description, username, password}) => {
-        it(`Should throw an error when ${description} is provided`, () => {
-            initiateAndExpectError(username, password, 'authentication_failed');
-        });
+    it('Should throw an error when an invalid password is provided', () => {
+        initiateAndExpectError(usr, 'myPassword', 'authentication_failed');
+    });
+
+    it('Should throw an error when an empty username is provided', () => {
+        initiateAndExpectError('', pwd, 'authentication_failed');
+    });
+
+    it('Should throw an error when an empty password is provided', () => {
+        initiateAndExpectError(usr, '', 'authentication_failed');
     });
 
     it('Should throw an error when a factor is requested twice, then should pass after the timeout', () => {
@@ -64,7 +61,7 @@ describe('Error scenarios common to all factors', () => {
         prepareEmailCodeFactorAndExpectError('prepare.rate_limit_exceeded', {
             nextRetryInSeconds: value => expect(parseInt(value, 10)).to.be.greaterThan(0),
             factorType: value => expect(value).to.eq('email_code'),
-            user: value => expect(value).to.eq('test_mfa_user')
+            user: value => expect(value).to.eq(usr)
         });
 
         cy.log('4- wait for end of timeout');
@@ -73,4 +70,54 @@ describe('Error scenarios common to all factors', () => {
         cy.log('5- prepare after timeout should pass');
         prepareEmailCodeFactor();
     });
+
+    it('Should throw an error when a suspended user tries to initiate the MFA flow', () => {
+        suspendUser(usr, pwd, email);
+
+        initiateAndExpectError(usr, pwd, 'suspended_user');
+    });
+
+    it('Should throw an error when a suspended user tries to prepare a factor', () => {
+        suspendUser(usr, pwd, email);
+
+        prepareEmailCodeFactorAndExpectError('suspended_user');
+    });
+
+    /**
+     * Suspends a user by entering wrong verification codes 3 times in a row
+     * @param username the username of the user to suspend
+     * @param password the password of the user to suspend
+     * @param userEmail the email of the user to suspend
+     */
+    const suspendUser = (username: string, password: string, userEmail: string) => {
+        cy.log(`Suspending user: ${username}`);
+
+        // Use quick-locking config to suspend after fewer attempts
+        installMFAConfig('quick-locking.yml');
+
+        initiate(username, password);
+        prepareEmailCodeFactor();
+
+        getVerificationCode(userEmail).then(code => {
+            // Make 3 failed verification attempts to trigger suspension
+            let wrongCode = generateWrongCode(code);
+            verifyEmailCodeFactorAndExpectError(wrongCode, 'verify.verification_failed', {
+                factorType: value => expect(value).to.eq('email_code')
+            });
+
+            wrongCode = generateWrongCode(wrongCode);
+            verifyEmailCodeFactorAndExpectError(wrongCode, 'verify.verification_failed', {
+                factorType: value => expect(value).to.eq('email_code')
+            });
+
+            wrongCode = generateWrongCode(wrongCode);
+            verifyEmailCodeFactorAndExpectError(wrongCode, 'verify.verification_failed', {
+                factorType: value => expect(value).to.eq('email_code')
+            });
+
+            // Final attempt should trigger suspension
+            wrongCode = generateWrongCode(wrongCode);
+            verifyEmailCodeFactorAndExpectError(wrongCode, 'suspended_user');
+        });
+    };
 });
