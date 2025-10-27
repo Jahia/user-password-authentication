@@ -9,7 +9,9 @@ import org.jahia.modules.graphql.provider.dxm.util.ContextUtil;
 import org.jahia.modules.mfa.MfaException;
 import org.jahia.modules.mfa.MfaService;
 import org.jahia.modules.mfa.MfaSession;
-import org.jahia.modules.mfa.MfaSessionState;
+import org.jahia.modules.mfa.gql.GqlFactorsMutation;
+import org.jahia.modules.mfa.gql.GqlMfaGenericResponse;
+import org.jahia.modules.mfa.gql.GqlMfaGenericResponse;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -30,21 +32,18 @@ public class GqlMfaMutation {
     @GraphQLName("initiate")
     @GraphQLDescription("Initiate MFA authentication")
     public GqlMfaGenericResponse initiate(@GraphQLName("username") String username,
-                                          @GraphQLName("password") String password,
-                                          @GraphQLName("site") String siteKey,
-                                          DataFetchingEnvironment environment) {
-        GqlMfaGenericResponse response;
+                                       @GraphQLName("password") String password,
+                                       @GraphQLName("site") String siteKey,
+                                       DataFetchingEnvironment environment) {
         try {
             HttpServletRequest httpServletRequest = ContextUtil.getHttpServletRequest(environment.getGraphQlContext());
             MfaSession session = mfaService.initiateMfa(username, password, siteKey, httpServletRequest);
-            response = GqlMfaGenericResponse.buildSuccessResponse(session);
-        } catch (MfaException e) {
-            response = GqlMfaGenericResponse.buildErrorResponse(e);
-        } catch (Exception e) {
-            response = GqlMfaGenericResponse.buildErrorResponse(e);
+            return new GqlMfaGenericResponse(session);
+        } catch (MfaException mfaException) {
+            return new GqlMfaGenericResponse(mfaException);
+        } catch (Exception unknownException) {
+            return new GqlMfaGenericResponse(unknownException);
         }
-        response.setRequiredFactors(mfaService.getAvailableFactors());
-        return response;
     }
 
 
@@ -56,20 +55,18 @@ public class GqlMfaMutation {
         try {
             HttpServletRequest httpServletRequest = ContextUtil.getHttpServletRequest(environment.getGraphQlContext());
             mfaService.clearMfaSession(httpServletRequest);
-            response = new GqlMfaGenericResponse();
-            response.setSuccess(true);
-            response.setSessionState(MfaSessionState.NOT_STARTED.getValue());
-        } catch (Exception e) {
-            response = GqlMfaGenericResponse.buildErrorResponse(e);
+            return new GqlMfaGenericResponse((MfaSession) null); // there is no session anymore
+
+        } catch (Exception exception) {
+            return new GqlMfaGenericResponse(exception);
         }
-        response.setRequiredFactors(mfaService.getAvailableFactors());
-        return response;
     }
 
     @GraphQLField
     @GraphQLName("factors")
     @GraphQLDescription("Access MFA factors specific mutations")
-    public GqlMfaFactorsMutation getMfaFactors() {
-        return new GqlMfaFactorsMutation(mfaService);
+    public static GqlFactorsMutation getMfaFactors() {
+        return new GqlFactorsMutation();
     }
+
 }

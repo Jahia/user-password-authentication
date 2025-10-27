@@ -1,14 +1,14 @@
 import type { BaseError, BaseSuccess } from "./common";
 
-type LoginResultSuccess = BaseSuccess;
-type LoginResultError = BaseError;
-export type LoginResult = LoginResultSuccess | LoginResultError;
+type InitiateResultSuccess = BaseSuccess;
+type InitiateResultError = BaseError;
+export type InitiateResult = InitiateResultSuccess | InitiateResultError;
 
-export default async function login(
+export default async function initiate(
   apiRoot: string,
   username: string,
   password: string,
-): Promise<LoginResult> {
+): Promise<InitiateResult> {
   const response = await fetch(apiRoot, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -17,7 +17,9 @@ export default async function login(
         mutation initiate($username: String!, $password: String!) {
           mfa {
             initiate(username: $username, password: $password) {
-              success
+              session {
+                state
+              }
               error {
                 code
                 arguments {
@@ -33,8 +35,10 @@ export default async function login(
     }),
   });
   const result = await response.json();
-  if (result?.data?.mfa?.initiate?.success === true) {
-    return { success: true };
+  if (result?.data?.mfa?.initiate?.session?.state === "INITIATED") {
+    return {
+      success: true,
+    };
   } else {
     return {
       success: false,

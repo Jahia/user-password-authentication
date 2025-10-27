@@ -14,6 +14,8 @@ import javax.servlet.http.HttpServletResponse;
  * (In such cases, request attributes can be useful to transport additional data.)
  */
 public class PreparationContext {
+    // TODO should this just be mfaSession + request + response ?
+    // and get user node from its id + add javadoc how to use userId
     private final JCRUserNode user;
     private final HttpServletRequest httpServletRequest;
     private final HttpServletResponse httpServletResponse;

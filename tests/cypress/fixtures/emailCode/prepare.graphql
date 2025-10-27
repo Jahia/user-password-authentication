@@ -1,0 +1,23 @@
+mutation prepareEmailCodeFactor {
+    mfa {
+        factors {
+            emailCode {
+                prepare {
+                    maskedEmail
+                    session {
+                        state
+                        completedFactors
+                        requiredFactors
+                    }
+                    error {
+                        code
+                        arguments {
+                            name
+                            value
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

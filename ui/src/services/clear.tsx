@@ -13,7 +13,16 @@ export default async function clear(apiRoot: string): Promise<ClearResult> {
         mutation clear {
           mfa {
             clear {
-              success
+              session {
+                state
+              }
+              error {
+                code
+                arguments {
+                  name
+                  value
+                }
+              }
             }
           }
         }
@@ -21,8 +30,10 @@ export default async function clear(apiRoot: string): Promise<ClearResult> {
     }),
   });
   const result = await response.json();
-  if (result?.data?.mfa?.clear?.success === true) {
-    return { success: true };
+  if (result?.data?.mfa?.clear?.session && !result?.errors) {
+    return {
+      success: true,
+    };
   } else {
     return {
       success: false,

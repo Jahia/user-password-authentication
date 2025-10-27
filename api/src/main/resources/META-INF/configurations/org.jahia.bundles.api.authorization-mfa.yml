@@ -8,8 +8,11 @@ mfa:
   - api: "graphql.MfaEmailCodeFactorPreparationResponse"
   - api: "graphql.MfaEmailCodeFactorVerificationResponse"
   - api: "graphql.MfaGenericResponse"
-  - api: "graphql.MfaFactorsMutation"
+  - api: "graphql.MfaEmailCodeFactorMutation"
   - api: "graphql.MfaError"
   - api: "graphql.MfaErrorArgument"
+  - api: "graphql.MfaFactorsMutation"
+  - api: "graphql.MfaSession"
+  - api: "graphql.MfaSessionState"
   auto_apply:
   - always: "true"

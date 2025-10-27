@@ -16,13 +16,17 @@ export default async function verifyEmailCodeFactor(
         mutation verifyEmailCodeFactor($code: String!) {
           mfa {
             factors {
-              verifyEmailCodeFactor(code: $code) {
-                success
-                error {
-                  code
-                  arguments {
-                    name
-                    value
+              emailCode {
+                verify(code: $code) {
+                  session {
+                    state
+                  }
+                  error {
+                    code
+                    arguments {
+                      name
+                      value
+                    }
                   }
                 }
               }
@@ -34,14 +38,14 @@ export default async function verifyEmailCodeFactor(
     }),
   });
   const result = await response.json();
-  if (result?.data?.mfa?.factors?.verifyEmailCodeFactor?.success === true) {
+  if (result?.data?.mfa?.factors?.emailCode?.verify?.session?.state === "COMPLETED") {
     return { success: true };
   } else {
     return {
       success: false,
       error: {
-        code: result?.data?.mfa?.factors?.verifyEmailCodeFactor?.error?.code || "unexpected_error",
-        arguments: result?.data?.mfa?.factors?.verifyEmailCodeFactor?.error?.arguments || [],
+        code: result?.data?.mfa?.factors?.emailCode?.verify?.error?.code || "unexpected_error",
+        arguments: result?.data?.mfa?.factors?.emailCode?.verify?.error?.arguments || [],
       },
     };
   }

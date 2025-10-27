@@ -1,7 +1,6 @@
 mutation initiate($username: String!, $password: String!, $site: String) {
     mfa {
         initiate(username: $username, password: $password, site: $site) {
-            success
             error {
                 code
                 arguments {
@@ -9,9 +8,11 @@ mutation initiate($username: String!, $password: String!, $site: String) {
                     value
                 }
             }
-            sessionState
-            requiredFactors
-            completedFactors
+            session {
+                state
+                requiredFactors
+                completedFactors
+            }
         }
     }
 }

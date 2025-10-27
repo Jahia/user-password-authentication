@@ -2,10 +2,7 @@ package org.jahia.modules.mfa;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Comprehensive MFA session that serves as the single source of truth for all MFA state.
@@ -16,19 +13,25 @@ public class MfaSession implements Serializable {
     private final Locale userPreferredLanguage;
     private final String siteKey;
     private MfaSessionState state;
+    private final List<String> requiredFactors;
     private final Map<String, MfaFactorState> factorStates;
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private Serializable preparationResult; // factor-specific preparation result
+    /**
+     * Preparation result per factor
+     */
+    private final Map<String, Serializable> factorPreparationResults;
 
-    public MfaSession(String userId, Locale userPreferredLanguage, String siteKey) {
+    public MfaSession(String userId, Locale userPreferredLanguage, String siteKey, List<String> requiredFactors) {
         this.userId = userId;
         this.userPreferredLanguage = userPreferredLanguage;
         this.siteKey = siteKey;
-        this.state = MfaSessionState.NOT_STARTED;
+        this.state = MfaSessionState.INITIATED;
+        this.requiredFactors = requiredFactors;
         this.factorStates = new HashMap<>();
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
+        this.factorPreparationResults = new HashMap<>();
     }
 
     // ===== BASIC GETTERS =====
@@ -50,6 +53,10 @@ public class MfaSession implements Serializable {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public List<String> getRequiredFactors() {
+        return requiredFactors;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -62,12 +69,12 @@ public class MfaSession implements Serializable {
         return userPreferredLanguage;
     }
 
-    public Serializable getPreparationResult() {
-        return preparationResult;
+    public Serializable getPreparationResult(String factorType) {
+        return factorPreparationResults.get(factorType);
     }
 
-    public void setPreparationResult(Serializable preparationResult) {
-        this.preparationResult = preparationResult;
+    public void setPreparationResult(String factorType, Serializable preparationResult) {
+        factorPreparationResults.put(factorType, preparationResult);
     }
 
     // ===== FACTOR STATE MANAGEMENT =====
@@ -78,7 +85,15 @@ public class MfaSession implements Serializable {
     public void markFactorPrepared(String factorType) {
         MfaFactorState factorState = getOrCreateFactorState(factorType);
         factorState.setPrepared(true);
-        setState(MfaSessionState.IN_PROGRESS);
+
+        // Check if all required factors are now prepared
+        boolean allPrepared = requiredFactors.stream()
+                .allMatch(this::isFactorPrepared);
+        if (allPrepared) {
+            setState(MfaSessionState.PREPARED);
+        } else {
+            setState(MfaSessionState.PREPARING);
+        }
         this.updatedAt = LocalDateTime.now();
     }
 
