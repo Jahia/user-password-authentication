@@ -17,7 +17,7 @@ export class EmailFactorStep extends BasePage {
         // Submit button
         buttonSubmit: '[data-testid="verification-submit"]',
         // Additional action
-        additionalAction: 'div.additionalAction',
+        additionalAction: 'div.additionalAction>div',
         // Resend code link
         linkResendCode: 'div.additionalAction>a',
 
@@ -36,6 +36,7 @@ export class EmailFactorStep extends BasePage {
      * @param code - The 6-digit verification code
      */
     static submitVerificationCode(code: string): void {
+        cy.log(`Submitting verification code: "${code}"`);
         cy.get(this.selectors.inputVerificationCode).clear();
         cy.get(this.selectors.inputVerificationCode).type(code);
         cy.get(this.selectors.buttonSubmit).click();
@@ -54,19 +55,31 @@ export class EmailFactorStep extends BasePage {
      * @param {string} params.verificationCodeLabel - Expected label for the verification code field
      * @param {string} params.submitButtonLabel - Expected label for the submit button
      * @param {string} params.additionalActionHtml - Expected content for the additional action section
+     * @param {string} params.resendCodeLink - Expected label for the resend code link
      */
     static assertContentMatches({
         verificationCodeLabel,
         submitButtonLabel,
-        additionalActionHtml
+        additionalActionHtml,
+        resendCodeLink
     }: {
-        verificationCodeLabel: string;
-        submitButtonLabel: string;
-        additionalActionHtml: string
-    }) {
-        cy.get(this.selectors.labelVerificationCode).should('have.text', verificationCodeLabel);
-        cy.get(this.selectors.buttonSubmit).should('have.text', submitButtonLabel);
-        cy.get(this.selectors.additionalAction).should('have.html', additionalActionHtml);
+        verificationCodeLabel?: string;
+        submitButtonLabel?: string;
+        additionalActionHtml?: string;
+        resendCodeLink?: string;
+    } = {}) {
+        // Use default i18n values if specific values are not provided
+        const content = {
+            verificationCodeLabel: verificationCodeLabel ?? I18N.labels[I18N.defaultLanguage].emailCodeVerificationLabel,
+            submitButtonLabel: submitButtonLabel ?? I18N.labels[I18N.defaultLanguage].emailCodeVerificationSubmitButtonLabel,
+            additionalActionHtml: additionalActionHtml ?? I18N.labels[I18N.defaultLanguage].emailCodeVerificationAdditionalActionHTML,
+            resendCodeLink: resendCodeLink ?? I18N.labels[I18N.defaultLanguage].emailCodeVerificationAdditionalActionResendLabel
+        };
+
+        cy.get(this.selectors.labelVerificationCode).should('have.text', content.verificationCodeLabel);
+        cy.get(this.selectors.buttonSubmit).should('have.text', content.submitButtonLabel);
+        cy.get(this.selectors.additionalAction).should('have.html', content.additionalActionHtml);
+        cy.get(this.selectors.linkResendCode).should('have.text', content.resendCodeLink);
     }
 
     /**

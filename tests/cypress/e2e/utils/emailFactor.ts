@@ -47,7 +47,9 @@ export function getVerificationCode(email: string, locale = 'en'): Cypress.Chain
                 throw new Error('No 6-digit verification code found in email HTML body');
             }
 
-            return match[1];
+            // Log and return the extracted code
+            cy.log(`Verification code received by email: ${match[1]}`);
+            cy.then(() => match[1]);
         });
 }
 

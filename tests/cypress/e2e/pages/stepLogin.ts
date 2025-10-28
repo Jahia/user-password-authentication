@@ -1,4 +1,5 @@
 import {BasePage} from './basePage';
+import {I18N} from '../utils';
 
 /**
  * Page Object for MFA Login page
@@ -73,16 +74,25 @@ export class LoginStep extends BasePage {
         submitButtonLabel,
         additionalActionHtml
     }: {
-            emailLabel: string;
-            passwordLabel: string;
-            belowPasswordFieldHtml: string;
-            submitButtonLabel: string;
-            additionalActionHtml: string;
-    }) {
-        cy.get(this.selectors.labelUsername).should('have.text', emailLabel);
-        cy.get(this.selectors.labelPassword).should('have.text', passwordLabel);
-        cy.get(this.selectors.belowPasswordField).should('have.html', belowPasswordFieldHtml);
-        cy.get(this.selectors.buttonSubmit).should('have.text', submitButtonLabel);
-        cy.get(this.selectors.additionalAction).should('have.html', additionalActionHtml);
+            emailLabel?: string;
+            passwordLabel?: string;
+            belowPasswordFieldHtml?: string;
+            submitButtonLabel?: string;
+            additionalActionHtml?: string;
+    } = {}) {
+        // Use default i18n values if specific values are not provided
+        const content = {
+            emailLabel: emailLabel ?? I18N.labels[I18N.defaultLanguage].loginEmailLabel,
+            passwordLabel: passwordLabel ?? I18N.labels[I18N.defaultLanguage].loginPasswordLabel,
+            belowPasswordFieldHtml: belowPasswordFieldHtml ?? I18N.labels[I18N.defaultLanguage].loginBelowPasswordFieldHTML,
+            submitButtonLabel: submitButtonLabel ?? I18N.labels[I18N.defaultLanguage].loginSubmitButtonLabel,
+            additionalActionHtml: additionalActionHtml ?? I18N.labels[I18N.defaultLanguage].loginAdditionalActionHTML
+        };
+
+        cy.get(this.selectors.labelUsername).should('have.text', content.emailLabel);
+        cy.get(this.selectors.labelPassword).should('have.text', content.passwordLabel);
+        cy.get(this.selectors.belowPasswordField).should('have.html', content.belowPasswordFieldHtml);
+        cy.get(this.selectors.buttonSubmit).should('have.text', content.submitButtonLabel);
+        cy.get(this.selectors.additionalAction).should('have.html', content.additionalActionHtml);
     }
 }
