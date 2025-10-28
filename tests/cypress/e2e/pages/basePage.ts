@@ -29,4 +29,11 @@ export class BasePage {
             cy.get(this.baseSelectors.errorMessage).should('contain.text', message);
         }
     }
+
+    /**
+     * Assert that no error message is present on the page
+     */
+    static assertErrorsAbsense(): void {
+        cy.get(this.baseSelectors.errorMessage).should('not.exist');
+    }
 }

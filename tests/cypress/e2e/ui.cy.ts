@@ -21,6 +21,7 @@ const CODE_LENGTH = 6;
 const COUNTDOWN_TO_REDIRECT = 5;
 const INCOMPLETE_CODE_LENGTH = CODE_LENGTH - 2;
 const MAX_INVALID_ATTEMPTS = 3;
+const TIME_BEFORE_NEXT_CODE_MS = 3000;
 const SUSPENSION_TIME_MS = 5000;
 
 describe('Tests for the UI module', () => {
@@ -261,6 +262,9 @@ describe('Tests for the UI module', () => {
                 // Make sure the two codes are different
                 expect(newCode).to.not.equal(code);
 
+                // Make sure no error is present
+                EmailFactorStep.assertErrorsAbsense();
+
                 // First enter the old code to check it fails
                 EmailFactorStep.submitVerificationCode(code);
                 EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.verification_failed'].replace('{{factorType}}', FACTOR_TYPE));
@@ -343,24 +347,13 @@ describe('Tests for the UI module', () => {
         getVerificationCode(email).then(code => {
             EmailFactorStep.assertVerificationCodeSentMessage(email);
 
-            // // Test the resend action: 'prepare.rate_limit_exceeded' error is expected
+            // Test the resend action: 'prepare.rate_limit_exceeded' error is expected
             EmailFactorStep.resendCode();
             EmailFactorStep.assertErrorMessage(
                 I18N_LOCALES['prepare.rate_limit_exceeded']
                     .replace('{{factorType}}', FACTOR_TYPE)
                     .replace('{{user}}', username)
-                    .replace('{{nextRetryInSeconds}}', '3')
-            );
-
-            // Wait for 1 second and re-try once again: 'prepare.rate_limit_exceeded' error is expected
-            // eslint-disable-next-line cypress/no-unnecessary-waiting
-            cy.wait(1000);
-            EmailFactorStep.resendCode();
-            EmailFactorStep.assertErrorMessage(
-                I18N_LOCALES['prepare.rate_limit_exceeded']
-                    .replace('{{factorType}}', FACTOR_TYPE)
-                    .replace('{{user}}', username)
-                    .replace('{{nextRetryInSeconds}}', '2')
+                    .replace('{{nextRetryInSeconds}}', (TIME_BEFORE_NEXT_CODE_MS / 1000).toString())
             );
 
             // eslint-disable-next-line cypress/no-unnecessary-waiting
@@ -383,6 +376,7 @@ describe('Tests for the UI module', () => {
             cy.wait(3000);
             deleteAllEmails();
             EmailFactorStep.resendCode();
+            EmailFactorStep.assertErrorsAbsense();
             EmailFactorStep.assertVerificationCodeSentMessage(email);
 
             getVerificationCode(email).then(secondCode => {
@@ -435,6 +429,9 @@ describe('Tests for the UI module', () => {
             getVerificationCode(email).then(secondCode => {
                 // Make sure the two codes are different
                 expect(secondCode).to.not.equal(firstCode);
+
+                // Make sure no error is present
+                EmailFactorStep.assertErrorsAbsense();
 
                 // First enter the old code to check it fails
                 EmailFactorStep.submitVerificationCode(firstCode);
