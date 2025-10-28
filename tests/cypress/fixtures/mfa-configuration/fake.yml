@@ -6,3 +6,5 @@
     loginUrl: "/sites/fake/fakePage.html"
     enabledFactors: "email_code"
     factorStartRateLimitSeconds: "3"
+    maxAuthFailuresBeforeLock: "3"
+    userTemporarySuspensionSeconds: "5"

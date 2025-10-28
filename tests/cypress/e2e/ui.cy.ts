@@ -16,11 +16,12 @@ import {
 
 const SITE_KEY = 'sample-ui';
 const I18N_LOCALES = I18N.locales[I18N.defaultLanguage];
-const I18N_LABELS = I18N.labels[I18N.defaultLanguage];
 const FACTOR_TYPE = 'email_code';
 const CODE_LENGTH = 6;
 const COUNTDOWN_TO_REDIRECT = 5;
 const INCOMPLETE_CODE_LENGTH = CODE_LENGTH - 2;
+const MAX_INVALID_ATTEMPTS = 3;
+const SUSPENSION_TIME_MS = 5000;
 
 describe('Tests for the UI module', () => {
     let username: string;
@@ -196,6 +197,79 @@ describe('Tests for the UI module', () => {
             EmailFactorStep.submitVerificationCode(code);
             EmailFactorStep.assertSuccessMessage(I18N_LOCALES['complete.successful']);
             assertIsLoggedIn(username);
+        });
+    });
+
+    // Blocked by https://github.com/Jahia/jahia-multi-factor-authentication/issues/16
+    it('Should be suspended when reaching the limit of INVALID attempts; be unable to continue MFA with the same code when suspension is lifted', () => {
+        LoginStep.triggerRedirect(SITE_KEY);
+        LoginStep.login(username, password);
+        LoginStep.selectEmailCodeFactor();
+        getVerificationCode(email).then(code => {
+            const wrongCode = generateWrongCode(code);
+
+            // Make MAX_INVALID_ATTEMPTS failed verification attempts to trigger suspension
+            for (let i = 0; i < MAX_INVALID_ATTEMPTS; i++) {
+                EmailFactorStep.submitVerificationCode(wrongCode);
+                EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.verification_failed'].replace('{{factorType}}', FACTOR_TYPE));
+            }
+
+            // One more attempt to confirm the user is suspended
+            EmailFactorStep.submitVerificationCode(wrongCode);
+            EmailFactorStep.assertErrorMessage(I18N_LOCALES.suspended_user);
+
+            // Wait for suspension to be lifted
+            cy.wait(SUSPENSION_TIME_MS + 1000);
+
+            // Now try to log in with initially received code and expect "no active session" error
+            EmailFactorStep.submitVerificationCode(code);
+            EmailFactorStep.assertErrorMessage(I18N_LOCALES.no_active_session);
+        });
+    });
+
+    it('Should be suspended when reaching the limit of INVALID attempts and blocked to re-initiate MFA; be able to authenticate when suspension is lifted and flow re-initiated', () => {
+        LoginStep.triggerRedirect(SITE_KEY);
+        LoginStep.login(username, password);
+        LoginStep.selectEmailCodeFactor();
+        getVerificationCode(email).then(code => {
+            const wrongCode = generateWrongCode(code);
+
+            // Make MAX_INVALID_ATTEMPTS failed verification attempts to trigger suspension
+            for (let i = 0; i < MAX_INVALID_ATTEMPTS; i++) {
+                EmailFactorStep.submitVerificationCode(wrongCode);
+                EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.verification_failed'].replace('{{factorType}}', FACTOR_TYPE));
+            }
+
+            // One more attempt to confirm the user is suspended
+            EmailFactorStep.submitVerificationCode(wrongCode);
+            EmailFactorStep.assertErrorMessage(I18N_LOCALES.suspended_user);
+
+            // Now try to re-initiate the flow and expect suspension message
+            LoginStep.triggerRedirect(SITE_KEY);
+            LoginStep.login(username, password);
+            LoginStep.assertErrorMessage(I18N_LOCALES.suspended_user);
+
+            // Wait for suspension to be lifted
+            cy.wait(SUSPENSION_TIME_MS + 1000);
+            deleteAllEmails();
+
+            // Re-initiate the flow and receive a new code
+            LoginStep.triggerRedirect(SITE_KEY);
+            LoginStep.login(username, password);
+            LoginStep.selectEmailCodeFactor();
+            getVerificationCode(email).then(newCode => {
+                // Make sure the two codes are different
+                expect(newCode).to.not.equal(code);
+
+                // First enter the old code to check it fails
+                EmailFactorStep.submitVerificationCode(code);
+                EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.verification_failed'].replace('{{factorType}}', FACTOR_TYPE));
+
+                // Now enter the correct code and authenticate
+                EmailFactorStep.submitVerificationCode(newCode);
+                EmailFactorStep.assertSuccessMessage(I18N_LOCALES['complete.successful']);
+                assertIsLoggedIn(username);
+            });
         });
     });
 
