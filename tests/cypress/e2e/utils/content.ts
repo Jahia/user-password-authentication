@@ -7,32 +7,34 @@ import {I18N} from './i18n';
 /**
  * Creates a new site with a login page. If a site matching this `siteKey` already exists, it is first deleted.
  * @param siteKey the site key to create
- * @param language site language
+ * @param languages the languages to create for the site, the first one is the default one
  * @param serverName the server name to use for the site
  */
-export function createSiteWithLoginPage(siteKey: string, language = I18N.defaultLanguage, serverName = 'localhost') {
+export function createSiteWithLoginPage(siteKey: string, languages = [I18N.defaultLanguage], serverName = 'localhost') {
     deleteSite(siteKey);
+    const siteLanguage = languages[0];
+    const languagesAsString = languages.join(',');
     createSite(siteKey, {
-        locale: language,
+        locale: siteLanguage,
+        languages: languagesAsString,
         serverName: serverName,
         templateSet: 'jahia-multi-factor-authentication-test-module'
     });
     enableModule('jahia-multi-factor-authentication-ui', siteKey);
+    const titleProps = languages.map(language => ({name: 'jcr:title', value: `Login page (${language})`, language: language}));
+    const properties = [...titleProps, {name: 'j:templateName', value: 'mfa-authentication-page'}];
     addNode({
         parentPathOrId: `/sites/${siteKey}`,
         name: LoginStep.PAGE_NAME,
         primaryNodeType: 'jnt:page',
-        properties: [
-            {name: 'jcr:title', value: 'Login page', language: language},
-            {name: 'j:templateName', value: 'mfa-authentication-page'}
-        ]
+        properties: properties
     });
 
     // Workaround: open JContent edit iframe to trigger area creation
     cy.login();
-    cy.visit(`/cms/editframe/default/${language}/sites/${siteKey}/${LoginStep.PAGE_NAME}.html?redirect=false`);
+    cy.visit(`/cms/editframe/default/${siteLanguage}/sites/${siteKey}/${LoginStep.PAGE_NAME}.html?redirect=false`);
     cy.get('div[type="area"][areaType="mfaui:authentication"]').should('exist');
-    publishAndWaitJobEnding(`/sites/${siteKey}`, [language]);
+    publishAndWaitJobEnding(`/sites/${siteKey}`, [siteLanguage]);
 }
 
 /**

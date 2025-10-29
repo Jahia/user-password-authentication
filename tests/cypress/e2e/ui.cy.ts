@@ -39,7 +39,6 @@ describe('Tests for the UI module', () => {
         email = faker.internet.email();
         createUserForMFA(username, password, email);
         deleteAllEmails(); // Sanity cleanup
-        cy.logout(); // Ensure to start with an unauthenticated session
     });
 
     afterEach(() => {
@@ -141,32 +140,54 @@ describe('Tests for the UI module', () => {
         deleteSite(siteKey);
     });
 
-    it('Should have the correct props (labels, HTMLs) after a partial update in lang not supported out of the box in Jahia (Spanish)', () => {
+    it('Should have the props (labels, HTMLs) matching the locale in the MFA URLs with multi-language site', () => {
         const siteKey = 'multi-language-site';
-        const language = 'es';
-        createSiteWithLoginPage(siteKey, language);
-        installMFAConfig('multi-language-site.yml');
+        const siteLanguage = 'es'; // Spanish
+        const additionalLanguage = 'cs'; // Czech
+        createSiteWithLoginPage(siteKey, [siteLanguage, additionalLanguage]);
 
         // Only change a few props:
-        const newProps = {
+        const esProps = {
             loginPasswordFieldLabel: 'Password in spanish',
             loginAdditionalActionHtml: '<b>additional action in Spanish</b>',
             emailCodeVerificationSubmitButtonLabel: 'Verify code in Spanish'
         };
-        updateSiteLoginPageProps(siteKey, newProps, language);
+        updateSiteLoginPageProps(siteKey, esProps, siteLanguage);
+
+        // ALL properties have to be set for additional languages (the default values are only used for the default language)
+        const csProps = {
+            loginSubmitButtonLabel: 'Custom login label cs',
+            emailCodeVerificationSubmitButtonLabel: 'Verify code in Czech'
+        };
+        updateSiteLoginPageProps(siteKey, csProps, additionalLanguage);
 
         // Login step:
+        // test with default (Spanish) language
+        installMFAConfig('multi-language-site-default.yml'); // URL is /sites/multi-language-site/myLoginPage.html
         LoginStep.triggerRedirect(siteKey);
         LoginStep.assertContentMatches({
-            passwordLabel: newProps.loginPasswordFieldLabel,
-            additionalActionHtml: newProps.loginAdditionalActionHtml
+            passwordLabel: esProps.loginPasswordFieldLabel,
+            additionalActionHtml: esProps.loginAdditionalActionHtml
         });
         LoginStep.login(username, password);
 
         // Email factor step:
         EmailFactorStep.assertHeaderTitleMatches();
-        EmailFactorStep.assertContentMatches({submitButtonLabel: newProps.emailCodeVerificationSubmitButtonLabel});
+        EmailFactorStep.assertContentMatches({submitButtonLabel: esProps.emailCodeVerificationSubmitButtonLabel});
         EmailFactorStep.assertVerificationCodeSentMessage(email);
+
+        // ----------
+        // test with additional language (Czech)
+        // ----------
+
+        installMFAConfig('multi-language-site-czech.yml'); // URL is /cs/sites/multi-language-site/myLoginPage.html
+        LoginStep.triggerRedirect(siteKey, additionalLanguage);
+
+        LoginStep.assertContentMatches({submitButtonLabel: csProps.loginSubmitButtonLabel});
+        LoginStep.login(username, password);
+
+        // Email factor step:
+        EmailFactorStep.assertContentMatches({submitButtonLabel: csProps.emailCodeVerificationSubmitButtonLabel});
 
         // Cleanup
         deleteSite(siteKey);

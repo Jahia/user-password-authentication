@@ -34,7 +34,7 @@ describe('Tests for the email template', () => {
     it('Should have the content defined in the default template', () => {
         // GIVEN: A site with a server name
         const siteKey = faker.lorem.slug();
-        createSiteWithLoginPage(siteKey, I18N.defaultLanguage);
+        createSiteWithLoginPage(siteKey);
 
         // WHEN: Initiating the MFA process
         initiate(username, password, siteKey);
@@ -54,7 +54,7 @@ describe('Tests for the email template', () => {
         // GIVEN: A site with a server name and a module with a custom email template enabled
         const siteKey = faker.lorem.slug();
         const serverName = faker.internet.domainName();
-        createSiteWithLoginPage(siteKey, I18N.defaultLanguage, serverName);
+        createSiteWithLoginPage(siteKey, [I18N.defaultLanguage], serverName);
         enableModule('jahia-multi-factor-authentication-test-module-custom-mail-code-template', siteKey);
 
         // WHEN: Initiating the MFA process
