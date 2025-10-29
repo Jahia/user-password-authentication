@@ -290,7 +290,7 @@ describe('Tests for the UI module', () => {
                 expect(newCode).to.not.equal(code);
 
                 // Make sure no error is present
-                EmailFactorStep.assertErrorsAbsense();
+                EmailFactorStep.assertNoErrors();
 
                 // First enter the old code to check it fails
                 EmailFactorStep.submitVerificationCode(code);
@@ -410,7 +410,7 @@ describe('Tests for the UI module', () => {
             cy.wait(3000);
             deleteAllEmails();
             EmailFactorStep.resendCode();
-            EmailFactorStep.assertErrorsAbsense();
+            EmailFactorStep.assertNoErrors();
             EmailFactorStep.assertVerificationCodeSentMessage(email);
 
             getVerificationCode(email).then(secondCode => {
@@ -468,7 +468,7 @@ describe('Tests for the UI module', () => {
                 expect(secondCode).to.not.equal(firstCode);
 
                 // Make sure no error is present
-                EmailFactorStep.assertErrorsAbsense();
+                EmailFactorStep.assertNoErrors();
 
                 // First enter the old code to check it fails
                 EmailFactorStep.submitVerificationCode(firstCode);

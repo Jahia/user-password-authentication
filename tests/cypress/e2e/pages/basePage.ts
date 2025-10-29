@@ -35,7 +35,7 @@ export class BasePage {
     /**
      * Assert that no error message is present on the page
      */
-    static assertErrorsAbsense(): void {
+    static assertNoErrors(): void {
         cy.get(this.baseSelectors.errorMessage).should('not.exist');
     }
 }
