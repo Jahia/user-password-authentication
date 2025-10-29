@@ -77,6 +77,7 @@ export default function ({ apiRoot, content }: { apiRoot: string; content: Props
                   values={{
                     redirectUrl: redirectUrl,
                   }}
+                  shouldUnescape
                 />
               </div>
               <div style={{ fontSize: "16px", color: "#333", marginBottom: "10px" }}>

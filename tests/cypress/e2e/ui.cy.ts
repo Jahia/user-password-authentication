@@ -181,6 +181,7 @@ describe('Tests for the UI module', () => {
             );
         });
     });
+
     it('Should redirect to the provided redirect page', () => {
         cy.visit(`/sites/${SITE_KEY}/${LOGIN_PAGE_NAME}.html?redirect=%2Fcms%2Frender%2Flive%2Fen%2Fsites%2F${SITE_KEY}%2Fhome.html%3Fparam%3Dtest`);
         enterCredential(username, password);
@@ -188,6 +189,7 @@ describe('Tests for the UI module', () => {
         getVerificationCode(email).then(code => {
             cy.log('Verification code received by email: ' + code);
             enterVerificationCode(code);
+            cy.get('[data-testid="success-message"]').should('contain', 'Redirect URL: /cms/render/live/en/sites/sample-ui/home.html?param=test');
             cy.url({timeout: 15000}).should('contain', `/cms/render/live/en/sites/${SITE_KEY}/home.html`);
             cy.url({timeout: 15000}).should('match', /\?param=test$/);
             cy.url({timeout: 15000}).should('not.contain', `${LOGIN_PAGE_NAME}.html`);
