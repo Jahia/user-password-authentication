@@ -31,6 +31,16 @@ export class BasePage {
     }
 
     /**
+     * Assert that an error message matches a specific pattern
+     * @param {string} pattern - The regular expression pattern (as a string) to match the error message against
+     * @note string passed should represent a valid regular expression, it will be converted to RegExp internally
+     */
+    static assertErrorMessageMatches(pattern: string): void {
+        cy.get(this.baseSelectors.errorMessage).should('be.visible');
+        cy.get(this.baseSelectors.errorMessage).invoke('text').should('match', new RegExp(pattern));
+    }
+
+    /**
      * Assert that no error message is present on the page
      */
     static assertErrorsAbsense(): void {

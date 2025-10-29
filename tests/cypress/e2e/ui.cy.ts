@@ -141,7 +141,7 @@ describe('Tests for the UI module', () => {
         deleteSite(siteKey);
     });
 
-    // BLOCKED BY: JSM peculiarities, ticket is pending
+    // BLOCKED BY: JSM peculiarities (see https://github.com/Jahia/jahia-multi-factor-authentication/pull/52), ticket is pending
     it.skip('Should have the props (labels, HTMLs) matching the locale in the MFA URLs with multi-language site', () => {
         const siteKey = 'multi-language-site';
         const siteLanguage = 'es'; // Spanish
@@ -380,11 +380,14 @@ describe('Tests for the UI module', () => {
 
             // Test the resend action: 'prepare.rate_limit_exceeded' error is expected
             EmailFactorStep.resendCode();
-            EmailFactorStep.assertErrorMessage(
+            // Build the expected time left string e.g. "[1,2,3]" to be used in Regexp
+            // Note: time left can vary depending on execution speed, so we check only the pattern here
+            const timeLeft = '[' + Array.from({length: (TIME_BEFORE_NEXT_CODE_MS / 1000)}, (_, i) => i + 1).join(',') + ']';
+            EmailFactorStep.assertErrorMessageMatches(
                 I18N_LOCALES['prepare.rate_limit_exceeded']
                     .replace('{{factorType}}', FACTOR_TYPE)
                     .replace('{{user}}', username)
-                    .replace('{{nextRetryInSeconds}}', (TIME_BEFORE_NEXT_CODE_MS / 1000).toString())
+                    .replace('{{nextRetryInSeconds}}', timeLeft)
             );
 
             // eslint-disable-next-line cypress/no-unnecessary-waiting
@@ -442,11 +445,14 @@ describe('Tests for the UI module', () => {
             LoginStep.selectEmailCodeFactor();
 
             // User is still rate-limited even when re-starting the flow
-            EmailFactorStep.assertErrorMessage(
+            // Note: time left can vary depending on execution speed, so we check only the pattern here
+            //       deducting 1 second used for the wait above
+            const timeLeft = '[' + Array.from({length: (TIME_BEFORE_NEXT_CODE_MS / 1000) - 1}, (_, i) => i + 1).join(',') + ']';
+            EmailFactorStep.assertErrorMessageMatches(
                 I18N_LOCALES['prepare.rate_limit_exceeded']
                     .replace('{{factorType}}', FACTOR_TYPE)
                     .replace('{{user}}', username)
-                    .replace('{{nextRetryInSeconds}}', '2')
+                    .replace('{{nextRetryInSeconds}}', timeLeft)
             );
 
             // Wait for the rate-limit to expire
