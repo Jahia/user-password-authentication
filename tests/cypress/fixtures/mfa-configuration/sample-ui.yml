@@ -4,3 +4,5 @@
     loginUrl: "/sites/sample-ui/myLoginPage.html"
     enabledFactors: "email_code"
     factorStartRateLimitSeconds: "3"
+    maxAuthFailuresBeforeLock: "3"
+    userTemporarySuspensionSeconds: "5"
