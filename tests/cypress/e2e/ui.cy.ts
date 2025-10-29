@@ -161,8 +161,10 @@ describe('Tests for the UI module', () => {
         };
         updateSiteLoginPageProps(siteKey, csProps, additionalLanguage);
 
-        // Login step:
+        // ----------
         // test with default (Spanish) language
+        // ----------
+
         installMFAConfig('multi-language-site-default.yml'); // URL is /sites/multi-language-site/myLoginPage.html
         LoginStep.triggerRedirect(siteKey);
         LoginStep.assertContentMatches({
@@ -187,7 +189,9 @@ describe('Tests for the UI module', () => {
         LoginStep.login(username, password);
 
         // Email factor step:
+        EmailFactorStep.assertHeaderTitleMatches();
         EmailFactorStep.assertContentMatches({submitButtonLabel: csProps.emailCodeVerificationSubmitButtonLabel});
+        EmailFactorStep.assertVerificationCodeSentMessage(email);
 
         // Cleanup
         deleteSite(siteKey);
@@ -330,32 +334,34 @@ describe('Tests for the UI module', () => {
         });
     });
 
-    it('Should automatically navigate to the provided redirect page', () => {
-        cy.visit(`/sites/${SITE_KEY}/${LoginStep.PAGE_NAME}.html?redirect=%2Fcms%2Frender%2Flive%2Fen%2Fsites%2F${SITE_KEY}%2Fhome.html%3Fparam%3Dtest`);
+    it('Should automatically navigate to the provided redirect page (using url-encoded url)', () => {
+        cy.visit(`/sites/${SITE_KEY}/${LoginStep.PAGE_NAME}.html?redirect=%2Fcms%2Frender%2Flive%2F${I18N.defaultLanguage}%2Fsites%2F${SITE_KEY}%2Fhome.html%3Fparam%3Dtest`);
         LoginStep.login(username, password);
         LoginStep.selectEmailCodeFactor();
         getVerificationCode(email).then(code => {
             EmailFactorStep.submitVerificationCode(code);
-            cy.url({timeout: 15000}).should('contain', `/cms/render/live/en/sites/${SITE_KEY}/home.html`);
+
+            EmailFactorStep.assertRedirectUrlMessage(`/cms/render/live/${I18N.defaultLanguage}/sites/${SITE_KEY}/home.html?param=test`);
+            EmailFactorStep.assertCountdownMessage(COUNTDOWN_TO_REDIRECT);
+
+            cy.url({timeout: 15000}).should('contain', `/cms/render/live/${I18N.defaultLanguage}/sites/${SITE_KEY}/home.html`);
             cy.url({timeout: 15000}).should('match', /\?param=test$/);
             cy.url({timeout: 15000}).should('not.contain', `${LoginStep.PAGE_NAME}.html`);
         });
     });
 
-    it('Should navigate to the provided redirect page using "Go now" button', () => {
-        cy.visit(`/sites/${SITE_KEY}/${LoginStep.PAGE_NAME}.html?redirect=%2Fcms%2Frender%2Flive%2Fen%2Fsites%2F${SITE_KEY}%2Fhome.html%3Fparam%3Dtest`);
+    it('Should navigate to the provided redirect page using "Go now" button (using plain url)', () => {
+        cy.visit(`/sites/${SITE_KEY}/${LoginStep.PAGE_NAME}.html?redirect=/cms/render/live/${I18N.defaultLanguage}/sites/${SITE_KEY}/home.html?param=test`);
         LoginStep.login(username, password);
         LoginStep.selectEmailCodeFactor();
         getVerificationCode(email).then(code => {
             EmailFactorStep.submitVerificationCode(code);
 
-            // BLOCKED by https://github.com/Jahia/jahia-multi-factor-authentication/pull/54
-            EmailFactorStep.assertRedirectUrlMessage(`/cms/render/live/en/sites/${SITE_KEY}/home.html?param=test`);
-
+            EmailFactorStep.assertRedirectUrlMessage(`/cms/render/live/${I18N.defaultLanguage}/sites/${SITE_KEY}/home.html?param=test`);
             EmailFactorStep.assertCountdownMessage(COUNTDOWN_TO_REDIRECT);
             EmailFactorStep.clickRedirectNowButton();
 
-            cy.url({timeout: 15000}).should('contain', `/cms/render/live/en/sites/${SITE_KEY}/home.html`);
+            cy.url({timeout: 15000}).should('contain', `/cms/render/live/${I18N.defaultLanguage}/sites/${SITE_KEY}/home.html`);
             cy.url({timeout: 15000}).should('match', /\?param=test$/);
             cy.url({timeout: 15000}).should('not.contain', `${LoginStep.PAGE_NAME}.html`);
         });
