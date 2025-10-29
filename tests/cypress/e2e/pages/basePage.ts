@@ -21,23 +21,15 @@ export class BasePage {
 
     /**
      * Assert that an error message is visible
-     * @param message - Optional specific message to check for
+     * @param {string | RegExp} message - Optional specific message to check for. Can be a string or a regular expression.
      */
-    static assertErrorMessage(message?: string): void {
+    static assertErrorMessage(message?: string | RegExp): void {
         cy.get(this.baseSelectors.errorMessage).should('be.visible');
-        if (message) {
+        if (typeof message === 'string') {
             cy.get(this.baseSelectors.errorMessage).should('contain.text', message);
+        } else if (message instanceof RegExp) {
+            cy.get(this.baseSelectors.errorMessage).invoke('text').should('match', message);
         }
-    }
-
-    /**
-     * Assert that an error message matches a specific pattern
-     * @param {string} pattern - The regular expression pattern (as a string) to match the error message against
-     * @note string passed should represent a valid regular expression, it will be converted to RegExp internally
-     */
-    static assertErrorMessageMatches(pattern: string): void {
-        cy.get(this.baseSelectors.errorMessage).should('be.visible');
-        cy.get(this.baseSelectors.errorMessage).invoke('text').should('match', new RegExp(pattern));
     }
 
     /**
