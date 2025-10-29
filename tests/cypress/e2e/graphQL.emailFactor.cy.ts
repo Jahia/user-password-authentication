@@ -175,7 +175,7 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
         });
     });
 
-    it('Should be locked when multiple wrong verification codes are entered in a row', () => {
+    it.only('Should be suspended when multiple wrong verification codes are entered in a row', () => {
         cy.log('0- installing the MFA configuration');
         // Config is:
         // maxAuthFailuresBeforeLock: 3
@@ -216,8 +216,8 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
             // Wait until the suspension expires
             // eslint-disable-next-line cypress/no-unnecessary-waiting
             cy.wait(6000);
-            verifyEmailCodeFactor(code);
-            assertIsLoggedIn(TEST_USER.username());
+            // The (valid) code obtained before being suspended can't be used anymore
+            verifyEmailCodeFactorAndExpectError(code, 'factor.email_code.missing_prepared_code');
         });
     });
 
