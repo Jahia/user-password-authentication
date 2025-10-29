@@ -5,6 +5,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import org.jahia.modules.mfa.*;
 import org.jahia.services.content.JCRPropertyWrapper;
 import org.jahia.services.content.JCRTemplate;
+import org.jahia.services.content.decorator.JCRNodeDecorator;
 import org.jahia.services.content.decorator.JCRUserNode;
 import org.jahia.services.usermanager.JahiaUserManagerService;
 import org.osgi.service.component.annotations.*;
@@ -34,8 +35,29 @@ public class MfaServiceImpl implements MfaService {
     private JahiaUserManagerService userManagerService;
     private MfaFactorRegistry factorRegistry;
     private volatile MfaConfigurationService mfaConfigurationService;
+    /**
+     * A thread-safe cache used for storing authentication failure details of users.
+     * <p>
+     * This cache maps user paths ({@link JCRNodeDecorator#getPath()} to {@link AuthFailuresDetails} objects, which track
+     * authentication failure attempts grouped by Multi-Factor Authentication (MFA) provider type.
+     * <p>
+     * Primarily leveraged to verify if a user has reached the defined limit of failed authentication attempts within
+     * a given time window, enabling further actions such as user suspension.
+     */
     private volatile Cache<String, AuthFailuresDetails> failuresCache;
-    private volatile Cache<String, Long> factorStartCache;
+
+    /**
+     * A thread-safe cache storing the timestamp (in milliseconds) when an MFA factor
+     * preparation was last initiated for each user-factor combination.
+     * <p>
+     * This cache is used to enforce rate limiting on factor preparation requests, preventing
+     * users from generating new verification codes too frequently. The cache key combines
+     * the user path, factor type, and provider hash code.
+     * <p>
+     * Entries automatically expire after {@link MfaConfigurationService#getFactorStartRateLimitSeconds()}
+     * seconds, allowing new preparation requests once the rate limit window has passed.
+     */
+    private volatile Cache<String, Long> factorPreparationTimestampsCache;
 
     @Reference
     public void setUserManagerService(JahiaUserManagerService userManagerService) {
@@ -74,7 +96,7 @@ public class MfaServiceImpl implements MfaService {
         failuresCache = Caffeine.newBuilder()
                 .expireAfterWrite(mfaConfigurationService.getAuthFailuresWindowSeconds(), TimeUnit.SECONDS)
                 .build();
-        factorStartCache = Caffeine.newBuilder()
+        factorPreparationTimestampsCache = Caffeine.newBuilder()
                 .expireAfterWrite(mfaConfigurationService.getFactorStartRateLimitSeconds(), TimeUnit.SECONDS).build();
     }
 
@@ -83,8 +105,8 @@ public class MfaServiceImpl implements MfaService {
         logger.info("Clearing Caffeine caches for MFA auth failures...");
         failuresCache.invalidateAll();
         failuresCache.cleanUp();
-        factorStartCache.invalidateAll();
-        factorStartCache.cleanUp();
+        factorPreparationTimestampsCache.invalidateAll();
+        factorPreparationTimestampsCache.cleanUp();
         logger.info("Caffeine cache cleared.");
     }
 
@@ -146,10 +168,10 @@ public class MfaServiceImpl implements MfaService {
         try {
             MfaFactorProvider provider = resolveProvider(factorType);
             JCRUserNode user = resolveUser(session);
-            validateUserCanAuthenticate(user, provider);
+            validateUserCanAuthenticate(request, user, provider);
 
             String cacheKey = getCacheKey(user, provider);
-            Long startedPrepareTime = factorStartCache.getIfPresent(cacheKey);
+            Long startedPrepareTime = factorPreparationTimestampsCache.getIfPresent(cacheKey);
             long now = System.currentTimeMillis();
             if (startedPrepareTime != null) {
                 long nextRetryInSeconds = mfaConfigurationService.getFactorStartRateLimitSeconds() - (now - startedPrepareTime) / 1000;
@@ -159,7 +181,7 @@ public class MfaServiceImpl implements MfaService {
             Serializable preparationResult = provider.prepare(preparationContext);
             session.setPreparationResult(preparationResult);
             // Store in cache to prevent same user to generate a new preparationResult for the current factor.
-            factorStartCache.put(cacheKey, now);
+            factorPreparationTimestampsCache.put(cacheKey, now);
             request.getSession().setAttribute(getAttributeKey(factorType), preparationResult);
             session.markFactorPrepared(provider.getFactorType());
             logger.info("Factor {} preparation completed for user: {}", factorType, session.getUserId());
@@ -189,7 +211,7 @@ public class MfaServiceImpl implements MfaService {
             MfaFactorProvider provider = resolveProvider(factorType);
             // TODO - reset mfa session if user is not found at this stage, better handling of user recheck during MFA steps
             JCRUserNode user = resolveUser(session);
-            validateUserCanAuthenticate(user, provider);
+            validateUserCanAuthenticate(request, user, provider);
 
             Serializable preparationResult = (Serializable) request.getSession().getAttribute(getAttributeKey(factorType));
             VerificationContext verificationContext = new VerificationContext(user, request, preparationResult, verificationData);
@@ -198,7 +220,7 @@ public class MfaServiceImpl implements MfaService {
                 request.getSession().removeAttribute(getAttributeKey(factorType));
                 session.markFactorCompleted(factorType);
                 // Clean up start cache
-                factorStartCache.invalidate(getCacheKey(user, provider));
+                factorPreparationTimestampsCache.invalidate(getCacheKey(user, provider));
                 logger.info("Factor {} verified successfully for user: {}", factorType, session.getUserId());
             } else {
                 trackFailure(user.getPath(), provider);
@@ -234,10 +256,10 @@ public class MfaServiceImpl implements MfaService {
         return user;
     }
 
-    private void validateUserCanAuthenticate(JCRUserNode user, MfaFactorProvider provider) throws MfaException {
+    private void validateUserCanAuthenticate(HttpServletRequest request, JCRUserNode user, MfaFactorProvider provider) throws MfaException {
         validateUserNotSuspended(user);
         if (hasReachedAuthFailuresCountLimit(user.getPath(), provider)) {
-            suspendUserInJCR(user.getPath());
+            suspendUser(request, user, provider);
             throw new MfaException("suspended_user");
         }
     }
@@ -277,12 +299,13 @@ public class MfaServiceImpl implements MfaService {
         }
     }
 
-    private void suspendUserInJCR(String userPath) throws MfaException {
+    private void suspendUser(HttpServletRequest request, JCRUserNode user, MfaFactorProvider provider) throws MfaException {
 
+        // suspend the user in the JCR
         try {
             JCRTemplate.getInstance().doExecuteWithSystemSession(session -> {
                 Calendar suspendedSince = Calendar.getInstance();
-                JCRUserNode userNode = (JCRUserNode) session.getNode(userPath);
+                JCRUserNode userNode = (JCRUserNode) session.getNode(user.getPath());
                 logger.debug("Marking user {} as suspended...", userNode);
                 userNode.addMixin(MFA_SUSPENDED_USER_MIXIN);
                 userNode.setProperty(MFA_SUSPENDED_SINCE_PROP, suspendedSince);
@@ -291,10 +314,16 @@ public class MfaServiceImpl implements MfaService {
                 return null;
             });
         } catch (RepositoryException e) {
-            logger.warn("Failed to mark user {} as suspended", userPath, e);
+            logger.warn("Failed to mark user {} as suspended", user.getPath(), e);
             throw new MfaException("failed_to_mark_user_as_suspended");
         }
-        failuresCache.invalidate(userPath); // no need to track failures anymore
+
+        // clear the caches for that suspended user:
+        failuresCache.invalidate(user.getPath()); // no need to track failures anymore
+        factorPreparationTimestampsCache.invalidate(getCacheKey(user, provider));
+
+        // remove the preparation result from their session:
+        request.getSession().removeAttribute(getAttributeKey(provider.getFactorType()));
     }
 
     private void trackFailure(String userNodePath, MfaFactorProvider provider) {
