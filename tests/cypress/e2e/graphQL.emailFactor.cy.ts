@@ -267,4 +267,31 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
             });
         });
     });
+
+    it('Should be allowed to authenticate even after trying to resend the code too early', () => {
+        // Setup:
+        const username = faker.internet.username();
+        const password = faker.internet.password();
+        const email = faker.internet.email();
+        createUserForMFA(username, password, email);
+
+        // Start the MFA process
+        initiate(username, password);
+        prepareEmailCodeFactor();
+
+        getVerificationCode(email).then(code => {
+        // Request the code a second time without waiting for the rate limit to expire
+            prepareEmailCodeFactorAndExpectError('prepare.rate_limit_exceeded', {
+                nextRetryInSeconds: value => expect(parseInt(value, 10)).to.be.greaterThan(0),
+                factorType: value => expect(value).to.eq('email_code'),
+                user: value => expect(value).to.eq(username)
+            });
+            // But the session is still valid, the user can authenticate
+            verifyEmailCodeFactor(code);
+            assertIsLoggedIn(username);
+        });
+
+        // Cleanup
+        deleteUser(username);
+    });
 });
