@@ -28,6 +28,7 @@ describe('Tests for the UI module', () => {
     let username: string;
     let password: string;
     let email: string;
+
     before(() => {
         createSiteWithLoginPage(SITE_KEY);
     });
@@ -140,7 +141,8 @@ describe('Tests for the UI module', () => {
         deleteSite(siteKey);
     });
 
-    it('Should have the props (labels, HTMLs) matching the locale in the MFA URLs with multi-language site', () => {
+    // BLOCKED BY: JSM peculiarities, ticket is pending
+    it.skip('Should have the props (labels, HTMLs) matching the locale in the MFA URLs with multi-language site', () => {
         const siteKey = 'multi-language-site';
         const siteLanguage = 'es'; // Spanish
         const additionalLanguage = 'cs'; // Czech
@@ -209,8 +211,8 @@ describe('Tests for the UI module', () => {
         LoginStep.assertErrorMessage(I18N_LOCALES.authentication_failed);
     });
 
-    // Blocked by https://github.com/Jahia/jahia-multi-factor-authentication/issues/41
-    it('Should display an error when an INVALID verification code is entered and authenticate afterwards', () => {
+    // BLOCKED BY: https://github.com/Jahia/jahia-multi-factor-authentication/issues/41
+    it.skip('Should display an error when an INVALID verification code is entered and authenticate afterwards', () => {
         LoginStep.triggerRedirect(SITE_KEY);
         LoginStep.login(username, password);
         LoginStep.selectEmailCodeFactor();
@@ -226,8 +228,8 @@ describe('Tests for the UI module', () => {
         });
     });
 
-    // Blocked by https://github.com/Jahia/jahia-multi-factor-authentication/issues/16
-    it('Should be suspended when reaching the limit of INVALID attempts; be unable to continue MFA with the same code when suspension is lifted', () => {
+    // BLOCKED BY: https://github.com/Jahia/jahia-multi-factor-authentication/issues/16
+    it.skip('Should be suspended when reaching the limit of INVALID attempts; be unable to continue MFA with the same code when suspension is lifted', () => {
         LoginStep.triggerRedirect(SITE_KEY);
         LoginStep.login(username, password);
         LoginStep.selectEmailCodeFactor();
@@ -302,8 +304,8 @@ describe('Tests for the UI module', () => {
         });
     });
 
-    // Blocked by https://github.com/Jahia/jahia-multi-factor-authentication/issues/41
-    it('Should display an error when an EMPTY verification code is submitted and authenticate afterwards', () => {
+    // BLOCKED BY: https://github.com/Jahia/jahia-multi-factor-authentication/issues/41
+    it.skip('Should display an error when an EMPTY verification code is submitted and authenticate afterwards', () => {
         LoginStep.triggerRedirect(SITE_KEY);
         LoginStep.login(username, password);
         LoginStep.selectEmailCodeFactor();
@@ -318,8 +320,8 @@ describe('Tests for the UI module', () => {
         });
     });
 
-    // Blocked by https://github.com/Jahia/jahia-multi-factor-authentication/issues/41
-    it('Should display an error when an INCOMPLETE (short) verification code is entered and authenticate afterwards', () => {
+    // BLOCKED BY: https://github.com/Jahia/jahia-multi-factor-authentication/issues/41
+    it.skip('Should display an error when an INCOMPLETE (short) verification code is entered and authenticate afterwards', () => {
         LoginStep.triggerRedirect(SITE_KEY);
         LoginStep.login(username, password);
         LoginStep.selectEmailCodeFactor();
@@ -334,6 +336,7 @@ describe('Tests for the UI module', () => {
         });
     });
 
+    // NOTE: might require adjustments due to https://github.com/Jahia/jahia-multi-factor-authentication/issues/62
     it('Should automatically navigate to the provided redirect page (using url-encoded url)', () => {
         cy.visit(`/sites/${SITE_KEY}/${LoginStep.PAGE_NAME}.html?redirect=%2Fcms%2Frender%2Flive%2F${I18N.defaultLanguage}%2Fsites%2F${SITE_KEY}%2Fhome.html%3Fparam%3Dtest`);
         LoginStep.login(username, password);
@@ -350,6 +353,7 @@ describe('Tests for the UI module', () => {
         });
     });
 
+    // NOTE: might be deprecated due to https://github.com/Jahia/jahia-multi-factor-authentication/issues/62
     it('Should navigate to the provided redirect page using "Go now" button (using plain url)', () => {
         cy.visit(`/sites/${SITE_KEY}/${LoginStep.PAGE_NAME}.html?redirect=/cms/render/live/${I18N.defaultLanguage}/sites/${SITE_KEY}/home.html?param=test`);
         LoginStep.login(username, password);

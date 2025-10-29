@@ -93,15 +93,17 @@ export class EmailFactorStep extends BasePage {
     /**
      * Assert that the verification code sent message is displayed
      * @param {string} email - The email address to verify in the message
+     * @param {string} message - The expected message (default: from i18n)
      */
-    static assertVerificationCodeSentMessage(email: string): void {
+    static assertVerificationCodeSentMessage(email: string, message: string = I18N.locales[I18N.defaultLanguage]['factor.email_code.verification_code_has_been_sent']): void {
         cy.get(this.selectors.verificationSentMessage)
-            .should('contain.text', I18N.locales[I18N.defaultLanguage]['factor.email_code.verification_code_has_been_sent'].replace('{{maskedEmail}}', this.maskEmail(email)));
+            .should('contain.text', message.replace('{{maskedEmail}}', this.maskEmail(email)));
     }
 
     /**
      * Assert that the redirect URL message is displayed
      * @param {string} redirectUrl - The expected redirect URL
+     * @note might be deprecated due to https://github.com/Jahia/jahia-multi-factor-authentication/issues/62
      */
     static assertRedirectUrlMessage(redirectUrl: string): void {
         cy.get(this.selectors.verificationRedirectURL)
@@ -111,6 +113,7 @@ export class EmailFactorStep extends BasePage {
     /**
      * Assert that the countdown message is displayed
      * @param {integer} countdownSeconds - The countdown seconds
+     * @note might be deprecated due to https://github.com/Jahia/jahia-multi-factor-authentication/issues/62
      */
     static assertCountdownMessage(countdownSeconds: number): void {
         cy.get(this.selectors.verificationRedirectCountdown)
@@ -119,6 +122,7 @@ export class EmailFactorStep extends BasePage {
 
     /**
      * Clicks the "Go now" redirect button
+     * @note might be deprecated due to https://github.com/Jahia/jahia-multi-factor-authentication/issues/62
      */
     static clickRedirectNowButton(): void {
         cy.log(`Clicking the "${I18N.locales[I18N.defaultLanguage]['complete.redirecting_go_label']}" redirect button`);
