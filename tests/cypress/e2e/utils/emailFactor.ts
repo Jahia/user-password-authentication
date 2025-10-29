@@ -18,7 +18,7 @@ export function deleteAllEmails() {
  * @returns a Cypress chainable that yields the 6-digit verification code as a string.
  * @throws Error if no 6-digit code is found in the email body.
  */
-export function getVerificationCode(email: string, locale = 'en'): Cypress.Chainable<JQuery<string>> {
+export function getVerificationCode(email: string, locale = 'en'): Cypress.Chainable<string> {
     const subject = VERIFICATION_CODE_SUBJECT[locale];
     const searchQuery = `Subject:${subject} to:${email}`;
 
@@ -47,9 +47,7 @@ export function getVerificationCode(email: string, locale = 'en'): Cypress.Chain
                 throw new Error('No 6-digit verification code found in email HTML body');
             }
 
-            // Log and return the extracted code
-            cy.log(`Verification code received by email: ${match[1]}`);
-            return cy.wrap(match[1].toString(), {log: false});
+            return cy.log(`Verification code received by email: ${match[1]}`).then(() => match[1]);
         });
 }
 
