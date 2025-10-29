@@ -113,7 +113,7 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
             throw new MfaException("factor.email_code.verification_code_required");
         }
         PreparationResult preparationResult = (PreparationResult) verificationContext.getPreparationResult();
-        String storedCode = preparationResult.getCode();
+        String storedCode = preparationResult != null ? preparationResult.getCode() : null;
         if (StringUtils.isEmpty(storedCode)) {
             throw new MfaException("factor.email_code.missing_prepared_code");
         }
