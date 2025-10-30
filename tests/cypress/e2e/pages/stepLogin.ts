@@ -44,6 +44,7 @@ export class LoginStep extends BasePage {
      */
     static login(username: string, password: string): void {
         cy.log(String('Authenticating with credentials: ' + username + ' / ' + password));
+        cy.get(this.selectors.inputUsername).should('be.visible');
         cy.get(this.selectors.inputUsername).type(username);
         cy.get(this.selectors.inputPassword).type(password);
         cy.get(this.selectors.buttonSubmit).click();

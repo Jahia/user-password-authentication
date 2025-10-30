@@ -255,6 +255,33 @@ describe('Tests for the UI module', () => {
         });
     });
 
+    it('Should be suspended when reaching the limit of INVALID attempts; when restarting the login flow, should remain suspended', () => {
+        installMFAConfig('sample-ui-long-suspension.yml');
+        LoginStep.triggerRedirect(SITE_KEY);
+        LoginStep.login(username, password);
+        LoginStep.selectEmailCodeFactor();
+        getVerificationCode(email).then(code => {
+            const wrongCode = generateWrongCode(code);
+
+            // Make MAX_INVALID_ATTEMPTS failed verification attempts to trigger suspension
+            for (let i = 0; i < MAX_INVALID_ATTEMPTS; i++) {
+                EmailFactorStep.submitVerificationCode(wrongCode);
+                EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.verification_failed'].replace('{{factorType}}', FACTOR_TYPE));
+            }
+
+            // Confirm the user is suspended
+            EmailFactorStep.submitVerificationCode(wrongCode);
+            EmailFactorStep.assertErrorMessage(I18N_LOCALES.suspended_user.replace('{{suspensionDurationInHours}}', '27')); // 97200 seconds = 27 hours
+
+            // Restart the login flow
+            EmailFactorStep.clickRestartLoginOnSuspension();
+
+            // Should remain suspended
+            LoginStep.login(username, password);
+            EmailFactorStep.assertErrorMessage(I18N_LOCALES.suspended_user.replace('{{suspensionDurationInHours}}', '27')); // 97200 seconds = 27 hours
+        });
+    });
+
     it('Should be suspended when reaching the limit of INVALID attempts and blocked to re-initiate MFA; be able to authenticate when suspension is lifted and flow re-initiated', () => {
         LoginStep.triggerRedirect(SITE_KEY);
         LoginStep.login(username, password);

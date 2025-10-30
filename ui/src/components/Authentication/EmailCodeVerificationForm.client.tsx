@@ -10,8 +10,9 @@ import { Trans } from "react-i18next";
 import { t } from "i18next";
 
 interface EmailCodeVerificationFormProps {
-  onSuccess: () => void;
   content: Props;
+  onSuccess: () => void;
+  onSuspended: (args: Array<{ name: string; value: string }>) => void;
 }
 export default function EmailCodeVerificationForm(props: EmailCodeVerificationFormProps) {
   const [loading, setLoading] = useState(true);
@@ -26,17 +27,23 @@ export default function EmailCodeVerificationForm(props: EmailCodeVerificationFo
   // 32px per digit, 6px between digits
   const codeContainerWidth = codeLength * 32 + (codeLength - 1) * 6 + "px";
 
-  useEffect(() => {
+  const prepareFactor = () => {
     prepareEmailFactor(apiRoot)
       .then((result) => {
         if (result.success) {
           setError("");
           setMaskedEmail(result.maskedEmail);
+        } else if (result.error.code === "suspended_user") {
+          props.onSuspended(result.error.arguments);
         } else {
           setError(tError(result.error));
         }
       })
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    prepareFactor();
   }, []);
 
   if (loading) {
@@ -67,12 +74,14 @@ export default function EmailCodeVerificationForm(props: EmailCodeVerificationFo
       return;
     }
     verifyEmailCodeFactor(apiRoot, code)
-      .then((r) => {
-        if (r.success) {
+      .then((result) => {
+        if (result.success) {
           setError("");
           props.onSuccess();
+        } else if (result.error.code === "suspended_user") {
+          props.onSuspended(result.error.arguments);
         } else {
-          setError(tError(r.error));
+          setError(tError(result.error));
         }
       })
       .finally(() => setInProgress(false));
@@ -80,16 +89,7 @@ export default function EmailCodeVerificationForm(props: EmailCodeVerificationFo
 
   const handleResendCode = (): void => {
     setLoading(true);
-    prepareEmailFactor(apiRoot)
-      .then((result) => {
-        if (result.success) {
-          setError("");
-          setMaskedEmail(result.maskedEmail);
-        } else {
-          setError(tError(result.error));
-        }
-      })
-      .finally(() => setLoading(false));
+    prepareFactor();
   };
 
   const renderDigitBox = (char: string, index: number) => (
