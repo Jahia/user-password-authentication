@@ -2,12 +2,12 @@ import {deleteSite, deleteUser, enableModule} from '@jahia/cypress';
 import {
     createSiteWithLoginPage,
     createUserForMFA,
-    DEFAULT_LANGUAGE,
     deleteAllEmails,
     getEmailBody,
     initiate,
     installMFAConfig,
-    prepareEmailCodeFactor
+    prepareEmailCodeFactor,
+    I18N
 } from './utils';
 import {faker} from '@faker-js/faker';
 
@@ -54,7 +54,7 @@ describe('Tests for the email template', () => {
         // GIVEN: A site with a server name and a module with a custom email template enabled
         const siteKey = faker.lorem.slug();
         const serverName = faker.internet.domainName();
-        createSiteWithLoginPage(siteKey, [DEFAULT_LANGUAGE], serverName);
+        createSiteWithLoginPage(siteKey, [I18N.defaultLanguage], serverName);
         enableModule('jahia-multi-factor-authentication-test-module-custom-mail-code-template', siteKey);
 
         // WHEN: Initiating the MFA process
