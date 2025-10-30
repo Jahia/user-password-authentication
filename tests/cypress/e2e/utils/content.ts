@@ -1,8 +1,18 @@
 import {addNode, createSite, deleteSite, enableModule, publishAndWaitJobEnding} from '@jahia/cypress';
 import 'cypress-iframe';
 import gql from 'graphql-tag';
-import {LoginStep} from '../pages/stepLogin';
+import {LoginStep} from '../pages';
 import {I18N} from './i18n';
+
+/**
+ * Returns the URL of the login page for the given site and language.
+ * Example: `/sites/dummy/myLoginPage.html` or, if `language` is specified, `/en/sites/dummy/myLoginPage.html`
+ * @param siteKey
+ * @param language
+ */
+export function getLoginPageURL(siteKey: string, language: string = undefined) {
+    return `${language ? '/' + language : ''}/sites/${siteKey}/${LoginStep.PAGE_NAME}.html`;
+}
 
 /**
  * Creates a new site with a login page. If a site matching this `siteKey` already exists, it is first deleted.
@@ -32,7 +42,7 @@ export function createSiteWithLoginPage(siteKey: string, languages = [I18N.defau
 
     // Workaround: open JContent edit iframe to trigger area creation
     cy.login();
-    cy.visit(`/cms/editframe/default/${siteLanguage}/sites/${siteKey}/${LoginStep.PAGE_NAME}.html?redirect=false`);
+    cy.visit(`/cms/editframe/default/${getLoginPageURL(siteKey, siteLanguage)}?redirect=false`);
     cy.get('div[type="area"][areaType="mfaui:authentication"]').should('exist');
     publishAndWaitJobEnding(`/sites/${siteKey}`, [siteLanguage]);
 }

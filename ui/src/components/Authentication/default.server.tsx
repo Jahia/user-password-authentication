@@ -14,11 +14,12 @@ jahiaComponent(
     displayName: "MFA Authentication Component",
     componentType: "view",
   },
-  (props: Props) => {
+  (props: Props, { renderContext }) => {
     // the API root is generated server-side
     const apiRoot = buildEndpointUrl("/modules/graphql");
     // pass the JCR props server-side -> client-side
     const content: Props = {
+      contextPath: renderContext.getRequest().getContextPath(),
       loginEmailFieldLabel: props.loginEmailFieldLabel,
       loginPasswordFieldLabel: props.loginPasswordFieldLabel,
       loginSubmitButtonLabel: props.loginSubmitButtonLabel,

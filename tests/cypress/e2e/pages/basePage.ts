@@ -1,3 +1,5 @@
+import {getLoginPageURL} from '../utils';
+
 /**
  * BasePage class containing common methods and selectors for page interactions
  */
@@ -9,13 +11,15 @@ export class BasePage {
     };
 
     /**
-     * Assert that a success message is visible
-     * @param message - Optional specific message to check for
+     * Assert that the user is successfully redirected
+     * @param siteKey - The site key of the site to check for
+     * @param language - Optional the language of the site to check for
+     * @param redirectUrl - Optional the expected redirect URL
      */
-    static assertSuccessMessage(message?: string): void {
-        cy.get(this.baseSelectors.successMessage).should('be.visible');
-        if (message) {
-            cy.get(this.baseSelectors.successMessage).should('contain.text', message);
+    static assertSuccessfullyRedirected(siteKey: string, language?: string, redirectUrl?: string): void {
+        cy.url().should('not.include', getLoginPageURL(siteKey, language));
+        if (redirectUrl) {
+            cy.url().should('include', redirectUrl);
         }
     }
 

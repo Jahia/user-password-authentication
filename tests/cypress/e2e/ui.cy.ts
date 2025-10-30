@@ -1,24 +1,24 @@
 import {deleteSite, deleteUser} from '@jahia/cypress';
 import {faker} from '@faker-js/faker';
-import {LoginStep, EmailFactorStep} from './pages';
+import {EmailFactorStep, LoginStep} from './pages';
 import {
     assertIsLoggedIn,
+    AuthenticationProps,
     createSiteWithLoginPage,
     createUserForMFA,
     deleteAllEmails,
     generateWrongCode,
+    getLoginPageURL,
     getVerificationCode,
+    I18N,
     installMFAConfig,
-    AuthenticationProps,
-    updateSiteLoginPageProps,
-    I18N
+    updateSiteLoginPageProps
 } from './utils';
 
 const SITE_KEY = 'sample-ui';
 const I18N_LOCALES = I18N.locales[I18N.defaultLanguage];
 const FACTOR_TYPE = 'email_code';
 const CODE_LENGTH = 6;
-const COUNTDOWN_TO_REDIRECT = 5;
 const INCOMPLETE_CODE_LENGTH = CODE_LENGTH - 2;
 const MAX_INVALID_ATTEMPTS = 3;
 const TIME_BEFORE_NEXT_CODE_MS = 3000;
@@ -66,7 +66,7 @@ describe('Tests for the UI module', () => {
 
             // Proceed with verification
             EmailFactorStep.submitVerificationCode(code);
-            EmailFactorStep.assertSuccessMessage(I18N_LOCALES['complete.successful']);
+            EmailFactorStep.assertSuccessfullyRedirected(SITE_KEY);
             assertIsLoggedIn(username);
         });
     });
@@ -77,7 +77,7 @@ describe('Tests for the UI module', () => {
         installMFAConfig('full-update-site.yml');
 
         // Change all props:
-        const newProps :AuthenticationProps = {
+        const newProps: AuthenticationProps = {
             loginEmailFieldLabel: 'Custom email label',
             loginPasswordFieldLabel: 'Custom pwd label',
             loginSubmitButtonLabel: 'Custom login label',
@@ -85,7 +85,8 @@ describe('Tests for the UI module', () => {
             loginAdditionalActionHtml: '<b>login additional action</b>',
             emailCodeVerificationFieldLabel: 'Custom code label',
             emailCodeVerificationSubmitButtonLabel: 'Custom verify label',
-            emailCodeVerificationAdditionalActionHtml: '<b>email code verification additional action</b>',
+            emailCodeVerificationAdditionalActionHtml:
+        '<b>email code verification additional action</b>',
             emailCodeVerificationAdditionalActionResendLabel: 'Custom resend label'
         };
         updateSiteLoginPageProps(siteKey, newProps);
@@ -135,7 +136,9 @@ describe('Tests for the UI module', () => {
         LoginStep.login(username, password);
 
         // Email factor step:
-        EmailFactorStep.assertContentMatches({submitButtonLabel: newProps.emailCodeVerificationSubmitButtonLabel});
+        EmailFactorStep.assertContentMatches({
+            submitButtonLabel: newProps.emailCodeVerificationSubmitButtonLabel
+        });
 
         // Cleanup
         deleteSite(siteKey);
@@ -177,7 +180,9 @@ describe('Tests for the UI module', () => {
 
         // Email factor step:
         EmailFactorStep.assertHeaderTitleMatches();
-        EmailFactorStep.assertContentMatches({submitButtonLabel: esProps.emailCodeVerificationSubmitButtonLabel});
+        EmailFactorStep.assertContentMatches({
+            submitButtonLabel: esProps.emailCodeVerificationSubmitButtonLabel
+        });
         EmailFactorStep.assertVerificationCodeSentMessage(email);
 
         // ----------
@@ -187,12 +192,16 @@ describe('Tests for the UI module', () => {
         installMFAConfig('multi-language-site-czech.yml'); // URL is /cs/sites/multi-language-site/myLoginPage.html
         LoginStep.triggerRedirect(siteKey, additionalLanguage);
 
-        LoginStep.assertContentMatches({submitButtonLabel: csProps.loginSubmitButtonLabel});
+        LoginStep.assertContentMatches({
+            submitButtonLabel: csProps.loginSubmitButtonLabel
+        });
         LoginStep.login(username, password);
 
         // Email factor step:
         EmailFactorStep.assertHeaderTitleMatches();
-        EmailFactorStep.assertContentMatches({submitButtonLabel: csProps.emailCodeVerificationSubmitButtonLabel});
+        EmailFactorStep.assertContentMatches({
+            submitButtonLabel: csProps.emailCodeVerificationSubmitButtonLabel
+        });
         EmailFactorStep.assertVerificationCodeSentMessage(email);
 
         // Cleanup
@@ -219,11 +228,16 @@ describe('Tests for the UI module', () => {
         getVerificationCode(email).then(code => {
             const wrongCode = generateWrongCode(code);
             EmailFactorStep.submitVerificationCode(wrongCode);
-            EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.verification_failed'].replace('{{factorType}}', FACTOR_TYPE));
+            EmailFactorStep.assertErrorMessage(
+                I18N_LOCALES['verify.verification_failed'].replace(
+                    '{{factorType}}',
+                    FACTOR_TYPE
+                )
+            );
 
             // Now enter the correct code
             EmailFactorStep.submitVerificationCode(code);
-            EmailFactorStep.assertSuccessMessage(I18N_LOCALES['complete.successful']);
+            EmailFactorStep.assertSuccessfullyRedirected(SITE_KEY);
             assertIsLoggedIn(username);
         });
     });
@@ -239,7 +253,12 @@ describe('Tests for the UI module', () => {
             // Make MAX_INVALID_ATTEMPTS failed verification attempts to trigger suspension
             for (let i = 0; i < MAX_INVALID_ATTEMPTS; i++) {
                 EmailFactorStep.submitVerificationCode(wrongCode);
-                EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.verification_failed'].replace('{{factorType}}', FACTOR_TYPE));
+                EmailFactorStep.assertErrorMessage(
+                    I18N_LOCALES['verify.verification_failed'].replace(
+                        '{{factorType}}',
+                        FACTOR_TYPE
+                    )
+                );
             }
 
             // One more attempt to confirm the user is suspended
@@ -265,7 +284,12 @@ describe('Tests for the UI module', () => {
             // Make MAX_INVALID_ATTEMPTS failed verification attempts to trigger suspension
             for (let i = 0; i < MAX_INVALID_ATTEMPTS; i++) {
                 EmailFactorStep.submitVerificationCode(wrongCode);
-                EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.verification_failed'].replace('{{factorType}}', FACTOR_TYPE));
+                EmailFactorStep.assertErrorMessage(
+                    I18N_LOCALES['verify.verification_failed'].replace(
+                        '{{factorType}}',
+                        FACTOR_TYPE
+                    )
+                );
             }
 
             // One more attempt to confirm the user is suspended
@@ -294,11 +318,16 @@ describe('Tests for the UI module', () => {
 
                 // First enter the old code to check it fails
                 EmailFactorStep.submitVerificationCode(code);
-                EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.verification_failed'].replace('{{factorType}}', FACTOR_TYPE));
+                EmailFactorStep.assertErrorMessage(
+                    I18N_LOCALES['verify.verification_failed'].replace(
+                        '{{factorType}}',
+                        FACTOR_TYPE
+                    )
+                );
 
                 // Now enter the correct code and authenticate
                 EmailFactorStep.submitVerificationCode(newCode);
-                EmailFactorStep.assertSuccessMessage(I18N_LOCALES['complete.successful']);
+                EmailFactorStep.assertSuccessfullyRedirected(SITE_KEY);
                 assertIsLoggedIn(username);
             });
         });
@@ -311,11 +340,16 @@ describe('Tests for the UI module', () => {
         LoginStep.selectEmailCodeFactor();
         getVerificationCode(email).then(code => {
             EmailFactorStep.submitVerificationCode('');
-            EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.code_too_short'].replace('{{codeLength}}', CODE_LENGTH.toString()));
+            EmailFactorStep.assertErrorMessage(
+                I18N_LOCALES['verify.code_too_short'].replace(
+                    '{{codeLength}}',
+                    CODE_LENGTH.toString()
+                )
+            );
 
             // Now enter the correct code
             EmailFactorStep.submitVerificationCode(code);
-            EmailFactorStep.assertSuccessMessage(I18N_LOCALES['complete.successful']);
+            EmailFactorStep.assertSuccessfullyRedirected(SITE_KEY);
             assertIsLoggedIn(username);
         });
     });
@@ -326,48 +360,78 @@ describe('Tests for the UI module', () => {
         LoginStep.login(username, password);
         LoginStep.selectEmailCodeFactor();
         getVerificationCode(email).then(code => {
-            EmailFactorStep.submitVerificationCode(faker.string.numeric(INCOMPLETE_CODE_LENGTH));
-            EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.code_too_short'].replace('{{codeLength}}', CODE_LENGTH.toString()));
+            EmailFactorStep.submitVerificationCode(
+                faker.string.numeric(INCOMPLETE_CODE_LENGTH)
+            );
+            EmailFactorStep.assertErrorMessage(
+                I18N_LOCALES['verify.code_too_short'].replace(
+                    '{{codeLength}}',
+                    CODE_LENGTH.toString()
+                )
+            );
 
             // Now enter the correct code
             EmailFactorStep.submitVerificationCode(code);
-            EmailFactorStep.assertSuccessMessage(I18N_LOCALES['complete.successful']);
+            EmailFactorStep.assertSuccessfullyRedirected(SITE_KEY);
             assertIsLoggedIn(username);
         });
     });
 
     // NOTE: might require adjustments due to https://github.com/Jahia/jahia-multi-factor-authentication/issues/62
-    it('Should automatically navigate to the provided redirect page (using url-encoded url)', () => {
-        cy.visit(`/sites/${SITE_KEY}/${LoginStep.PAGE_NAME}.html?redirect=%2Fcms%2Frender%2Flive%2F${I18N.defaultLanguage}%2Fsites%2F${SITE_KEY}%2Fhome.html%3Fparam%3Dtest`);
-        LoginStep.login(username, password);
-        LoginStep.selectEmailCodeFactor();
-        getVerificationCode(email).then(code => {
-            EmailFactorStep.submitVerificationCode(code);
-
-            EmailFactorStep.assertRedirectUrlMessage(`/cms/render/live/${I18N.defaultLanguage}/sites/${SITE_KEY}/home.html?param=test`);
-            EmailFactorStep.assertCountdownMessage(COUNTDOWN_TO_REDIRECT);
-
-            cy.url({timeout: 15000}).should('contain', `/cms/render/live/${I18N.defaultLanguage}/sites/${SITE_KEY}/home.html`);
-            cy.url({timeout: 15000}).should('match', /\?param=test$/);
-            cy.url({timeout: 15000}).should('not.contain', `${LoginStep.PAGE_NAME}.html`);
+    const redirectPages = [
+        `/sites/${SITE_KEY}/otherPage.html`, // Absolute URL, same site, no parameter
+        `/sites/${SITE_KEY}/otherPage.html?param=test`, // Absolute URL, same site, with parameter
+        '/sites/otherSite/otherPage.html?param=test', // Absolute URL, different site, with parameter
+        '/my/other/page?param=test', // Absolute URL, not a site, with parameter
+        'otherPage.html?param=test', // Relative URL, no parameter
+        Cypress.env('JAHIA_URL') + '/sample.html' // Same domain (with protocol)
+    ];
+    redirectPages.forEach(redirectPage => {
+        it(`Should automatically navigate to the provided redirect page (${redirectPage})`, () => {
+            const encodedRedirectPage = encodeURIComponent(redirectPage);
+            cy.visit(`${getLoginPageURL(SITE_KEY)}?redirect=${encodedRedirectPage}`);
+            LoginStep.login(username, password);
+            LoginStep.selectEmailCodeFactor();
+            getVerificationCode(email).then(code => {
+                // Intercept the redirect to the root page, to validate the root page was not visited after submitting the code
+                cy.intercept('GET', '/').as('rootRedirect');
+                EmailFactorStep.submitVerificationCode(code);
+                EmailFactorStep.assertSuccessfullyRedirected(
+                    SITE_KEY,
+                    I18N.defaultLanguage,
+                    redirectPage
+                );
+                // Make sure the root page was not visited:
+                cy.get('@rootRedirect.all').should('have.length', 0);
+            });
         });
     });
-
-    // NOTE: might be deprecated due to https://github.com/Jahia/jahia-multi-factor-authentication/issues/62
-    it('Should navigate to the provided redirect page using "Go now" button (using plain url)', () => {
-        cy.visit(`/sites/${SITE_KEY}/${LoginStep.PAGE_NAME}.html?redirect=/cms/render/live/${I18N.defaultLanguage}/sites/${SITE_KEY}/home.html?param=test`);
-        LoginStep.login(username, password);
-        LoginStep.selectEmailCodeFactor();
-        getVerificationCode(email).then(code => {
-            EmailFactorStep.submitVerificationCode(code);
-
-            EmailFactorStep.assertRedirectUrlMessage(`/cms/render/live/${I18N.defaultLanguage}/sites/${SITE_KEY}/home.html?param=test`);
-            EmailFactorStep.assertCountdownMessage(COUNTDOWN_TO_REDIRECT);
-            EmailFactorStep.clickRedirectNowButton();
-
-            cy.url({timeout: 15000}).should('contain', `/cms/render/live/${I18N.defaultLanguage}/sites/${SITE_KEY}/home.html`);
-            cy.url({timeout: 15000}).should('match', /\?param=test$/);
-            cy.url({timeout: 15000}).should('not.contain', `${LoginStep.PAGE_NAME}.html`);
+    const prohibitedRedirectPages = [
+    // eslint-disable-next-line no-template-curly-in-string
+        '//sites/${SITE_KEY}/otherPage.html', // Starting with '//'
+        // eslint-disable-next-line no-script-url
+        'javascript:alert(\'XSS attack\')', // XSS attack using the 'javascript:' protocol
+        'javascript%3Aalert%28%27XSS%20attack%27%29', // XSS attack using the 'javascript:' protocol (URL encoded)
+        'data:text/html,<script>alert(\'XSS\')</script>', // XSS attack using the 'data:' protocol
+        'http://otherdomain.com/fake.html', // External site (http)
+        'https://otherdomain.com/fake.html' // External site (https)
+    ];
+    prohibitedRedirectPages.forEach(redirectPage => {
+        it(`Should not navigate to the provided redirect page (${redirectPage})`, () => {
+            const encodedRedirectPage = encodeURIComponent(redirectPage);
+            cy.visit(`${getLoginPageURL(SITE_KEY)}?redirect=${encodedRedirectPage}`);
+            LoginStep.login(username, password);
+            LoginStep.selectEmailCodeFactor();
+            getVerificationCode(email).then(code => {
+                // Intercept the redirect to the root page, to validate the root page was visited after submitting the code
+                cy.intercept('GET', '/').as('rootRedirect');
+                EmailFactorStep.submitVerificationCode(code);
+                EmailFactorStep.assertSuccessfullyRedirected(
+                    SITE_KEY,
+                    I18N.defaultLanguage
+                );
+                cy.wait('@rootRedirect');
+            });
         });
     });
 
@@ -382,19 +446,27 @@ describe('Tests for the UI module', () => {
             EmailFactorStep.resendCode();
             // Build the expected time left string e.g. "[1,2,3]" to be used in Regexp
             // Note: time left can vary depending on execution speed, so we check only the pattern here
-            const timeLeft = '[' + Array.from({length: (TIME_BEFORE_NEXT_CODE_MS / 1000)}, (_, i) => i + 1).join(',') + ']';
-            EmailFactorStep.assertErrorMessage(new RegExp(
-                I18N_LOCALES['prepare.rate_limit_exceeded']
-                    .replace('{{factorType}}', FACTOR_TYPE)
-                    .replace('{{user}}', username)
-                    .replace('{{nextRetryInSeconds}}', timeLeft)
-            ));
+            const timeLeft =
+        '[' +
+        Array.from(
+            {length: TIME_BEFORE_NEXT_CODE_MS / 1000},
+            (_, i) => i + 1
+        ).join(',') +
+        ']';
+            EmailFactorStep.assertErrorMessage(
+                new RegExp(
+                    I18N_LOCALES['prepare.rate_limit_exceeded']
+                        .replace('{{factorType}}', FACTOR_TYPE)
+                        .replace('{{user}}', username)
+                        .replace('{{nextRetryInSeconds}}', timeLeft)
+                )
+            );
 
             // eslint-disable-next-line cypress/no-unnecessary-waiting
             cy.wait(1000);
             // Finally submit the initially received code
             EmailFactorStep.submitVerificationCode(code);
-            EmailFactorStep.assertSuccessMessage(I18N_LOCALES['complete.successful']);
+            EmailFactorStep.assertSuccessfullyRedirected(SITE_KEY);
             assertIsLoggedIn(username);
         });
     });
@@ -419,11 +491,16 @@ describe('Tests for the UI module', () => {
 
                 // First enter the old code to check it fails
                 EmailFactorStep.submitVerificationCode(firstCode);
-                EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.verification_failed'].replace('{{factorType}}', FACTOR_TYPE));
+                EmailFactorStep.assertErrorMessage(
+                    I18N_LOCALES['verify.verification_failed'].replace(
+                        '{{factorType}}',
+                        FACTOR_TYPE
+                    )
+                );
 
                 // Now enter the correct code
                 EmailFactorStep.submitVerificationCode(secondCode);
-                EmailFactorStep.assertSuccessMessage(I18N_LOCALES['complete.successful']);
+                EmailFactorStep.assertSuccessfullyRedirected(SITE_KEY);
                 assertIsLoggedIn(username);
             });
         });
@@ -447,13 +524,21 @@ describe('Tests for the UI module', () => {
             // User is still rate-limited even when re-starting the flow
             // Note: time left can vary depending on execution speed, so we check only the pattern here
             //       deducting 1 second used for the wait above
-            const timeLeft = '[' + Array.from({length: (TIME_BEFORE_NEXT_CODE_MS / 1000) - 1}, (_, i) => i + 1).join(',') + ']';
-            EmailFactorStep.assertErrorMessage(new RegExp(
-                I18N_LOCALES['prepare.rate_limit_exceeded']
-                    .replace('{{factorType}}', FACTOR_TYPE)
-                    .replace('{{user}}', username)
-                    .replace('{{nextRetryInSeconds}}', timeLeft)
-            ));
+            const timeLeft =
+        '[' +
+        Array.from(
+            {length: TIME_BEFORE_NEXT_CODE_MS / 1000 - 1},
+            (_, i) => i + 1
+        ).join(',') +
+        ']';
+            EmailFactorStep.assertErrorMessage(
+                new RegExp(
+                    I18N_LOCALES['prepare.rate_limit_exceeded']
+                        .replace('{{factorType}}', FACTOR_TYPE)
+                        .replace('{{user}}', username)
+                        .replace('{{nextRetryInSeconds}}', timeLeft)
+                )
+            );
 
             // Wait for the rate-limit to expire
             // eslint-disable-next-line cypress/no-unnecessary-waiting
@@ -472,11 +557,16 @@ describe('Tests for the UI module', () => {
 
                 // First enter the old code to check it fails
                 EmailFactorStep.submitVerificationCode(firstCode);
-                EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.verification_failed'].replace('{{factorType}}', FACTOR_TYPE));
+                EmailFactorStep.assertErrorMessage(
+                    I18N_LOCALES['verify.verification_failed'].replace(
+                        '{{factorType}}',
+                        FACTOR_TYPE
+                    )
+                );
 
                 // Now enter the correct code
                 EmailFactorStep.submitVerificationCode(secondCode);
-                EmailFactorStep.assertSuccessMessage(I18N_LOCALES['complete.successful']);
+                EmailFactorStep.assertSuccessfullyRedirected(SITE_KEY);
                 assertIsLoggedIn(username);
             });
         });
