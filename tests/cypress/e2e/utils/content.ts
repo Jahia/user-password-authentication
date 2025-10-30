@@ -7,8 +7,8 @@ import {I18N} from './i18n';
 /**
  * Returns the URL of the login page for the given site and language.
  * Example: `/sites/dummy/myLoginPage.html` or, if `language` is specified, `/en/sites/dummy/myLoginPage.html`
- * @param siteKey
- * @param language
+ * @param siteKey the site key
+ * @param language the language
  */
 export function getLoginPageURL(siteKey: string, language: string = undefined) {
     return `${language ? '/' + language : ''}/sites/${siteKey}/${LoginStep.PAGE_NAME}.html`;
