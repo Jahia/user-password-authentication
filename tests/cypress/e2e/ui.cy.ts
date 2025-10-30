@@ -85,8 +85,7 @@ describe('Tests for the UI module', () => {
             loginAdditionalActionHtml: '<b>login additional action</b>',
             emailCodeVerificationFieldLabel: 'Custom code label',
             emailCodeVerificationSubmitButtonLabel: 'Custom verify label',
-            emailCodeVerificationAdditionalActionHtml:
-        '<b>email code verification additional action</b>',
+            emailCodeVerificationAdditionalActionHtml: '<b>email code verification additional action</b>',
             emailCodeVerificationAdditionalActionResendLabel: 'Custom resend label'
         };
         updateSiteLoginPageProps(siteKey, newProps);
@@ -136,9 +135,7 @@ describe('Tests for the UI module', () => {
         LoginStep.login(username, password);
 
         // Email factor step:
-        EmailFactorStep.assertContentMatches({
-            submitButtonLabel: newProps.emailCodeVerificationSubmitButtonLabel
-        });
+        EmailFactorStep.assertContentMatches({submitButtonLabel: newProps.emailCodeVerificationSubmitButtonLabel});
 
         // Cleanup
         deleteSite(siteKey);
@@ -180,9 +177,7 @@ describe('Tests for the UI module', () => {
 
         // Email factor step:
         EmailFactorStep.assertHeaderTitleMatches();
-        EmailFactorStep.assertContentMatches({
-            submitButtonLabel: esProps.emailCodeVerificationSubmitButtonLabel
-        });
+        EmailFactorStep.assertContentMatches({submitButtonLabel: esProps.emailCodeVerificationSubmitButtonLabel});
         EmailFactorStep.assertVerificationCodeSentMessage(email);
 
         // ----------
@@ -192,16 +187,12 @@ describe('Tests for the UI module', () => {
         installMFAConfig('multi-language-site-czech.yml'); // URL is /cs/sites/multi-language-site/myLoginPage.html
         LoginStep.triggerRedirect(siteKey, additionalLanguage);
 
-        LoginStep.assertContentMatches({
-            submitButtonLabel: csProps.loginSubmitButtonLabel
-        });
+        LoginStep.assertContentMatches({submitButtonLabel: csProps.loginSubmitButtonLabel});
         LoginStep.login(username, password);
 
         // Email factor step:
         EmailFactorStep.assertHeaderTitleMatches();
-        EmailFactorStep.assertContentMatches({
-            submitButtonLabel: csProps.emailCodeVerificationSubmitButtonLabel
-        });
+        EmailFactorStep.assertContentMatches({submitButtonLabel: csProps.emailCodeVerificationSubmitButtonLabel});
         EmailFactorStep.assertVerificationCodeSentMessage(email);
 
         // Cleanup
@@ -228,12 +219,7 @@ describe('Tests for the UI module', () => {
         getVerificationCode(email).then(code => {
             const wrongCode = generateWrongCode(code);
             EmailFactorStep.submitVerificationCode(wrongCode);
-            EmailFactorStep.assertErrorMessage(
-                I18N_LOCALES['verify.verification_failed'].replace(
-                    '{{factorType}}',
-                    FACTOR_TYPE
-                )
-            );
+            EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.verification_failed'].replace('{{factorType}}', FACTOR_TYPE));
 
             // Now enter the correct code
             EmailFactorStep.submitVerificationCode(code);
@@ -253,12 +239,7 @@ describe('Tests for the UI module', () => {
             // Make MAX_INVALID_ATTEMPTS failed verification attempts to trigger suspension
             for (let i = 0; i < MAX_INVALID_ATTEMPTS; i++) {
                 EmailFactorStep.submitVerificationCode(wrongCode);
-                EmailFactorStep.assertErrorMessage(
-                    I18N_LOCALES['verify.verification_failed'].replace(
-                        '{{factorType}}',
-                        FACTOR_TYPE
-                    )
-                );
+                EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.verification_failed'].replace('{{factorType}}', FACTOR_TYPE));
             }
 
             // One more attempt to confirm the user is suspended
@@ -284,12 +265,7 @@ describe('Tests for the UI module', () => {
             // Make MAX_INVALID_ATTEMPTS failed verification attempts to trigger suspension
             for (let i = 0; i < MAX_INVALID_ATTEMPTS; i++) {
                 EmailFactorStep.submitVerificationCode(wrongCode);
-                EmailFactorStep.assertErrorMessage(
-                    I18N_LOCALES['verify.verification_failed'].replace(
-                        '{{factorType}}',
-                        FACTOR_TYPE
-                    )
-                );
+                EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.verification_failed'].replace('{{factorType}}', FACTOR_TYPE));
             }
 
             // One more attempt to confirm the user is suspended
@@ -318,12 +294,7 @@ describe('Tests for the UI module', () => {
 
                 // First enter the old code to check it fails
                 EmailFactorStep.submitVerificationCode(code);
-                EmailFactorStep.assertErrorMessage(
-                    I18N_LOCALES['verify.verification_failed'].replace(
-                        '{{factorType}}',
-                        FACTOR_TYPE
-                    )
-                );
+                EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.verification_failed'].replace('{{factorType}}', FACTOR_TYPE));
 
                 // Now enter the correct code and authenticate
                 EmailFactorStep.submitVerificationCode(newCode);
@@ -340,12 +311,7 @@ describe('Tests for the UI module', () => {
         LoginStep.selectEmailCodeFactor();
         getVerificationCode(email).then(code => {
             EmailFactorStep.submitVerificationCode('');
-            EmailFactorStep.assertErrorMessage(
-                I18N_LOCALES['verify.code_too_short'].replace(
-                    '{{codeLength}}',
-                    CODE_LENGTH.toString()
-                )
-            );
+            EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.code_too_short'].replace('{{codeLength}}', CODE_LENGTH.toString()));
 
             // Now enter the correct code
             EmailFactorStep.submitVerificationCode(code);
@@ -360,15 +326,8 @@ describe('Tests for the UI module', () => {
         LoginStep.login(username, password);
         LoginStep.selectEmailCodeFactor();
         getVerificationCode(email).then(code => {
-            EmailFactorStep.submitVerificationCode(
-                faker.string.numeric(INCOMPLETE_CODE_LENGTH)
-            );
-            EmailFactorStep.assertErrorMessage(
-                I18N_LOCALES['verify.code_too_short'].replace(
-                    '{{codeLength}}',
-                    CODE_LENGTH.toString()
-                )
-            );
+            EmailFactorStep.submitVerificationCode(faker.string.numeric(INCOMPLETE_CODE_LENGTH));
+            EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.code_too_short'].replace('{{codeLength}}', CODE_LENGTH.toString()));
 
             // Now enter the correct code
             EmailFactorStep.submitVerificationCode(code);
@@ -482,12 +441,7 @@ describe('Tests for the UI module', () => {
 
                 // First enter the old code to check it fails
                 EmailFactorStep.submitVerificationCode(firstCode);
-                EmailFactorStep.assertErrorMessage(
-                    I18N_LOCALES['verify.verification_failed'].replace(
-                        '{{factorType}}',
-                        FACTOR_TYPE
-                    )
-                );
+                EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.verification_failed'].replace('{{factorType}}', FACTOR_TYPE));
 
                 // Now enter the correct code
                 EmailFactorStep.submitVerificationCode(secondCode);
@@ -540,12 +494,7 @@ describe('Tests for the UI module', () => {
 
                 // First enter the old code to check it fails
                 EmailFactorStep.submitVerificationCode(firstCode);
-                EmailFactorStep.assertErrorMessage(
-                    I18N_LOCALES['verify.verification_failed'].replace(
-                        '{{factorType}}',
-                        FACTOR_TYPE
-                    )
-                );
+                EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.verification_failed'].replace('{{factorType}}', FACTOR_TYPE));
 
                 // Now enter the correct code
                 EmailFactorStep.submitVerificationCode(secondCode);
