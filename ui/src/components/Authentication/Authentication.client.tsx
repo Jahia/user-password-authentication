@@ -3,7 +3,7 @@ import LoginForm from "./LoginForm.client.jsx";
 import { ApiRootContext } from "../../hooks/ApiRootContext.jsx";
 import EmailCodeVerificationForm from "./EmailCodeVerificationForm.client.jsx";
 import type { Props } from "./types";
-import { redirect } from "../../services/redirect";
+import { redirect } from "../../services";
 
 enum Step {
   LOGIN,

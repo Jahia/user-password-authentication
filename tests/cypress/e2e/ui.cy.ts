@@ -377,7 +377,6 @@ describe('Tests for the UI module', () => {
         });
     });
 
-    // NOTE: might require adjustments due to https://github.com/Jahia/jahia-multi-factor-authentication/issues/62
     const redirectPages = [
         `/sites/${SITE_KEY}/otherPage.html`, // Absolute URL, same site, no parameter
         `/sites/${SITE_KEY}/otherPage.html?param=test`, // Absolute URL, same site, with parameter
@@ -387,7 +386,7 @@ describe('Tests for the UI module', () => {
         Cypress.env('JAHIA_URL') + '/sample.html' // Same domain (with protocol)
     ];
     redirectPages.forEach(redirectPage => {
-        it(`Should automatically navigate to the provided redirect page (${redirectPage})`, () => {
+        it(`Should be redirected to the provided redirect page (${redirectPage})`, () => {
             const encodedRedirectPage = encodeURIComponent(redirectPage);
             cy.visit(`${getLoginPageURL(SITE_KEY)}?redirect=${encodedRedirectPage}`);
             LoginStep.login(username, password);
@@ -407,7 +406,7 @@ describe('Tests for the UI module', () => {
         });
     });
     const prohibitedRedirectPages = [
-    // eslint-disable-next-line no-template-curly-in-string
+        // eslint-disable-next-line no-template-curly-in-string
         '//sites/${SITE_KEY}/otherPage.html', // Starting with '//'
         // eslint-disable-next-line no-script-url
         'javascript:alert(\'XSS attack\')', // XSS attack using the 'javascript:' protocol
@@ -417,7 +416,7 @@ describe('Tests for the UI module', () => {
         'https://otherdomain.com/fake.html' // External site (https)
     ];
     prohibitedRedirectPages.forEach(redirectPage => {
-        it(`Should not navigate to the provided redirect page (${redirectPage})`, () => {
+        it(`Should be redirected to / when a prohibited redirect page is passed (${redirectPage})`, () => {
             const encodedRedirectPage = encodeURIComponent(redirectPage);
             cy.visit(`${getLoginPageURL(SITE_KEY)}?redirect=${encodedRedirectPage}`);
             LoginStep.login(username, password);
@@ -446,21 +445,13 @@ describe('Tests for the UI module', () => {
             EmailFactorStep.resendCode();
             // Build the expected time left string e.g. "[1,2,3]" to be used in Regexp
             // Note: time left can vary depending on execution speed, so we check only the pattern here
-            const timeLeft =
-        '[' +
-        Array.from(
-            {length: TIME_BEFORE_NEXT_CODE_MS / 1000},
-            (_, i) => i + 1
-        ).join(',') +
-        ']';
-            EmailFactorStep.assertErrorMessage(
-                new RegExp(
-                    I18N_LOCALES['prepare.rate_limit_exceeded']
-                        .replace('{{factorType}}', FACTOR_TYPE)
-                        .replace('{{user}}', username)
-                        .replace('{{nextRetryInSeconds}}', timeLeft)
-                )
-            );
+            const timeLeft = '[' + Array.from({length: (TIME_BEFORE_NEXT_CODE_MS / 1000)}, (_, i) => i + 1).join(',') + ']';
+            EmailFactorStep.assertErrorMessage(new RegExp(
+                I18N_LOCALES['prepare.rate_limit_exceeded']
+                    .replace('{{factorType}}', FACTOR_TYPE)
+                    .replace('{{user}}', username)
+                    .replace('{{nextRetryInSeconds}}', timeLeft)
+            ));
 
             // eslint-disable-next-line cypress/no-unnecessary-waiting
             cy.wait(1000);
@@ -524,21 +515,13 @@ describe('Tests for the UI module', () => {
             // User is still rate-limited even when re-starting the flow
             // Note: time left can vary depending on execution speed, so we check only the pattern here
             //       deducting 1 second used for the wait above
-            const timeLeft =
-        '[' +
-        Array.from(
-            {length: TIME_BEFORE_NEXT_CODE_MS / 1000 - 1},
-            (_, i) => i + 1
-        ).join(',') +
-        ']';
-            EmailFactorStep.assertErrorMessage(
-                new RegExp(
-                    I18N_LOCALES['prepare.rate_limit_exceeded']
-                        .replace('{{factorType}}', FACTOR_TYPE)
-                        .replace('{{user}}', username)
-                        .replace('{{nextRetryInSeconds}}', timeLeft)
-                )
-            );
+            const timeLeft = '[' + Array.from({length: (TIME_BEFORE_NEXT_CODE_MS / 1000) - 1}, (_, i) => i + 1).join(',') + ']';
+            EmailFactorStep.assertErrorMessage(new RegExp(
+                I18N_LOCALES['prepare.rate_limit_exceeded']
+                    .replace('{{factorType}}', FACTOR_TYPE)
+                    .replace('{{user}}', username)
+                    .replace('{{nextRetryInSeconds}}', timeLeft)
+            ));
 
             // Wait for the rate-limit to expire
             // eslint-disable-next-line cypress/no-unnecessary-waiting

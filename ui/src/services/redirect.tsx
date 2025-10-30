@@ -37,7 +37,7 @@ function getSafeRedirect(redirect: string | null, contextPath: string): string {
  * @param {string} contextPath - The base context path used to validate the redirect parameter.
  * @return {void} This function does not return a value.
  */
-export function redirect(contextPath: string): void {
+export default function redirect(contextPath: string): void {
   const urlParams = new URLSearchParams(window.location.search);
   const redirectParam = urlParams.get("redirect");
 
