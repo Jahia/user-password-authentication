@@ -244,7 +244,7 @@ describe('Tests for the UI module', () => {
 
             // One more attempt to confirm the user is suspended
             EmailFactorStep.submitVerificationCode(wrongCode);
-            EmailFactorStep.assertErrorMessage(I18N_LOCALES.suspended_user);
+            EmailFactorStep.assertErrorMessage(I18N_LOCALES.suspended_user.replace('{{suspensionDurationInHours}}', '1'));
 
             // Wait for suspension to be lifted
             cy.wait(SUSPENSION_TIME_MS + 1000);
@@ -270,12 +270,12 @@ describe('Tests for the UI module', () => {
 
             // One more attempt to confirm the user is suspended
             EmailFactorStep.submitVerificationCode(wrongCode);
-            EmailFactorStep.assertErrorMessage(I18N_LOCALES.suspended_user);
+            EmailFactorStep.assertErrorMessage(I18N_LOCALES.suspended_user.replace('{{suspensionDurationInHours}}', '1'));
 
             // Now try to re-initiate the flow and expect suspension message
             LoginStep.triggerRedirect(SITE_KEY);
             LoginStep.login(username, password);
-            LoginStep.assertErrorMessage(I18N_LOCALES.suspended_user);
+            EmailFactorStep.assertErrorMessage(I18N_LOCALES.suspended_user.replace('{{suspensionDurationInHours}}', '1'));
 
             // Wait for suspension to be lifted
             cy.wait(SUSPENSION_TIME_MS + 1000);
@@ -301,6 +301,25 @@ describe('Tests for the UI module', () => {
                 EmailFactorStep.assertSuccessfullyRedirected(SITE_KEY);
                 assertIsLoggedIn(username);
             });
+        });
+    });
+
+    it('Should be suspended when reaching the limit of INVALID attempts and the suspension duration be displayed', () => {
+        installMFAConfig('sample-ui-long-suspension.yml');
+        LoginStep.triggerRedirect(SITE_KEY);
+        LoginStep.login(username, password);
+        LoginStep.selectEmailCodeFactor();
+        getVerificationCode(email).then(code => {
+            const wrongCode = generateWrongCode(code);
+
+            // Make MAX_INVALID_ATTEMPTS failed verification attempts to trigger suspension
+            for (let i = 0; i < MAX_INVALID_ATTEMPTS; i++) {
+                EmailFactorStep.submitVerificationCode(wrongCode);
+                EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.verification_failed'].replace('{{factorType}}', FACTOR_TYPE));
+            }
+
+            EmailFactorStep.submitVerificationCode(wrongCode);
+            EmailFactorStep.assertErrorMessage(I18N_LOCALES.suspended_user.replace('{{suspensionDurationInHours}}', '27')); // 97200 seconds = 27 hours
         });
     });
 

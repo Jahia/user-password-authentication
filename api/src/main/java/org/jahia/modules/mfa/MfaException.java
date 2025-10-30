@@ -20,21 +20,15 @@ public class MfaException extends Exception {
     }
 
     public MfaException(String code, String argumentKey, String argumentValue) {
-        super();
-        this.code = code;
-        this.arguments = Map.of(argumentKey, argumentValue);
+        this(code, Map.of(argumentKey, argumentValue));
     }
 
     public MfaException(String code, String argument1Key, String argument1Value, String argument2Key, String argument2Value) {
-        super();
-        this.code = code;
-        this.arguments = Map.of(argument1Key, argument1Value, argument2Key, argument2Value);
+        this(code, Map.of(argument1Key, argument1Value, argument2Key, argument2Value));
     }
 
     public MfaException(String code, String argument1Key, String argument1Value, String argument2Key, String argument2Value, String argument3Key, String argument3Value) {
-        super();
-        this.code = code;
-        this.arguments = Map.of(argument1Key, argument1Value, argument2Key, argument2Value, argument3Key, argument3Value);
+        this(code, Map.of(argument1Key, argument1Value, argument2Key, argument2Value, argument3Key, argument3Value));
     }
 
     public String getCode() {

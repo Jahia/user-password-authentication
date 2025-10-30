@@ -260,15 +260,21 @@ public class MfaServiceImpl implements MfaService {
         validateUserNotSuspended(user);
         if (hasReachedAuthFailuresCountLimit(user.getPath(), provider)) {
             suspendUser(request, user, provider);
-            throw new MfaException("suspended_user");
+            throwSuspendedUserException();
         }
     }
 
     private void validateUserNotSuspended(JCRUserNode user) throws MfaException {
         if (isUserSuspended(user.getPath())) {
             logger.warn("User {} is suspended", user.getPath());
-            throw new MfaException("suspended_user");
+            throwSuspendedUserException();
         }
+    }
+
+    private void throwSuspendedUserException() throws MfaException {
+        // convert and round up suspension in seconds to hours
+        int suspensionDurationInHours = (int) Math.ceil(mfaConfigurationService.getUserTemporarySuspensionSeconds() / 3600.0);
+        throw new MfaException("suspended_user", "suspensionDurationInHours", Integer.toString(suspensionDurationInHours));
     }
 
     private boolean isUserSuspended(String userPath) throws MfaException {

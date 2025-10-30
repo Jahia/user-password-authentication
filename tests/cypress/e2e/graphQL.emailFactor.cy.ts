@@ -175,7 +175,7 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
         });
     });
 
-    it.only('Should be suspended when multiple wrong verification codes are entered in a row', () => {
+    it('Should be suspended when multiple wrong verification codes are entered in a row', () => {
         cy.log('0- installing the MFA configuration');
         // Config is:
         // maxAuthFailuresBeforeLock: 3
@@ -209,10 +209,14 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
             });
             wrongCode = generateWrongCode(wrongCode);
             cy.log('4th attempt: ' + wrongCode);
-            verifyEmailCodeFactorAndExpectError(wrongCode, 'suspended_user');
+            verifyEmailCodeFactorAndExpectError(wrongCode, 'suspended_user', {
+                suspensionDurationInHours: value => expect(value).to.eq('1') // 6 seconds rounded up to 1 hour
+            });
             assertIsSuspended(TEST_USER.username());
             cy.log('Even the valid code is not accepted: ' + code);
-            verifyEmailCodeFactorAndExpectError(wrongCode, 'suspended_user');
+            verifyEmailCodeFactorAndExpectError(wrongCode, 'suspended_user', {
+                suspensionDurationInHours: value => expect(value).to.eq('1') // 6 seconds rounded up to 1 hour
+            });
             // Wait until the suspension expires
             // eslint-disable-next-line cypress/no-unnecessary-waiting
             cy.wait(6000);
