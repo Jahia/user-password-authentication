@@ -7,12 +7,15 @@ import org.jahia.services.content.JCRPropertyWrapper;
 import org.jahia.services.content.JCRTemplate;
 import org.jahia.services.content.decorator.JCRNodeDecorator;
 import org.jahia.services.content.decorator.JCRUserNode;
+import org.jahia.services.security.*;
 import org.jahia.services.usermanager.JahiaUserManagerService;
 import org.osgi.service.component.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.jcr.RepositoryException;
+import javax.security.auth.login.AccountNotFoundException;
+import javax.security.auth.login.LoginException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -31,10 +34,16 @@ public class MfaServiceImpl implements MfaService {
     private static final String MFA_SESSION_KEY = "mfa_session";
     private static final String MFA_SUSPENDED_USER_MIXIN = "mfa:suspendedUser";
     private static final String MFA_SUSPENDED_SINCE_PROP = "mfa:suspendedSince";
+    private static final AuthenticationOptions AUTH_OPTIONS = AuthenticationOptions.Builder.withDefaults()
+            // TODO disable it until https://github.com/Jahia/jahia-multi-factor-authentication/issues/68 is implemented
+            .shouldRememberMe(false)
+            .build();
 
     private JahiaUserManagerService userManagerService;
     private MfaFactorRegistry factorRegistry;
     private volatile MfaConfigurationService mfaConfigurationService;
+    private AuthenticationService authenticationService;
+
     /**
      * A thread-safe cache used for storing authentication failure details of users.
      * <p>
@@ -83,6 +92,11 @@ public class MfaServiceImpl implements MfaService {
 
     public void unsetOrUpdateMfaConfigurationService(MfaConfigurationService mfaConfigurationService) {
         this.mfaConfigurationService = null;
+    }
+
+    @Reference
+    public void setAuthenticationService(AuthenticationService authenticationService) {
+        this.authenticationService = authenticationService;
     }
 
     @Activate
@@ -134,15 +148,19 @@ public class MfaServiceImpl implements MfaService {
     public MfaSession initiateMfa(String username, String password, String siteKey, HttpServletRequest request) throws MfaException {
         logger.info("Initiating MFA for user: {}", username);
 
-        // Todo - site user check ?
-        JCRUserNode user = AuthHelper.lookupUserFromCredentials(username, password, null);
-        if (user == null) {
-            logger.warn("Invalid credentials for user: {}", username);
+        AuthenticationRequest authenticationRequest = new AuthenticationRequest(username, password, siteKey, true);
+        JCRUserNode user;
+        try {
+            user = authenticationService.getUserNodeFromCredentials(authenticationRequest);
+        } catch (IllegalArgumentException | LoginException e) {
+            logger.warn("Unable to authenticate the user: {}", username);
+            logger.debug("Authentication error", e);
             throw new MfaException("authentication_failed");
         }
+
         validateUserNotSuspended(user);
 
-        HttpSession httpSession = request.getSession(true);
+        HttpSession httpSession = request.getSession();
         Locale userLocale;
         try {
             userLocale = user.hasProperty("preferredLanguage") ?
@@ -229,7 +247,15 @@ public class MfaServiceImpl implements MfaService {
             if (isAllRequiredFactorsCompleted(session)) {
                 session.setState(MfaSessionState.COMPLETED);
                 logger.info("All MFA factors completed for user: {}, proceed with authentication", session.getUserId());
-                AuthHelper.authenticateUser(request, user);
+
+                try {
+                    authenticationService.authenticate(user, AUTH_OPTIONS, request, null);
+                } catch (InvalidSessionLoginException e) {
+                    // TODO should we something else in this case?
+                    throw new IllegalStateException("Invalid session login", e);
+                } catch (AccountNotFoundException e) {
+                    throw new IllegalStateException("Account not found", e);
+                }
                 failuresCache.invalidate(user.getPath()); // clear any failure attempts for that user
             }
         } catch (Exception e) {
