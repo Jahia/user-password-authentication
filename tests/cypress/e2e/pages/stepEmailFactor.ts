@@ -101,36 +101,6 @@ export class EmailFactorStep extends BasePage {
     }
 
     /**
-     * Assert that the redirect URL message is displayed
-     * @param {string} redirectUrl - The expected redirect URL
-     * @note might be deprecated due to https://github.com/Jahia/jahia-multi-factor-authentication/issues/62
-     */
-    static assertRedirectUrlMessage(redirectUrl: string): void {
-        cy.get(this.selectors.verificationRedirectURL)
-            .should('contain.html', I18N.locales[I18N.defaultLanguage]['complete.redirect_url'].replace('{{redirectUrl}}', redirectUrl));
-    }
-
-    /**
-     * Assert that the countdown message is displayed
-     * @param {integer} countdownSeconds - The countdown seconds
-     * @note might be deprecated due to https://github.com/Jahia/jahia-multi-factor-authentication/issues/62
-     */
-    static assertCountdownMessage(countdownSeconds: number): void {
-        cy.get(this.selectors.verificationRedirectCountdown)
-            .should('contain.text', I18N.locales[I18N.defaultLanguage]['complete.redirecting_countdown'].replace('{{countdown}}', countdownSeconds.toString()));
-    }
-
-    /**
-     * Clicks the "Go now" redirect button
-     * @note might be deprecated due to https://github.com/Jahia/jahia-multi-factor-authentication/issues/62
-     */
-    static clickRedirectNowButton(): void {
-        cy.log(`Clicking the "${I18N.locales[I18N.defaultLanguage]['complete.redirecting_go_label']}" redirect button`);
-        cy.get(this.selectors.verificationRedirectButton).should('have.text', I18N.locales[I18N.defaultLanguage]['complete.redirecting_go_label']);
-        cy.get(this.selectors.verificationRedirectButton).click();
-    }
-
-    /**
      * Masks the username part of an email address.
      * @param {string} email - The email address to mask.
      * @returns {string} - The masked email address.

@@ -1,5 +1,5 @@
 import {BasePage} from './basePage';
-import {I18N} from '../utils';
+import {getLoginPageURL, I18N} from '../utils';
 
 /**
  * Page Object for MFA Login page
@@ -29,11 +29,12 @@ export class LoginStep extends BasePage {
     /**
      * Triggers redirect to the login page of the specified site
      * @param {string} siteKey Site key where the login page is located
+     * @param language Language code to use for the login page URL (optional)
      */
     static triggerRedirect(siteKey: string, language: string = undefined): void {
         cy.logout(); // Ensure to start with an unauthenticated session
         cy.visit(this.REDIRECT_TRIGGER, {failOnStatusCode: false});
-        cy.url().should('contain', `${language ? '/' + language : ''}/sites/${siteKey}/${LoginStep.PAGE_NAME}.html`);
+        cy.url().should('contain', getLoginPageURL(siteKey, language));
     }
 
     /**
