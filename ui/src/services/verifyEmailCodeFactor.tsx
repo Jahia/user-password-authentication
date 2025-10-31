@@ -1,13 +1,7 @@
-interface VerifyEmailFactorResultSuccess {
-  success: true;
-}
-interface VerifyEmailFactorResultError {
-  success: false;
-  error: {
-    code: string;
-    arguments: Array<{ name: string; value: string }>;
-  };
-}
+import type { BaseError, BaseSuccess } from "./common";
+
+type VerifyEmailFactorResultSuccess = BaseSuccess;
+type VerifyEmailFactorResultError = BaseError;
 export type VerifyEmailFactorResult = VerifyEmailFactorResultSuccess | VerifyEmailFactorResultError;
 
 export default async function verifyEmailCodeFactor(

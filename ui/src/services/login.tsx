@@ -1,13 +1,7 @@
-interface LoginResultSuccess {
-  success: true;
-}
-interface LoginResultError {
-  success: false;
-  error: {
-    code: string;
-    arguments: Array<{ name: string; value: string }>;
-  };
-}
+import type { BaseError, BaseSuccess } from "./common";
+
+type LoginResultSuccess = BaseSuccess;
+type LoginResultError = BaseError;
 export type LoginResult = LoginResultSuccess | LoginResultError;
 
 export default async function login(
