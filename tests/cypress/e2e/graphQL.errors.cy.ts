@@ -74,13 +74,17 @@ describe('Error scenarios common to all factors', () => {
     it('Should throw an error when a suspended user tries to initiate the MFA flow', () => {
         suspendUser(usr, pwd, email);
 
-        initiateAndExpectError(usr, pwd, 'suspended_user');
+        initiateAndExpectError(usr, pwd, 'suspended_user', {
+            suspensionDurationInHours: value => expect(value).to.eq('1') // 6 seconds rounded up to 1 hour
+        });
     });
 
     it('Should throw an error when a suspended user tries to prepare a factor', () => {
         suspendUser(usr, pwd, email);
 
-        prepareEmailCodeFactorAndExpectError('suspended_user');
+        prepareEmailCodeFactorAndExpectError('suspended_user', {
+            suspensionDurationInHours: value => expect(value).to.eq('1') // 6 seconds rounded up to 1 hour
+        });
     });
 
     /**
@@ -117,7 +121,9 @@ describe('Error scenarios common to all factors', () => {
 
             // Final attempt should trigger suspension
             wrongCode = generateWrongCode(wrongCode);
-            verifyEmailCodeFactorAndExpectError(wrongCode, 'suspended_user');
+            verifyEmailCodeFactorAndExpectError(wrongCode, 'suspended_user', {
+                suspensionDurationInHours: value => expect(value).to.eq('1') // 6 seconds rounded up to 1 hour
+            });
         });
     };
 });
