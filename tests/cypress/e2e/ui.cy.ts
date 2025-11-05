@@ -23,7 +23,7 @@ const INCOMPLETE_CODE_LENGTH = CODE_LENGTH - 2;
 const MAX_INVALID_ATTEMPTS = 3;
 const TIME_BEFORE_NEXT_CODE_MS = 3000;
 const SUSPENSION_TIME_MS = 5000;
-const REDIRECT_URLS = [
+const VALID_REDIRECT_URLS = [
     `/sites/${SITE_KEY}/otherPage.html`, // Absolute URL, same site, no parameter
     `/sites/${SITE_KEY}/otherPage.html?param=test`, // Absolute URL, same site, with parameter
     '/sites/otherSite/otherPage.html?param=test', // Absolute URL, different site, with parameter
@@ -514,7 +514,7 @@ describe('Tests for the UI module', () => {
     });
 
     // Test both URL-encoded and non URL-encoded redirect parameters
-    REDIRECT_URLS.forEach(redirectURL => {
+    VALID_REDIRECT_URLS.forEach(redirectURL => {
         it(`Should be redirected to the provided URL-encoded redirect page (${redirectURL})`, () => {
             testSuccessfulRedirect(encodeURIComponent(redirectURL), redirectURL);
         });
