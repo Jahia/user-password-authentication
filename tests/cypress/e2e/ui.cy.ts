@@ -23,11 +23,58 @@ const INCOMPLETE_CODE_LENGTH = CODE_LENGTH - 2;
 const MAX_INVALID_ATTEMPTS = 3;
 const TIME_BEFORE_NEXT_CODE_MS = 3000;
 const SUSPENSION_TIME_MS = 5000;
+const VALID_REDIRECT_URLS = [
+    `/sites/${SITE_KEY}/otherPage.html`, // Absolute URL, same site, no parameter
+    `/sites/${SITE_KEY}/otherPage.html?param=test`, // Absolute URL, same site, with parameter
+    '/sites/otherSite/otherPage.html?param=test', // Absolute URL, different site, with parameter
+    '/my/other/page?param=test', // Absolute URL, not a site, with parameter
+    'otherPage.html?param=test', // Relative URL, no parameter
+    Cypress.env('JAHIA_URL') + '/sample.html' // Same domain (with protocol)
+];
+const PROHIBITED_REDIRECT_URLS = [
+    `//sites/${SITE_KEY}/otherPage.html`, // Starting with '//'
+    // eslint-disable-next-line no-script-url
+    'javascript:alert(\'XSS attack\')', // XSS attack using the 'javascript:' protocol
+    'javascript%3Aalert%28%27XSS%20attack%27%29', // XSS attack using the 'javascript:' protocol (URL encoded)
+    'data:text/html,<script>alert(\'XSS\')</script>', // XSS attack using the 'data:' protocol
+    'http://otherdomain.com/fake.html', // External site (http)
+    'https://otherdomain.com/fake.html' // External site (https)
+];
 
 describe('Tests for the UI module', () => {
     let username: string;
     let password: string;
     let email: string;
+
+    /**
+     * Tests a successful redirect to the given redirectParam after completing the MFA flow.
+     * @param {string} redirectParam the redirect parameter to use in the login URL
+     * @param {string} expectedRedirectUrl the expected redirect URL after successful authentication (if different from redirectParam)
+     * @return {void}
+     */
+    const testSuccessfulRedirect = (redirectParam: string, expectedRedirectUrl: string): void => {
+        cy.visit(`${getLoginPageURL(SITE_KEY)}?redirect=${redirectParam}`);
+        LoginStep.login(username, password);
+        LoginStep.selectEmailCodeFactor();
+        getVerificationCode(email).then(code => {
+            // Intercept the redirect to the expected page, to validate it actually happens
+            cy.intercept('GET', expectedRedirectUrl).as('expectedRedirect');
+
+            EmailFactorStep.submitVerificationCode(code);
+            EmailFactorStep.assertSuccessfullyRedirected(SITE_KEY, I18N.defaultLanguage, expectedRedirectUrl);
+
+            // Build expected response URL: handle the case when redirect URL is absolute or relative or full URL
+            let responseURL: string;
+            if (expectedRedirectUrl.startsWith('http://') || expectedRedirectUrl.startsWith('https://')) {
+                responseURL = expectedRedirectUrl;
+            } else {
+                responseURL = `${Cypress.env('JAHIA_URL')}${expectedRedirectUrl[0] === '/' ? '' : '/'}${expectedRedirectUrl}`;
+            }
+
+            // Wait for the expected redirect to complete and validate the URL
+            cy.wait('@expectedRedirect').its('response.url').should('eq', responseURL);
+        });
+    };
 
     before(() => {
         createSiteWithLoginPage(SITE_KEY);
@@ -355,68 +402,6 @@ describe('Tests for the UI module', () => {
         });
     });
 
-    const testSuccessfulRedirect = (redirectParam: string, expectedRedirectUrl: string = undefined) => {
-        cy.visit(`${getLoginPageURL(SITE_KEY)}?redirect=${redirectParam}`);
-        LoginStep.login(username, password);
-        LoginStep.selectEmailCodeFactor();
-        getVerificationCode(email).then(code => {
-            // Intercept the redirect to the root page, to validate the root page was not visited after submitting the code
-            cy.intercept('GET', '/').as('rootRedirect');
-            EmailFactorStep.submitVerificationCode(code);
-            EmailFactorStep.assertSuccessfullyRedirected(SITE_KEY, I18N.defaultLanguage, expectedRedirectUrl);
-            // Make sure the root page was not visited:
-            cy.get('@rootRedirect.all').should('have.length', 0);
-        });
-    };
-
-    const redirectPages = [
-        `/sites/${SITE_KEY}/otherPage.html`, // Absolute URL, same site, no parameter
-        `/sites/${SITE_KEY}/otherPage.html?param=test`, // Absolute URL, same site, with parameter
-        '/sites/otherSite/otherPage.html?param=test', // Absolute URL, different site, with parameter
-        '/my/other/page?param=test', // Absolute URL, not a site, with parameter
-        'otherPage.html?param=test', // Relative URL, no parameter
-        Cypress.env('JAHIA_URL') + '/sample.html' // Same domain (with protocol)
-    ];
-
-    redirectPages.forEach(redirectPage => {
-        it(`Should be redirected to the provided URL-encoded redirect page (${redirectPage})`, () => {
-            const encodedRedirectPage = encodeURIComponent(redirectPage);
-            testSuccessfulRedirect(encodedRedirectPage, redirectPage);
-        });
-
-        it(`Should be redirected to the provided (non URL-encoded) redirect page (${redirectPage})`, () => {
-            testSuccessfulRedirect(redirectPage, redirectPage);
-        });
-    });
-
-    const prohibitedRedirectPages = [
-        `//sites/${SITE_KEY}/otherPage.html`, // Starting with '//'
-        // eslint-disable-next-line no-script-url
-        'javascript:alert(\'XSS attack\')', // XSS attack using the 'javascript:' protocol
-        'javascript%3Aalert%28%27XSS%20attack%27%29', // XSS attack using the 'javascript:' protocol (URL encoded)
-        'data:text/html,<script>alert(\'XSS\')</script>', // XSS attack using the 'data:' protocol
-        'http://otherdomain.com/fake.html', // External site (http)
-        'https://otherdomain.com/fake.html' // External site (https)
-    ];
-    prohibitedRedirectPages.forEach(redirectPage => {
-        it(`Should be redirected to / when a prohibited redirect page is passed (${redirectPage})`, () => {
-            const encodedRedirectPage = encodeURIComponent(redirectPage);
-            cy.visit(`${getLoginPageURL(SITE_KEY)}?redirect=${encodedRedirectPage}`);
-            LoginStep.login(username, password);
-            LoginStep.selectEmailCodeFactor();
-            getVerificationCode(email).then(code => {
-                // Intercept the redirect to the root page, to validate the root page was visited after submitting the code
-                cy.intercept('GET', '/').as('rootRedirect');
-                EmailFactorStep.submitVerificationCode(code);
-                EmailFactorStep.assertSuccessfullyRedirected(
-                    SITE_KEY,
-                    I18N.defaultLanguage
-                );
-                cy.wait('@rootRedirect');
-            });
-        });
-    });
-
     it('Should display an error when re-sending code to early, and successfully authenticate afterwards', () => {
         LoginStep.triggerRedirect(SITE_KEY);
         LoginStep.login(username, password);
@@ -525,6 +510,24 @@ describe('Tests for the UI module', () => {
                 EmailFactorStep.assertSuccessfullyRedirected(SITE_KEY);
                 assertIsLoggedIn(username);
             });
+        });
+    });
+
+    // Test both URL-encoded and non URL-encoded redirect parameters
+    VALID_REDIRECT_URLS.forEach(redirectURL => {
+        it(`Should be redirected to the provided URL-encoded redirect page (${redirectURL})`, () => {
+            testSuccessfulRedirect(encodeURIComponent(redirectURL), redirectURL);
+        });
+
+        it(`Should be redirected to the provided (non URL-encoded) redirect page (${redirectURL})`, () => {
+            testSuccessfulRedirect(redirectURL, redirectURL);
+        });
+    });
+
+    // Test with prohibited redirect URLS: should always be redirected to root page '/'
+    PROHIBITED_REDIRECT_URLS.forEach(redirectURL => {
+        it(`Should be redirected to / when a prohibited redirect page is passed (${redirectURL})`, () => {
+            testSuccessfulRedirect(encodeURIComponent(redirectURL), '/');
         });
     });
 });
