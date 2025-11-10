@@ -185,7 +185,7 @@ public class MfaServiceImpl implements MfaService {
 
         try {
             MfaFactorProvider provider = resolveProvider(factorType);
-            JCRUserNode user = resolveUser(session);
+            JCRUserNode user = resolveUserNode(session);
             validateUserCanAuthenticate(request, user, provider);
 
             String cacheKey = getCacheKey(user, provider);
@@ -228,35 +228,27 @@ public class MfaServiceImpl implements MfaService {
 
             MfaFactorProvider provider = resolveProvider(factorType);
             // TODO - reset mfa session if user is not found at this stage, better handling of user recheck during MFA steps
-            JCRUserNode user = resolveUser(session);
-            validateUserCanAuthenticate(request, user, provider);
+            JCRUserNode jcrUserNode = resolveUserNode(session);
+            validateUserCanAuthenticate(request, jcrUserNode, provider);
 
             Serializable preparationResult = (Serializable) request.getSession().getAttribute(getAttributeKey(factorType));
-            VerificationContext verificationContext = new VerificationContext(user, request, preparationResult, verificationData);
+            VerificationContext verificationContext = new VerificationContext(jcrUserNode, request, preparationResult, verificationData);
             if (provider.verify(verificationContext)) {
                 // Clear preparation result after successful verification
                 request.getSession().removeAttribute(getAttributeKey(factorType));
                 session.markFactorCompleted(factorType);
                 // Clean up start cache
-                factorPreparationTimestampsCache.invalidate(getCacheKey(user, provider));
+                factorPreparationTimestampsCache.invalidate(getCacheKey(jcrUserNode, provider));
                 logger.info("Factor {} verified successfully for user: {}", factorType, session.getUserId());
             } else {
-                trackFailure(user.getPath(), provider);
+                trackFailure(jcrUserNode.getPath(), provider);
                 throw new MfaException("verify.verification_failed", "factorType", factorType);
             }
             if (isAllRequiredFactorsCompleted(session)) {
                 session.setState(MfaSessionState.COMPLETED);
                 logger.info("All MFA factors completed for user: {}, proceed with authentication", session.getUserId());
-
-                try {
-                    authenticationService.authenticate(user, AUTH_OPTIONS, request, null);
-                } catch (InvalidSessionLoginException e) {
-                    // TODO should we something else in this case?
-                    throw new IllegalStateException("Invalid session login", e);
-                } catch (AccountNotFoundException e) {
-                    throw new IllegalStateException("Account not found", e);
-                }
-                failuresCache.invalidate(user.getPath()); // clear any failure attempts for that user
+                authenticateUser(request, jcrUserNode);
+                failuresCache.invalidate(jcrUserNode.getPath()); // clear any failure attempts for that user
             }
         } catch (Exception e) {
             session.markFactorVerificationFailed(factorType);
@@ -264,6 +256,16 @@ public class MfaServiceImpl implements MfaService {
         }
 
         return session;
+    }
+
+    private void authenticateUser(HttpServletRequest request, JCRUserNode jcrUserNode) {
+        try {
+            authenticationService.authenticate(jcrUserNode, AUTH_OPTIONS, request, null);
+        } catch (InvalidSessionLoginException e) {
+            throw new IllegalStateException("Invalid session login", e);
+        } catch (AccountNotFoundException e) {
+            throw new IllegalStateException("Account not found", e);
+        }
     }
 
     private MfaFactorProvider resolveProvider(String factorType) throws MfaException {
@@ -274,7 +276,7 @@ public class MfaServiceImpl implements MfaService {
         return provider;
     }
 
-    private JCRUserNode resolveUser(MfaSession session) throws MfaException {
+    private JCRUserNode resolveUserNode(MfaSession session) throws MfaException {
         JCRUserNode user = userManagerService.lookupUser(session.getUserId());
         if (user == null) {
             throw new MfaException("user_not_found");
