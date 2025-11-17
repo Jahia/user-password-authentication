@@ -188,7 +188,7 @@ describe('Tests for the UI module', () => {
         deleteSite(siteKey);
     });
 
-    // BLOCKED BY: JSM peculiarities (see https://github.com/Jahia/jahia-multi-factor-authentication/pull/52), ticket is pending
+    // BLOCKED BY: https://github.com/Jahia/jahia-multi-factor-authentication/issues/72
     it.skip('Should have the props (labels, HTMLs) matching the locale in the MFA URLs with multi-language site', () => {
         const siteKey = 'multi-language-site';
         const siteLanguage = 'es'; // Spanish
@@ -275,33 +275,6 @@ describe('Tests for the UI module', () => {
         });
     });
 
-    // BLOCKED BY: https://github.com/Jahia/jahia-multi-factor-authentication/issues/16
-    it.skip('Should be suspended when reaching the limit of INVALID attempts; be unable to continue MFA with the same code when suspension is lifted', () => {
-        LoginStep.triggerRedirect(SITE_KEY);
-        LoginStep.login(username, password);
-        LoginStep.selectEmailCodeFactor();
-        getVerificationCode(email).then(code => {
-            const wrongCode = generateWrongCode(code);
-
-            // Make MAX_INVALID_ATTEMPTS failed verification attempts to trigger suspension
-            for (let i = 0; i < MAX_INVALID_ATTEMPTS; i++) {
-                EmailFactorStep.submitVerificationCode(wrongCode);
-                EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.verification_failed'].replace('{{factorType}}', FACTOR_TYPE));
-            }
-
-            // One more attempt to confirm the user is suspended
-            EmailFactorStep.submitVerificationCode(wrongCode);
-            EmailFactorStep.assertErrorMessage(I18N_LOCALES.suspended_user.replace('{{suspensionDurationInHours}}', '1'));
-
-            // Wait for suspension to be lifted
-            cy.wait(SUSPENSION_TIME_MS + 1000);
-
-            // Now try to log in with initially received code and expect "no active session" error
-            EmailFactorStep.submitVerificationCode(code);
-            EmailFactorStep.assertErrorMessage(I18N_LOCALES.no_active_session);
-        });
-    });
-
     it('Should be suspended when reaching the limit of INVALID attempts; when restarting the login flow, should remain suspended', () => {
         installMFAConfig('sample-ui-long-suspension.yml');
         LoginStep.triggerRedirect(SITE_KEY);
@@ -346,8 +319,8 @@ describe('Tests for the UI module', () => {
             EmailFactorStep.submitVerificationCode(wrongCode);
             EmailFactorStep.assertErrorMessage(I18N_LOCALES.suspended_user.replace('{{suspensionDurationInHours}}', '1'));
 
-            // Now try to re-initiate the flow and expect suspension message
-            LoginStep.triggerRedirect(SITE_KEY);
+            // Restart the login flow and expect suspension message
+            EmailFactorStep.clickRestartLoginOnSuspension();
             LoginStep.login(username, password);
             EmailFactorStep.assertErrorMessage(I18N_LOCALES.suspended_user.replace('{{suspensionDurationInHours}}', '1'));
 
@@ -355,8 +328,8 @@ describe('Tests for the UI module', () => {
             cy.wait(SUSPENSION_TIME_MS + 1000);
             deleteAllEmails();
 
-            // Re-initiate the flow and receive a new code
-            LoginStep.triggerRedirect(SITE_KEY);
+            // Restart the login flow and receive a new code
+            EmailFactorStep.clickRestartLoginOnSuspension();
             LoginStep.login(username, password);
             LoginStep.selectEmailCodeFactor();
             getVerificationCode(email).then(newCode => {
