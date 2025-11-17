@@ -8,6 +8,7 @@ import { tError } from "../../services/i18n";
 interface LoginFormProps {
   content: Props;
   onSuccess: (username: string) => void;
+  onSuspended: (args: Array<{ name: string; value: string }>) => void;
 }
 
 export default function (props: LoginFormProps) {
@@ -22,12 +23,14 @@ export default function (props: LoginFormProps) {
     setInProgress(true);
 
     login(apiRoot, username, password)
-      .then((loginResult) => {
-        if (loginResult.success) {
+      .then((result) => {
+        if (result.success) {
           props.onSuccess(username);
           setError("");
+        } else if (result.error.code === "suspended_user") {
+          props.onSuspended(result.error.arguments);
         } else {
-          setError(tError(loginResult.error));
+          setError(tError(result.error));
         }
       })
       .finally(() => setInProgress(false));

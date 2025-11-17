@@ -25,7 +25,7 @@ export const I18N = {
             'no_active_session': 'No active MFA session found',
             'authentication_failed': 'Invalid username or password',
             'verification_failed': 'Verification failed',
-            'suspended_user': 'Your account is temporarily locked for {{suspensionDurationInHours}} hours.',
+            'suspended_user': 'Your account is temporarily locked for {{suspensionDurationInHours}} hour(s).',
             'failed_to_check_if_user_suspended': 'Failed to check if the user is suspended',
             'failed_to_mark_user_as_suspended': 'Failed to mark user as suspended',
             'factor_type_not_supported': 'Factor {{factorType}} not supported',

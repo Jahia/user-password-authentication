@@ -20,6 +20,8 @@ export class EmailFactorStep extends BasePage {
         additionalAction: 'div.additionalAction>div',
         // Resend code link
         linkResendCode: 'div.additionalAction>a',
+        // Restart login link
+        linkRestartLogin: 'div.additionalAction>a[data-testid="restart-login"]',
 
         // Messages and notifications
         verificationSentMessage: 'main>jsm-island>div>div',
@@ -47,6 +49,13 @@ export class EmailFactorStep extends BasePage {
      */
     static resendCode(): void {
         cy.get(this.selectors.linkResendCode).click();
+    }
+
+    /**
+     * Click on the "Restart login" link on suspension
+     */
+    static clickRestartLoginOnSuspension(): void {
+        cy.get(this.selectors.linkRestartLogin).click();
     }
 
     /**
