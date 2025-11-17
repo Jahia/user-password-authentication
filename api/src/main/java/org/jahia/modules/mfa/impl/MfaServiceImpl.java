@@ -2,12 +2,14 @@ package org.jahia.modules.mfa.impl;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import org.apache.commons.lang3.StringUtils;
 import org.jahia.modules.mfa.*;
 import org.jahia.services.content.JCRPropertyWrapper;
 import org.jahia.services.content.JCRTemplate;
 import org.jahia.services.content.decorator.JCRNodeDecorator;
 import org.jahia.services.content.decorator.JCRUserNode;
 import org.jahia.services.security.*;
+import org.jahia.services.usermanager.JahiaUser;
 import org.jahia.services.usermanager.JahiaUserManagerService;
 import org.osgi.service.component.annotations.*;
 import org.slf4j.Logger;
@@ -149,25 +151,21 @@ public class MfaServiceImpl implements MfaService {
         logger.info("Initiating MFA for user: {}", username);
 
         AuthenticationRequest authenticationRequest = new AuthenticationRequest(username, password, siteKey, true);
-        JCRUserNode user;
+        JahiaUser user;
         try {
-            user = authenticationService.getUserNodeFromCredentials(authenticationRequest);
+            user = authenticationService.getUserFromCredentials(authenticationRequest);
         } catch (IllegalArgumentException | LoginException e) {
             logger.warn("Unable to authenticate the user: {}", username);
             logger.debug("Authentication error", e);
             throw new MfaException("authentication_failed");
         }
 
-        validateUserNotSuspended(user);
+        validateUserNotSuspended(user.getUserKey());
 
         HttpSession httpSession = request.getSession();
         Locale userLocale;
-        try {
-            userLocale = user.hasProperty("preferredLanguage") ?
-                    new Locale(user.getPropertyAsString("preferredLanguage")) : Locale.ENGLISH;
-        } catch (RepositoryException e) {
-            throw new IllegalStateException(e);
-        }
+        String preferredLanguage = user.getProperty("preferredLanguage");
+        userLocale = preferredLanguage != null ? new Locale(preferredLanguage) : Locale.ENGLISH;
         MfaSession mfaSession = new MfaSession(username, userLocale, siteKey);
         mfaSession.setState(MfaSessionState.IN_PROGRESS);
         httpSession.setAttribute(MFA_SESSION_KEY, mfaSession);
@@ -260,7 +258,7 @@ public class MfaServiceImpl implements MfaService {
 
     private void authenticateUser(HttpServletRequest request, JCRUserNode jcrUserNode) {
         try {
-            authenticationService.authenticate(jcrUserNode, AUTH_OPTIONS, request, null);
+            authenticationService.authenticate(jcrUserNode.getPath(), AUTH_OPTIONS, request, null);
         } catch (InvalidSessionLoginException e) {
             throw new IllegalStateException("Invalid session login", e);
         } catch (AccountNotFoundException e) {
@@ -285,16 +283,16 @@ public class MfaServiceImpl implements MfaService {
     }
 
     private void validateUserCanAuthenticate(HttpServletRequest request, JCRUserNode user, MfaFactorProvider provider) throws MfaException {
-        validateUserNotSuspended(user);
+        validateUserNotSuspended(user.getPath());
         if (hasReachedAuthFailuresCountLimit(user.getPath(), provider)) {
             suspendUser(request, user, provider);
             throwSuspendedUserException();
         }
     }
 
-    private void validateUserNotSuspended(JCRUserNode user) throws MfaException {
-        if (isUserSuspended(user.getPath())) {
-            logger.warn("User {} is suspended", user.getPath());
+    private void validateUserNotSuspended(String userNodePath) throws MfaException {
+        if (isUserSuspended(userNodePath)) {
+            logger.warn("User {} is suspended", userNodePath);
             throwSuspendedUserException();
         }
     }
