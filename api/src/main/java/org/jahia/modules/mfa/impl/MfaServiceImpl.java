@@ -2,17 +2,22 @@ package org.jahia.modules.mfa.impl;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import org.apache.commons.lang3.StringUtils;
 import org.jahia.modules.mfa.*;
 import org.jahia.services.content.JCRPropertyWrapper;
 import org.jahia.services.content.JCRTemplate;
 import org.jahia.services.content.decorator.JCRNodeDecorator;
 import org.jahia.services.content.decorator.JCRUserNode;
+import org.jahia.services.security.*;
+import org.jahia.services.usermanager.JahiaUser;
 import org.jahia.services.usermanager.JahiaUserManagerService;
 import org.osgi.service.component.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.jcr.RepositoryException;
+import javax.security.auth.login.AccountNotFoundException;
+import javax.security.auth.login.LoginException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -31,10 +36,16 @@ public class MfaServiceImpl implements MfaService {
     private static final String MFA_SESSION_KEY = "mfa_session";
     private static final String MFA_SUSPENDED_USER_MIXIN = "mfa:suspendedUser";
     private static final String MFA_SUSPENDED_SINCE_PROP = "mfa:suspendedSince";
+    private static final AuthenticationOptions AUTH_OPTIONS = AuthenticationOptions.Builder.withDefaults()
+            // TODO disable it until https://github.com/Jahia/jahia-multi-factor-authentication/issues/68 is implemented
+            .shouldRememberMe(false)
+            .build();
 
     private JahiaUserManagerService userManagerService;
     private MfaFactorRegistry factorRegistry;
     private volatile MfaConfigurationService mfaConfigurationService;
+    private AuthenticationService authenticationService;
+
     /**
      * A thread-safe cache used for storing authentication failure details of users.
      * <p>
@@ -83,6 +94,11 @@ public class MfaServiceImpl implements MfaService {
 
     public void unsetOrUpdateMfaConfigurationService(MfaConfigurationService mfaConfigurationService) {
         this.mfaConfigurationService = null;
+    }
+
+    @Reference
+    public void setAuthenticationService(AuthenticationService authenticationService) {
+        this.authenticationService = authenticationService;
     }
 
     @Activate
@@ -134,22 +150,22 @@ public class MfaServiceImpl implements MfaService {
     public MfaSession initiateMfa(String username, String password, String siteKey, HttpServletRequest request) throws MfaException {
         logger.info("Initiating MFA for user: {}", username);
 
-        // Todo - site user check ?
-        JCRUserNode user = AuthHelper.lookupUserFromCredentials(username, password, null);
-        if (user == null) {
-            logger.warn("Invalid credentials for user: {}", username);
+        AuthenticationRequest authenticationRequest = new AuthenticationRequest(username, password, siteKey, true);
+        JahiaUser user;
+        try {
+            user = authenticationService.getUserFromCredentials(authenticationRequest);
+        } catch (IllegalArgumentException | LoginException e) {
+            logger.warn("Unable to authenticate the user: {}", username);
+            logger.debug("Authentication error", e);
             throw new MfaException("authentication_failed");
         }
-        validateUserNotSuspended(user);
 
-        HttpSession httpSession = request.getSession(true);
+        validateUserNotSuspended(user.getUserKey());
+
+        HttpSession httpSession = request.getSession();
         Locale userLocale;
-        try {
-            userLocale = user.hasProperty("preferredLanguage") ?
-                    new Locale(user.getPropertyAsString("preferredLanguage")) : Locale.ENGLISH;
-        } catch (RepositoryException e) {
-            throw new IllegalStateException(e);
-        }
+        String preferredLanguage = user.getProperty("preferredLanguage");
+        userLocale = preferredLanguage != null ? new Locale(preferredLanguage) : Locale.ENGLISH;
         MfaSession mfaSession = new MfaSession(username, userLocale, siteKey);
         mfaSession.setState(MfaSessionState.IN_PROGRESS);
         httpSession.setAttribute(MFA_SESSION_KEY, mfaSession);
@@ -167,7 +183,7 @@ public class MfaServiceImpl implements MfaService {
 
         try {
             MfaFactorProvider provider = resolveProvider(factorType);
-            JCRUserNode user = resolveUser(session);
+            JCRUserNode user = resolveUserNode(session);
             validateUserCanAuthenticate(request, user, provider);
 
             String cacheKey = getCacheKey(user, provider);
@@ -210,27 +226,27 @@ public class MfaServiceImpl implements MfaService {
 
             MfaFactorProvider provider = resolveProvider(factorType);
             // TODO - reset mfa session if user is not found at this stage, better handling of user recheck during MFA steps
-            JCRUserNode user = resolveUser(session);
-            validateUserCanAuthenticate(request, user, provider);
+            JCRUserNode jcrUserNode = resolveUserNode(session);
+            validateUserCanAuthenticate(request, jcrUserNode, provider);
 
             Serializable preparationResult = (Serializable) request.getSession().getAttribute(getAttributeKey(factorType));
-            VerificationContext verificationContext = new VerificationContext(user, request, preparationResult, verificationData);
+            VerificationContext verificationContext = new VerificationContext(jcrUserNode, request, preparationResult, verificationData);
             if (provider.verify(verificationContext)) {
                 // Clear preparation result after successful verification
                 request.getSession().removeAttribute(getAttributeKey(factorType));
                 session.markFactorCompleted(factorType);
                 // Clean up start cache
-                factorPreparationTimestampsCache.invalidate(getCacheKey(user, provider));
+                factorPreparationTimestampsCache.invalidate(getCacheKey(jcrUserNode, provider));
                 logger.info("Factor {} verified successfully for user: {}", factorType, session.getUserId());
             } else {
-                trackFailure(user.getPath(), provider);
+                trackFailure(jcrUserNode.getPath(), provider);
                 throw new MfaException("verify.verification_failed", "factorType", factorType);
             }
             if (isAllRequiredFactorsCompleted(session)) {
                 session.setState(MfaSessionState.COMPLETED);
                 logger.info("All MFA factors completed for user: {}, proceed with authentication", session.getUserId());
-                AuthHelper.authenticateUser(request, user);
-                failuresCache.invalidate(user.getPath()); // clear any failure attempts for that user
+                authenticateUser(request, jcrUserNode);
+                failuresCache.invalidate(jcrUserNode.getPath()); // clear any failure attempts for that user
             }
         } catch (Exception e) {
             session.markFactorVerificationFailed(factorType);
@@ -238,6 +254,16 @@ public class MfaServiceImpl implements MfaService {
         }
 
         return session;
+    }
+
+    private void authenticateUser(HttpServletRequest request, JCRUserNode jcrUserNode) {
+        try {
+            authenticationService.authenticate(jcrUserNode.getPath(), AUTH_OPTIONS, request, null);
+        } catch (InvalidSessionLoginException e) {
+            throw new IllegalStateException("Invalid session login", e);
+        } catch (AccountNotFoundException e) {
+            throw new IllegalStateException("Account not found", e);
+        }
     }
 
     private MfaFactorProvider resolveProvider(String factorType) throws MfaException {
@@ -248,7 +274,7 @@ public class MfaServiceImpl implements MfaService {
         return provider;
     }
 
-    private JCRUserNode resolveUser(MfaSession session) throws MfaException {
+    private JCRUserNode resolveUserNode(MfaSession session) throws MfaException {
         JCRUserNode user = userManagerService.lookupUser(session.getUserId());
         if (user == null) {
             throw new MfaException("user_not_found");
@@ -257,16 +283,16 @@ public class MfaServiceImpl implements MfaService {
     }
 
     private void validateUserCanAuthenticate(HttpServletRequest request, JCRUserNode user, MfaFactorProvider provider) throws MfaException {
-        validateUserNotSuspended(user);
+        validateUserNotSuspended(user.getPath());
         if (hasReachedAuthFailuresCountLimit(user.getPath(), provider)) {
             suspendUser(request, user, provider);
             throwSuspendedUserException();
         }
     }
 
-    private void validateUserNotSuspended(JCRUserNode user) throws MfaException {
-        if (isUserSuspended(user.getPath())) {
-            logger.warn("User {} is suspended", user.getPath());
+    private void validateUserNotSuspended(String userNodePath) throws MfaException {
+        if (isUserSuspended(userNodePath)) {
+            logger.warn("User {} is suspended", userNodePath);
             throwSuspendedUserException();
         }
     }
