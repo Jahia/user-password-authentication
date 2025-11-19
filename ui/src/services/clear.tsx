@@ -1,13 +1,7 @@
-interface ClearResultSuccess {
-  success: true;
-}
-interface ClearResultError {
-  success: false;
-  error: {
-    code: string;
-    arguments: Array<{ name: string; value: string }>;
-  };
-}
+import type { BaseError, BaseSuccess } from "./common";
+
+type ClearResultSuccess = BaseSuccess;
+type ClearResultError = BaseError;
 export type ClearResult = ClearResultSuccess | ClearResultError;
 
 export default async function clear(apiRoot: string): Promise<ClearResult> {

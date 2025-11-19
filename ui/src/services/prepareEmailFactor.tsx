@@ -1,14 +1,9 @@
-interface PrepareEmailFactorResultSuccess {
-  success: true;
+import type { BaseError, BaseSuccess } from "./common";
+
+interface PrepareEmailFactorResultSuccess extends BaseSuccess {
   maskedEmail: string;
 }
-interface PrepareEmailFactorResultError {
-  success: false;
-  error: {
-    code: string;
-    arguments: Array<{ name: string; value: string }>;
-  };
-}
+type PrepareEmailFactorResultError = BaseError;
 export type PrepareEmailFactorResult =
   | PrepareEmailFactorResultSuccess
   | PrepareEmailFactorResultError;
