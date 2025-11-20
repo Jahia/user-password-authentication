@@ -14,13 +14,13 @@ export default async function clear(apiRoot: string): Promise<ClearResult> {
           mfa {
             clear {
               session {
-                state
-              }
-              error {
-                code
-                arguments {
-                  name
-                  value
+                initiated
+                error {
+                  code
+                  arguments {
+                    name
+                    value
+                  }
                 }
               }
             }
@@ -30,7 +30,8 @@ export default async function clear(apiRoot: string): Promise<ClearResult> {
     }),
   });
   const result = await response.json();
-  if (result?.data?.mfa?.clear?.session && !result?.errors) {
+  console.log("result", result);
+  if (result?.data?.mfa?.clear?.session?.initiated === false) {
     return {
       success: true,
     };
@@ -41,6 +42,7 @@ export default async function clear(apiRoot: string): Promise<ClearResult> {
         code: result?.data?.mfa?.clear?.error?.code || "unexpected_error",
         arguments: result?.data?.mfa?.clear?.error?.arguments || [],
       },
+      suspensionDurationInSeconds: result?.data?.mfa?.clear?.session?.suspensionDurationInSeconds,
     };
   }
 }

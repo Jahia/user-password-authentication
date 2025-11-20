@@ -3227,8 +3227,6 @@ type MfaCustomFactorMutation {
 
 "Custom factor preparation result"
 type MfaCustomFactorPreparationResponse {
-    "Error details when the operation fails"
-    error: MfaError
     otherInfo: String
     "Details about the MFA session when the operation succeeds"
     session: MfaSession
@@ -3244,8 +3242,6 @@ type MfaEmailCodeFactorMutation {
 
 "Email code factor preparation result"
 type MfaEmailCodeFactorPreparationResponse {
-    "Error details when the operation fails"
-    error: MfaError
     "masked email the verification code has been sent to"
     maskedEmail: String
     "Details about the MFA session when the operation succeeds"
@@ -3268,6 +3264,16 @@ type MfaErrorArgument {
     value: String
 }
 
+"Details about an MFA factor"
+type MfaFactorState {
+    preparationError: MfaError
+    "Whether the factor has been prepared or not"
+    prepared: Boolean
+    verificationError: MfaError
+    "Whether the factor has been verified or not"
+    verified: Boolean
+}
+
 "Access MFA factors specific mutations"
 type MfaFactorsMutation {
     custom: MfaCustomFactorMutation
@@ -3280,8 +3286,6 @@ type MfaFactorsMutation {
 
 "Generic response for MFA operations"
 type MfaGenericResponse {
-    "Error details when the operation fails"
-    error: MfaError
     "Details about the MFA session when the operation succeeds"
     session: MfaSession
 }
@@ -3310,10 +3314,13 @@ type MfaQuery {
 type MfaSession {
     "List of completed MFA factors"
     completedFactors: [String]
+    error: MfaError
+    "Details about the current MFA factor"
+    factorState(factorType: String): MfaFactorState
+    "List of required MFA factors"
+    initiated: Boolean
     "List of required MFA factors"
     requiredFactors: [String]
-    "state of the session"
-    state: MfaSessionState
 }
 
 "Root mutation type"
@@ -4338,19 +4345,6 @@ enum LoadInterval {
     FIVE
     "ONE"
     ONE
-}
-
-enum MfaSessionState {
-    "The session has been successfully completed."
-    COMPLETED
-    "The session has failed."
-    FAILED
-    "The session has been successfully initiated, but no factors have been prepared or verified yet."
-    INITIATED
-    "All required factors have been prepared."
-    PREPARED
-    "At least one factor has been prepared, but not all required factors have been fully prepared yet."
-    PREPARING
 }
 
 enum MulticriteriaEvaluation {

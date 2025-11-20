@@ -13,20 +13,30 @@ export default async function verifyEmailCodeFactor(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       query: /* GraphQL */ `
-        mutation verifyEmailCodeFactor($code: String!) {
+        mutation verifyEmailCodeFactor($code: String!, $factorType: String!) {
           mfa {
             factors {
               emailCode {
                 verify(code: $code) {
                   session {
-                    state
-                  }
-                  error {
-                    code
-                    arguments {
-                      name
-                      value
+                    factorState(factorType: $factorType) {
+                      verified
+                      verificationError {
+                        code
+                        arguments {
+                          name
+                          value
+                        }
+                      }
                     }
+                    error {
+                      code
+                      arguments {
+                        name
+                        value
+                      }
+                    }
+                    suspensionDurationInSeconds
                   }
                 }
               }
@@ -34,19 +44,25 @@ export default async function verifyEmailCodeFactor(
           }
         }
       `,
-      variables: { code },
+      variables: { code, factorType: "email_code" },
     }),
   });
   const result = await response.json();
-  if (result?.data?.mfa?.factors?.emailCode?.verify?.session?.state === "COMPLETED") {
+  if (result?.data?.mfa?.factors?.emailCode?.verify?.session?.factorState?.verified) {
     return { success: true };
   } else {
+    console.log(result);
+    const error = result?.data?.mfa?.factors?.emailCode?.verify?.session?.factorState
+      ?.verificationError ||
+      result?.data?.mfa?.factors?.emailCode?.verify?.session?.error || {
+        code: "unexpected_error",
+        arguments: [],
+      };
     return {
       success: false,
-      error: {
-        code: result?.data?.mfa?.factors?.emailCode?.verify?.error?.code || "unexpected_error",
-        arguments: result?.data?.mfa?.factors?.emailCode?.verify?.error?.arguments || [],
-      },
+      error: error,
+      suspensionDurationInSeconds:
+        result?.data?.mfa?.factors?.emailCode?.verify?.session?.suspensionDurationInSeconds,
     };
   }
 }

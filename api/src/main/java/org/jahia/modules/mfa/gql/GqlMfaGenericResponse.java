@@ -12,9 +12,6 @@ import org.jahia.modules.mfa.MfaSession;
 @GraphQLName("MfaGenericResponse")
 @GraphQLDescription("Generic response for MFA operations")
 public class GqlMfaGenericResponse {
-    @GraphQLField
-    @GraphQLDescription("Error details when the operation fails")
-    private final GqlError error;
 
     @GraphQLField
     @GraphQLDescription("Details about the MFA session when the operation succeeds")
@@ -25,22 +22,9 @@ public class GqlMfaGenericResponse {
         return session;
     }
 
-    public GqlError getError() {
-        return error;
-    }
 
     public GqlMfaGenericResponse(MfaSession session) {
-        this.error = null;
         this.session = new GqlSession(session);
     }
 
-    public GqlMfaGenericResponse(MfaException mfaException) {
-        this.error = new GqlError(mfaException);
-        this.session = null;
-    }
-
-    public GqlMfaGenericResponse(Exception unexpectedException) {
-        this.error = new GqlError(unexpectedException);
-        this.session = null;
-    }
 }

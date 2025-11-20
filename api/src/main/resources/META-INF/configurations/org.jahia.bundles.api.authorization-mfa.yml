@@ -4,6 +4,7 @@ mfa:
   - api: "graphql.Mutation.mfa"
   - api: "graphql.Query.mfa"
   - api: "graphql.MfaQuery"
+  - api: "graphql.MfaFactorState"
   - api: "graphql.MfaMutation"
   - api: "graphql.MfaEmailCodeFactorPreparationResponse"
   - api: "graphql.MfaEmailCodeFactorVerificationResponse"

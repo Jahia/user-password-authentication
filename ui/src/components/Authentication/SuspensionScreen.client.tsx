@@ -7,12 +7,12 @@ import { t } from "i18next";
 import clear from "../../services/clear";
 
 interface SuspensionScreenProps {
-  suspensionErrorArguments: Array<{ name: string; value: string }>;
+  suspensionDurationInSeconds: number;
 }
 export default function SuspensionScreen(props: SuspensionScreenProps) {
-  const args = props.suspensionErrorArguments ?? [];
-  const values = Object.fromEntries(args.map((arg) => [arg.name, arg.value]));
-  const [error, setError] = useState(() => t("suspended_user", values));
+  const [error, setError] = useState(() =>
+    t("suspended_user", { suspensionDurationInHours: props.suspensionDurationInSeconds }),
+  );
   const [inProgress, setInProgress] = useState(false);
   const apiRoot = useApiRoot();
 

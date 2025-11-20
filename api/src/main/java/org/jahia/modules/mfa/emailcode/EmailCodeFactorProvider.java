@@ -6,13 +6,19 @@ import org.jahia.bin.Render;
 import org.jahia.modules.mfa.*;
 import org.jahia.osgi.BundleUtils;
 import org.jahia.registries.ServicesRegistry;
-import org.jahia.services.content.*;
+import org.jahia.services.content.JCRNodeWrapper;
+import org.jahia.services.content.JCRSessionFactory;
+import org.jahia.services.content.JCRTemplate;
 import org.jahia.services.content.decorator.JCRSiteNode;
 import org.jahia.services.content.decorator.JCRUserNode;
 import org.jahia.services.mail.MailService;
-import org.jahia.services.render.*;
+import org.jahia.services.render.RenderContext;
+import org.jahia.services.render.RenderException;
+import org.jahia.services.render.RenderService;
+import org.jahia.services.render.Resource;
 import org.jahia.services.sites.JahiaSitesService;
 import org.jahia.services.usermanager.JahiaUser;
+import org.jahia.services.usermanager.JahiaUserManagerService;
 import org.jahia.utils.i18n.Messages;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -41,6 +47,7 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
     public static final String MAIL_CODE_TEMPLATE_NAME = "mailCodeTemplate";
     private static final SecureRandom random = new SecureRandom();
 
+    private JahiaUserManagerService userManagerService;
     private RenderService renderService;
     private JahiaSitesService sitesService;
     private String mailCodeContentPath;
@@ -53,6 +60,11 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
         String moduleId = BundleUtils.getModuleId(currentBundle);
         this.mailCodeContentPath = String.format("/modules/%s/%s/contents/mfaMailCode", moduleId, BundleUtils.getModuleVersion(currentBundle));
         this.resourceBundleName = "resources." + moduleId;
+    }
+
+    @Reference
+    public void setUserManagerService(JahiaUserManagerService userManagerService) {
+        this.userManagerService = userManagerService;
     }
 
     @Reference
@@ -72,20 +84,23 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
 
     @Override
     public Serializable prepare(PreparationContext preparationContext) throws MfaException {
-        JCRUserNode user = preparationContext.getUser();
-        String emailAddress = getUserEmailAddress(user);
+        JCRUserNode userNode = userManagerService.lookupUser(preparationContext.getSessionContext().getUserId());
+        if (userNode == null) {
+            throw new IllegalStateException("User not found for path: " + preparationContext.getSessionContext().getUserId());
+        }
+        String emailAddress = getUserEmailAddress(userNode);
 
         // Generate verification code
-        MfaSession mfaSession = preparationContext.getMfaSession();
+        MfaSessionContext sessionContext = preparationContext.getSessionContext();
         String code = generateEmailCode();
-        String mailContent = generateMailContent(mfaSession, preparationContext.getHttpServletRequest(), preparationContext.getHttpServletResponse(), code);
-        String mailSubject = Messages.get(resourceBundleName, "jahia-mfa.mail.title", mfaSession.getUserPreferredLanguage());
+        String mailContent = generateMailContent(sessionContext, preparationContext.getHttpServletRequest(), preparationContext.getHttpServletResponse(), code);
+        String mailSubject = Messages.get(resourceBundleName, "jahia-mfa.mail.title", sessionContext.getUserPreferredLanguage());
 
         MailService mailService = ServicesRegistry.getInstance().getMailService();
         if (mailService.sendHtmlMessage(null, emailAddress, null, null, mailSubject, mailContent)) {
-            logger.info("Validation code sent to user {} (email: {})", user.getName(), emailAddress);
+            logger.info("Validation code sent to user {} (email: {})", userNode.getName(), emailAddress);
         } else {
-            throw new MfaException("factor.email_code.sending_validation_code_failed", "user", user.getName());
+            throw new MfaException("factor.email_code.sending_validation_code_failed", "user", userNode.getName());
         }
         String maskedEmail = getMaskedEmail(emailAddress);
         return new PreparationResult(code, maskedEmail);
@@ -141,11 +156,11 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
         return email;
     }
 
-    private String generateMailContent(MfaSession mfaSession, HttpServletRequest currentRequest, HttpServletResponse currentResponse, String code) throws MfaException {
+    private String generateMailContent(MfaSessionContext sessionContext, HttpServletRequest currentRequest, HttpServletResponse currentResponse, String code) throws MfaException {
         // will be "guest" at this stage, and it's sounds logical to render the mail code as guest user, for caching purpose.
         JahiaUser user = JCRSessionFactory.getInstance().getCurrentUser();
         try {
-            return JCRTemplate.getInstance().doExecuteWithSystemSessionAsUser(user, Constants.LIVE_WORKSPACE, mfaSession.getUserPreferredLanguage(), session -> {
+            return JCRTemplate.getInstance().doExecuteWithSystemSessionAsUser(user, Constants.LIVE_WORKSPACE, sessionContext.getUserPreferredLanguage(), session -> {
 
                 RenderContext localRenderContext = new RenderContext(unwrapRequest(currentRequest), currentResponse, session.getUser());
                 // Use live workspace to benefit from HTML cache capabilities of Jahia rendering engine
@@ -160,8 +175,8 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
 
                 // Resolve site, use the one from the session if specified, otherwise use the module as site, this allows site template resolution.
                 JCRSiteNode resolvedSite = null;
-                if (mfaSession.getSiteKey() != null) {
-                    resolvedSite = sitesService.getSiteByKey(mfaSession.getSiteKey(), session);
+                if (sessionContext.getSiteKey() != null) {
+                    resolvedSite = sitesService.getSiteByKey(sessionContext.getSiteKey(), session);
                     localRenderContext.setSite(resolvedSite);
                 } else {
                     localRenderContext.setSite(mailCodeContentNode.getResolveSite());
@@ -169,7 +184,7 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
 
                 if (logger.isDebugEnabled()) {
                     logger.debug("In order to debug the HTML output of the mfa mail code verification template, " +
-                            "you can directly visit: {}", String.format("/cms/render/live/%s%s.%s.html%s", mfaSession.getUserPreferredLanguage(), mailCodeContentPath,
+                            "you can directly visit: {}", String.format("/cms/render/live/%s%s.%s.html%s", sessionContext.getUserPreferredLanguage(), mailCodeContentPath,
                             MAIL_CODE_TEMPLATE_NAME, resolvedSite != null ? "?jsite=" + resolvedSite.getIdentifier() : ""));
                 }
 
