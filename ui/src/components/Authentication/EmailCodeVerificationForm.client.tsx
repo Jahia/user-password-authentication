@@ -12,7 +12,7 @@ import { t } from "i18next";
 interface EmailCodeVerificationFormProps {
   content: Props;
   onSuccess: () => void;
-  onSuspended: (args: Array<{ name: string; value: string }>) => void;
+  onSuspended: (suspensionDurationInSeconds: number) => void;
 }
 export default function EmailCodeVerificationForm(props: EmailCodeVerificationFormProps) {
   const [loading, setLoading] = useState(true);
@@ -33,8 +33,8 @@ export default function EmailCodeVerificationForm(props: EmailCodeVerificationFo
         if (result.success) {
           setError("");
           setMaskedEmail(result.maskedEmail);
-        } else if (result.error.code === "suspended_user") {
-          props.onSuspended(result.error.arguments);
+        } else if (result?.suspensionDurationInSeconds) {
+          props.onSuspended(result.suspensionDurationInSeconds);
         } else {
           setError(tError(result.error));
         }
@@ -78,8 +78,8 @@ export default function EmailCodeVerificationForm(props: EmailCodeVerificationFo
         if (result.success) {
           setError("");
           props.onSuccess();
-        } else if (result.error.code === "suspended_user") {
-          props.onSuspended(result.error.arguments);
+        } else if (result?.suspensionDurationInSeconds) {
+          props.onSuspended(result.suspensionDurationInSeconds);
         } else {
           setError(tError(result.error));
         }

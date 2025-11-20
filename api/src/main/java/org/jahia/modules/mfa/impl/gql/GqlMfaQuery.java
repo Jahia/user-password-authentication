@@ -24,7 +24,6 @@ import org.jahia.modules.graphql.provider.dxm.util.ContextUtil;
 import org.jahia.modules.mfa.MfaService;
 import org.jahia.modules.mfa.MfaSession;
 import org.jahia.modules.mfa.gql.GqlMfaGenericResponse;
-import org.jahia.modules.mfa.gql.GqlMfaGenericResponse;
 import org.jahia.modules.mfa.impl.MfaConfigurationService;
 
 import javax.inject.Inject;
@@ -68,14 +67,8 @@ public class GqlMfaQuery {
     @GraphQLName("sessionStatus")
     @GraphQLDescription("Get current MFA session status")
     public GqlMfaGenericResponse sessionStatus(DataFetchingEnvironment environment) {
-        try {
-            HttpServletRequest httpServletRequest = ContextUtil.getHttpServletRequest(environment.getGraphQlContext());
-
-            MfaSession session = mfaService.getMfaSession(httpServletRequest);
-            return new GqlMfaGenericResponse(session);
-
-        } catch (Exception e) {
-            return new GqlMfaGenericResponse(e);
-        }
+        HttpServletRequest httpServletRequest = ContextUtil.getHttpServletRequest(environment.getGraphQlContext());
+        MfaSession session = mfaService.getMfaSession(httpServletRequest);
+        return new GqlMfaGenericResponse(session);
     }
 }

@@ -18,14 +18,15 @@ export default async function initiate(
           mfa {
             initiate(username: $username, password: $password) {
               session {
-                state
-              }
-              error {
-                code
-                arguments {
-                  name
-                  value
+                initiated
+                error {
+                  code
+                  arguments {
+                    name
+                    value
+                  }
                 }
+                suspensionDurationInSeconds
               }
             }
           }
@@ -35,17 +36,18 @@ export default async function initiate(
     }),
   });
   const result = await response.json();
-  if (result?.data?.mfa?.initiate?.session?.state === "INITIATED") {
+  console.log("result", result);
+  if (result?.data?.mfa?.initiate?.session?.initiated) {
     return {
       success: true,
     };
   } else {
+    const error = result?.data?.mfa?.initiate?.session?.error || { code: "unexpected_error" };
     return {
       success: false,
-      error: {
-        code: result?.data?.mfa?.initiate?.error?.code || "unexpected_error",
-        arguments: result?.data?.mfa?.initiate?.error?.arguments || [],
-      },
+      error: error,
+      suspensionDurationInSeconds:
+        result?.data?.mfa?.initiate?.session?.suspensionDurationInSeconds,
     };
   }
 }

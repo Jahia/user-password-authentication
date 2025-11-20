@@ -9,8 +9,8 @@ import org.jahia.modules.graphql.provider.dxm.util.ContextUtil;
 import org.jahia.modules.mfa.MfaException;
 import org.jahia.modules.mfa.MfaService;
 import org.jahia.modules.mfa.MfaSession;
+import org.jahia.modules.mfa.MfaSessionContext;
 import org.jahia.modules.mfa.gql.GqlFactorsMutation;
-import org.jahia.modules.mfa.gql.GqlMfaGenericResponse;
 import org.jahia.modules.mfa.gql.GqlMfaGenericResponse;
 
 import javax.inject.Inject;
@@ -32,18 +32,12 @@ public class GqlMfaMutation {
     @GraphQLName("initiate")
     @GraphQLDescription("Initiate MFA authentication")
     public GqlMfaGenericResponse initiate(@GraphQLName("username") String username,
-                                       @GraphQLName("password") String password,
-                                       @GraphQLName("site") String siteKey,
-                                       DataFetchingEnvironment environment) {
-        try {
-            HttpServletRequest httpServletRequest = ContextUtil.getHttpServletRequest(environment.getGraphQlContext());
-            MfaSession session = mfaService.initiateMfa(username, password, siteKey, httpServletRequest);
-            return new GqlMfaGenericResponse(session);
-        } catch (MfaException mfaException) {
-            return new GqlMfaGenericResponse(mfaException);
-        } catch (Exception unknownException) {
-            return new GqlMfaGenericResponse(unknownException);
-        }
+                                          @GraphQLName("password") String password,
+                                          @GraphQLName("site") String siteKey,
+                                          DataFetchingEnvironment environment) {
+        HttpServletRequest httpServletRequest = ContextUtil.getHttpServletRequest(environment.getGraphQlContext());
+        MfaSession session = mfaService.initiate(username, password, siteKey, httpServletRequest);
+        return new GqlMfaGenericResponse(session);
     }
 
 
@@ -52,14 +46,11 @@ public class GqlMfaMutation {
     @GraphQLDescription("Clear current MFA session")
     public GqlMfaGenericResponse clear(DataFetchingEnvironment environment) {
         GqlMfaGenericResponse response;
-        try {
-            HttpServletRequest httpServletRequest = ContextUtil.getHttpServletRequest(environment.getGraphQlContext());
-            mfaService.clearMfaSession(httpServletRequest);
-            return new GqlMfaGenericResponse((MfaSession) null); // there is no session anymore
+        HttpServletRequest httpServletRequest = ContextUtil.getHttpServletRequest(environment.getGraphQlContext());
+        mfaService.clearMfaSession(httpServletRequest);
+        // TODO review
+        return new GqlMfaGenericResponse(new MfaSession(null));
 
-        } catch (Exception exception) {
-            return new GqlMfaGenericResponse(exception);
-        }
     }
 
     @GraphQLField
@@ -67,6 +58,13 @@ public class GqlMfaMutation {
     @GraphQLDescription("Access MFA factors specific mutations")
     public static GqlFactorsMutation getMfaFactors() {
         return new GqlFactorsMutation();
+    }
+
+    /**
+     * Converts an MfaError to MfaException for backward compatibility with GraphQL response structure.
+     */
+    private MfaException toMfaException(org.jahia.modules.mfa.MfaError error) {
+        return new MfaException(error.getCode(), error.getArguments());
     }
 
 }

@@ -5,40 +5,50 @@ import graphql.annotations.annotationTypes.GraphQLField;
 import graphql.annotations.annotationTypes.GraphQLName;
 import org.jahia.modules.mfa.MfaSession;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @GraphQLName("MfaSession")
 @GraphQLDescription("Details about the current MFA session")
 public class GqlSession {
 
-    @GraphQLField
-    @GraphQLDescription("state of the session")
-    private final GqlSessionState state;
+    private final MfaSession session;
+
+    protected GqlSession(MfaSession session) {
+        this.session = session;
+    }
 
     @GraphQLField
     @GraphQLDescription("List of required MFA factors")
-    private final List<String> requiredFactors;
+    public boolean isInitiated() {
+        return session.isInitiated();
+    }
+
+    @GraphQLField
+    @GraphQLDescription("Details about the current MFA factor")
+    public GqlFactorState factorState(@GraphQLName("factorType") String factorType) {
+        return new GqlFactorState(session.getOrCreateFactorState(factorType));
+    }
+
+    @GraphQLField
+    @GraphQLDescription("List of required MFA factors")
+    public List<String> getRequiredFactors() {
+        return session.getContext().getRequiredFactors();
+    }
 
     @GraphQLField
     @GraphQLDescription("List of completed MFA factors")
-    private final List<String> completedFactors;
-
-    protected GqlSession(MfaSession session) {
-        state = session != null ? GqlSessionState.from(session.getState()) : null;
-        requiredFactors = session != null ? new ArrayList<>(session.getPreparedFactors()) : null;
-        completedFactors = session != null ? new ArrayList<>(session.getCompletedFactors()) : null;
-    }
-
-    public GqlSessionState getState() {
-        return state;
-    }
-
-    public List<String> getRequiredFactors() {
-        return requiredFactors;
-    }
-
     public List<String> getCompletedFactors() {
-        return completedFactors;
+        return session.getCompletedFactors();
+    }
+
+    @GraphQLField
+    public long getSuspensionDurationInSeconds() {
+        return session.getSuspensionDurationInSeconds();
+    }
+
+    @GraphQLField
+    @GraphQLDescription("") // TODO
+    public GqlError getError() {
+        return session.getError() == null ? null : new GqlError(session.getError());
     }
 }

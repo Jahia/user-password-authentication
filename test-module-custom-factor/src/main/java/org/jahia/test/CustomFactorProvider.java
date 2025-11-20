@@ -27,13 +27,18 @@ import org.jahia.modules.mfa.MfaFactorProvider;
 import org.jahia.modules.mfa.PreparationContext;
 import org.jahia.modules.mfa.VerificationContext;
 import org.jahia.services.content.decorator.JCRUserNode;
+import org.jahia.services.usermanager.JahiaUserManagerService;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 import java.io.Serializable;
 
 @Component(service = MfaFactorProvider.class, immediate = true)
 public class CustomFactorProvider implements MfaFactorProvider {
     public static final String FACTOR_TYPE = "custom";
+
+    @Reference
+    private JahiaUserManagerService userManagerService;
 
     @Override
     public String getFactorType() {
@@ -43,7 +48,7 @@ public class CustomFactorProvider implements MfaFactorProvider {
     @Override
     public Serializable prepare(PreparationContext preparationContext) {
         // use the JCR user node and a request parameter
-        JCRUserNode user = preparationContext.getUser();
+        JCRUserNode user = userManagerService.lookupUser(preparationContext.getSessionContext().getUserId());
         String userProperty = user.getDisplayableName();
         int offset = Integer.parseInt(preparationContext.getHttpServletRequest().getHeader("X-offset"));
         int number = 123456;

@@ -42,7 +42,5 @@ export default function redirect(contextPath: string): void {
   const redirectParam = urlParams.get("redirect");
 
   // Validate redirect URL
-  const safeRedirect = getSafeRedirect(redirectParam, contextPath);
-  console.log("safeRedirect", safeRedirect);
-  window.location.href = safeRedirect;
+  window.location.href = getSafeRedirect(redirectParam, contextPath);
 }
