@@ -217,7 +217,6 @@ public class MfaServiceImpl implements MfaService {
         try {
             MfaFactorProvider provider = resolveProvider(factorType);
             if (provider == null) {
-                // TODO the factorType param is no longer needed
                 factorState.setError(new MfaError("factor_type_not_supported", Map.of("factorType", factorType)));
                 return session;
             }
@@ -318,7 +317,7 @@ public class MfaServiceImpl implements MfaService {
                 factorPreparationTimestampsCache.invalidate(getCacheKey(userNode, provider));
                 logger.info("Factor {} verified successfully for context: {}", factorType, session.getContext());
             } else {
-                trackFailure(userNode.getPath(), provider); // TODO rename trackVerificationFailure?
+                trackVerificationFailure(userNode.getPath(), provider);
                 factorState.setError(new MfaError("verify.verification_failed", Map.of("factorType", factorType)));
                 return session;
             }
@@ -448,7 +447,7 @@ public class MfaServiceImpl implements MfaService {
         session.getOrCreateFactorState(factorType).setPreparationResult(null);
     }
 
-    private void trackFailure(String userNodePath, MfaFactorProvider provider) {
+    private void trackVerificationFailure(String userNodePath, MfaFactorProvider provider) {
         AuthFailuresDetails tracker = failuresCache.getIfPresent(userNodePath);
         if (tracker == null) {
             tracker = new AuthFailuresDetails();

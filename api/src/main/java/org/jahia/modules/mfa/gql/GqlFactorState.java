@@ -43,7 +43,6 @@ public class GqlFactorState {
         return state.isPrepared();
     }
 
-    // same for verification
     @GraphQLField
     @GraphQLDescription("Whether the factor has been verified or not")
     public boolean isVerified() {
@@ -51,7 +50,7 @@ public class GqlFactorState {
     }
 
     @GraphQLField
-    @GraphQLDescription("Error that may occur during preparation or verification")
+    @GraphQLDescription("Factor-level error that is non-fatal and specific to this factor. If not null, this factor encountered a recoverable error (e.g., invalid code, rate limit), but other factors may still be attempted or this factor can be retried. Check session-level error first for irrecoverable failures.")
     public GqlError getError() {
         return state.getError() == null ? null : new GqlError(state.getError());
     }

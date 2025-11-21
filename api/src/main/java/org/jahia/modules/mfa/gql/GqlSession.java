@@ -18,7 +18,7 @@ public class GqlSession {
     }
 
     @GraphQLField
-    @GraphQLDescription("List of required MFA factors")
+    @GraphQLDescription("Whether the MFA session has been initiated")
     public boolean isInitiated() {
         return session.isInitiated();
     }
@@ -42,12 +42,13 @@ public class GqlSession {
     }
 
     @GraphQLField
+    @GraphQLDescription("Suspension duration in seconds if the user is temporarily suspended due to too many failed attempts. Returns 0 if not suspended.")
     public long getSuspensionDurationInSeconds() {
         return session.getSuspensionDurationInSeconds();
     }
 
     @GraphQLField
-    @GraphQLDescription("") // TODO
+    @GraphQLDescription("Session-level error indicating an irrecoverable failure. If not null, the session has permanently failed and must be discarded. A new session must be created to retry authentication. Check this before checking factor-level errors.")
     public GqlError getError() {
         return session.getError() == null ? null : new GqlError(session.getError());
     }

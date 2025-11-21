@@ -28,10 +28,45 @@ public class MfaFactorState implements Serializable {
         this.verified = verified;
     }
 
+    /**
+     * Returns the factor-level error for this specific factor.
+     * <p>
+     * Factor-level errors are non-fatal and specific to this factor's preparation or verification.
+     * They indicate issues like invalid verification codes, rate limiting, or missing configuration
+     * for this particular factor.
+     * <p>
+     * If this returns a non-null value, this specific factor has encountered an error, but other
+     * factors may still be attempted. For fatal session-wide errors that prevent all operations,
+     * check {@link MfaSession#getError()} instead.
+     *
+     * @return the factor-level error, or null if no error has occurred for this factor
+     * @see MfaSession#getError() for session-level errors
+     */
     public MfaError getError() {
         return error;
     }
 
+    /**
+     * Sets a factor-level error for this specific factor.
+     * <p>
+     * This should be called for errors that affect only this factor and do not invalidate
+     * the entire MFA session, such as:
+     * <ul>
+     *   <li>Invalid verification code entered</li>
+     *   <li>Factor preparation rate limit exceeded</li>
+     *   <li>Factor type not supported or not available</li>
+     *   <li>Factor-specific configuration missing (e.g., no email address)</li>
+     * </ul>
+     * <p>
+     * For errors that invalidate the entire session and prevent all factors from proceeding,
+     * use {@link MfaSession#setError(MfaError)} instead.
+     * <p>
+     * Setting an error on a factor typically allows the user to retry the same factor or
+     * attempt a different factor if available.
+     *
+     * @param error the factor-level error to set
+     * @see MfaSession#setError(MfaError) for setting session-level errors
+     */
     public void setError(MfaError error) {
         this.error = error;
     }
