@@ -10,9 +10,9 @@ interface SuspensionScreenProps {
   suspensionDurationInSeconds: number;
 }
 export default function SuspensionScreen(props: SuspensionScreenProps) {
-  const [error, setError] = useState(() =>
-    t("suspended_user", { suspensionDurationInHours: props.suspensionDurationInSeconds }),
-  );
+  // Convert seconds to hours and round up for user-friendly display
+  const suspensionDurationInHours = Math.ceil(props.suspensionDurationInSeconds / 3600);
+  const [error, setError] = useState(() => t("suspended_user", { suspensionDurationInHours }));
   const [inProgress, setInProgress] = useState(false);
   const apiRoot = useApiRoot();
 

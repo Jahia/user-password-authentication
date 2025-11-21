@@ -119,8 +119,8 @@ describe('Error scenarios common to all factors', () => {
 
             // Final attempt should trigger suspension
             wrongCode = generateWrongCode(wrongCode);
-            const expectedSuspensionDurationInHours = 1; // 6 seconds rounded up to 1 hour
-            verifyEmailCodeFactorAndExpectSuspended(wrongCode, expectedSuspensionDurationInHours);
+            const expectedSuspensionDurationInSeconds = 6;
+            verifyEmailCodeFactorAndExpectSuspended(wrongCode, expectedSuspensionDurationInSeconds);
         });
     };
 });

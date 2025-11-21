@@ -376,7 +376,7 @@ public class MfaServiceImpl implements MfaService {
         return null;
     }
 
-    // Returns suspension duration in hours, or null if not suspended
+    // Returns suspension duration in seconds, or null if not suspended
     private Integer getUserSuspension(String userNodePath) {
         if (isUserSuspended(userNodePath)) {
             logger.warn("User {} is suspended", userNodePath);
@@ -386,8 +386,8 @@ public class MfaServiceImpl implements MfaService {
     }
 
     private Integer getSuspensionDuration() {
-        // Convert and round up suspension in seconds to hours
-        return (int) Math.ceil(mfaConfigurationService.getUserTemporarySuspensionSeconds() / 3600.0);
+        // Return suspension duration in seconds
+        return mfaConfigurationService.getUserTemporarySuspensionSeconds();
     }
 
     private boolean isUserSuspended(String userPath) {

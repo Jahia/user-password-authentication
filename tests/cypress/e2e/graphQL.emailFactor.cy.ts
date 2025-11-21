@@ -211,11 +211,11 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
             });
             wrongCode = generateWrongCode(wrongCode);
             cy.log('4th attempt: ' + wrongCode);
-            const expectedSuspensionDurationInHours = 1; // 6 seconds rounded up to 1 hour
-            verifyEmailCodeFactorAndExpectSuspended(wrongCode, expectedSuspensionDurationInHours);
+            const expectedSuspensionDurationInSeconds = 6;
+            verifyEmailCodeFactorAndExpectSuspended(wrongCode, expectedSuspensionDurationInSeconds);
             assertIsSuspended(TEST_USER.username());
             cy.log('Even the valid code is not accepted: ' + code);
-            verifyEmailCodeFactorAndExpectSuspended(wrongCode, expectedSuspensionDurationInHours);
+            verifyEmailCodeFactorAndExpectSuspended(wrongCode, expectedSuspensionDurationInSeconds);
             // Wait until the suspension expires
             // eslint-disable-next-line cypress/no-unnecessary-waiting
             cy.wait(6000);
