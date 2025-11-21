@@ -44,14 +44,14 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
     private static final Logger logger = LoggerFactory.getLogger(EmailCodeFactorProvider.class);
     private static final int EMAIL_CODE_LENGTH = 6;
     public static final String FACTOR_TYPE = "email_code";
-    public static final String MAIL_CODE_TEMPLATE_NAME = "mailCodeTemplate";
+    private static final String MAIL_CODE_TEMPLATE_NAME = "mailCodeTemplate";
     private static final SecureRandom random = new SecureRandom();
-    protected static final String ERROR_SENDING_VALIDATION_FAILED = "factor.email_code.sending_validation_code_failed";
-    protected static final String ERROR_VERIFICATION_CODE_REQUIRED = "factor.email_code.verification_code_required";
-    protected static final String ERROR_PREPARATION_CODE_REQUIRED = "factor.email_code.missing_prepared_code";
-    protected static final String ERROR_PREPARATION_FAILED = "factor.email_code.preparation_failed";
-    protected static final String ERROR_EMAIL_NOT_CONFIGURED = "factor.email_code.email_not_configured_for_user";
-    protected static final String ERROR_EMAIL_CONTENT_GENERATION = "factor.email_code.generating_email_content_failed";
+    private static final String ERROR_SENDING_VALIDATION_FAILED = "factor.email_code.sending_validation_code_failed";
+    private static final String ERROR_VERIFICATION_CODE_REQUIRED = "factor.email_code.verification_code_required";
+    private static final String ERROR_PREPARATION_CODE_REQUIRED = "factor.email_code.missing_prepared_code";
+    private static final String ERROR_PREPARATION_FAILED = "factor.email_code.preparation_failed";
+    private static final String ERROR_EMAIL_NOT_CONFIGURED = "factor.email_code.email_not_configured_for_user";
+    private static final String ERROR_EMAIL_CONTENT_GENERATION = "factor.email_code.generating_email_content_failed";
 
     private JahiaUserManagerService userManagerService;
     private RenderService renderService;

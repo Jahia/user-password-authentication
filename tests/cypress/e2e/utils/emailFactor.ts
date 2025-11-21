@@ -1,5 +1,3 @@
-import {SessionState} from './api';
-
 const VERIFICATION_CODE_SUBJECT = {
     en: 'Authentication Code',
     fr: 'Code d\'authentification'

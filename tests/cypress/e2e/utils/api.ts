@@ -2,13 +2,6 @@ export interface Error {
     code: string;
     arguments?: Array<{ name: string; value: string }>;
 }
-
-export enum SessionState {
-    INITIATED = 'INITIATED',
-    PREPARED = 'PREPARED',
-    COMPLETED = 'COMPLETED'
-}
-
 /**
  * Initiates the MFA process for a given user and asserts the expected outcome.
  *

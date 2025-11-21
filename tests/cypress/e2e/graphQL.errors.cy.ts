@@ -74,15 +74,15 @@ describe('Error scenarios common to all factors', () => {
     it('Should throw an error when a suspended user tries to initiate the MFA flow', () => {
         suspendUser(usr, pwd, email);
 
-        const suspensionDurationInHours = 1; // 6 seconds rounded up to 1 hour
-        initiateAndExpectSuspended(usr, pwd, suspensionDurationInHours);
+        const expectedSuspensionDurationInSeconds = 6;
+        initiateAndExpectSuspended(usr, pwd, expectedSuspensionDurationInSeconds);
     });
 
     it('Should throw an error when a suspended user tries to prepare a factor', () => {
         suspendUser(usr, pwd, email);
 
-        const suspensionDurationInHours = 1; // 6 seconds rounded up to 1 hour
-        prepareEmailCodeFactorAndExpectSuspended(suspensionDurationInHours);
+        const expectedSuspensionDurationInSeconds = 6;
+        prepareEmailCodeFactorAndExpectSuspended(expectedSuspensionDurationInSeconds);
     });
 
     /**
