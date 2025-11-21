@@ -6,7 +6,7 @@ import java.io.Serializable;
 
 /**
  * Context object containing all necessary data for verifying an MFA factor.
- * Provides access to the user, HTTP request, preparation result, and verification data.
+ * Provided to {@link MfaFactorProvider#verify(VerificationContext)} implementations.
  */
 public class VerificationContext {
     private final MfaSessionContext sessionContext;

@@ -4,7 +4,8 @@ import java.io.Serializable;
 
 /**
  * Represents the state of a single MFA factor within a session.
- * Tracks preparation and completion statuses.
+ * Tracks preparation and completion statuses plus any recoverable factor-level error.
+ * Factor-level errors use codes such as verify_factor_not_prepared or verify_verification_failed.
  */
 public class MfaFactorState implements Serializable {
     private boolean prepared = false;

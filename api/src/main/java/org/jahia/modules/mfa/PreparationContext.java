@@ -5,11 +5,9 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * Holds the information needed during multi-factor authentication preparation for a user.
- * This includes the user account, the current site, and the HTTP servlet request details.
+ * Includes session context plus the originating HTTP request/response.
  * <p>
- * Note: The HTTP servlet request is always included because some custom mfa factor
- * may need to pass additional data from the front-end application targeting the preparation.
- * (In such cases, request attributes can be useful to transport additional data.)
+ * Custom factor providers may read request attributes to access additional data supplied by the frontend.
  */
 public class PreparationContext {
     private final MfaSessionContext sessionContext;
@@ -19,7 +17,9 @@ public class PreparationContext {
     /**
      * Creates a new context for MFA preparation.
      *
-     * @param httpServletRequest the HTTP servlet request with any additional preparation data
+     * @param sessionContext       the immutable MFA session context
+     * @param httpServletRequest   the HTTP servlet request supplying any extra preparation data
+     * @param httpServletResponse  the HTTP servlet response for writing side-effects if needed
      */
     public PreparationContext(MfaSessionContext sessionContext,
                               HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
@@ -28,21 +28,18 @@ public class PreparationContext {
         this.httpServletResponse = httpServletResponse;
     }
 
-    public MfaSessionContext getSessionContext() {
-        return sessionContext;
-    }
-
+    /**
+     * Returns the immutable session context.
+     */
+    public MfaSessionContext getSessionContext() { return sessionContext; }
 
     /**
      * Returns the HTTP servlet request that triggered MFA preparation.
-     *
-     * @return the HTTP servlet request containing any additional preparation data
      */
-    public HttpServletRequest getHttpServletRequest() {
-        return httpServletRequest;
-    }
+    public HttpServletRequest getHttpServletRequest() { return httpServletRequest; }
 
-    public HttpServletResponse getHttpServletResponse() {
-        return httpServletResponse;
-    }
+    /**
+     * Returns the HTTP servlet response associated with preparation.
+     */
+    public HttpServletResponse getHttpServletResponse() { return httpServletResponse; }
 }
