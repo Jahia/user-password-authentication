@@ -88,19 +88,33 @@ public class MfaSession implements Serializable {
     }
 
     /**
-     * Returns the session-level error if the MFA session has failed.
+     * Returns the session-level error if the MFA session has failed irrecoverably.
      * <p>
      * Session-level errors indicate fatal failures that prevent all MFA operations from proceeding.
      * These errors should be checked before attempting to prepare or verify any factor.
      * <p>
-     * If this returns a non-null value, the authentication flow cannot continue and the
-     * user should be presented with an appropriate error message.
+     * <b>Important:</b> If this returns a non-null value, the session is permanently failed and must be
+     * discarded. The authentication flow cannot continue with this session, and a new session must be
+     * created to retry authentication. The user should be presented with an appropriate error message.
      *
      * @return the session-level error, or null if no session-level error has occurred
-     * @see MfaFactorState#getError() for factor-specific errors
+     * @see MfaFactorState#getError() for factor-specific recoverable errors
+     * @see #hasError() to check if an error exists without retrieving the error details
      */
     public MfaError getError() {
         return error;
+    }
+
+    /**
+     * Checks if this session has a session-level error.
+     * <p>
+     * This is a convenience method equivalent to {@code getError() != null}.
+     *
+     * @return true if a session-level error exists, false otherwise
+     * @see #getError() to retrieve the error details
+     */
+    public boolean hasError() {
+        return error != null;
     }
 
     /**

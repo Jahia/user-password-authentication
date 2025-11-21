@@ -152,7 +152,6 @@ public class MfaServiceImpl implements MfaService {
     public MfaSession initiate(String username, String password, String siteKey, HttpServletRequest request) {
         logger.info("Initiating MFA for user: {}", username);
 
-
         AuthenticationRequest authenticationRequest = new AuthenticationRequest(username, password, siteKey, true);
         JahiaUser user;
         try {
@@ -195,21 +194,31 @@ public class MfaServiceImpl implements MfaService {
         return new MfaSession(sessionContext);
     }
 
-
-    @Override
-    public MfaSession prepareFactor(String factorType, HttpServletRequest request, HttpServletResponse response) {
+    /**
+     * Gets the current MFA session or creates an error session if none exists.
+     * <p>
+     * This centralizes the null session handling logic to ensure consistent error responses
+     * across all operations that require an active session.
+     *
+     * @param request the HTTP request to get the session from
+     * @return the existing MFA session, or an error session with "no_active_session" error if none exists
+     */
+    private MfaSession getSessionOrCreateError(HttpServletRequest request) {
         MfaSession session = getMfaSession(request);
         if (session == null) {
-            // Cannot proceed without a session
-            logger.error("Attempt to prepare factor without active session");
             MfaSession errorSession = createErrorSession("unknown", null);
             errorSession.setError(new MfaError("no_active_session"));
             return errorSession;
         }
+        return session;
+    }
 
-        // TODO check no session error?
-        // clear any previous session error? TODO
-//        session.setError(null);
+
+    @Override
+    public MfaSession prepareFactor(String factorType, HttpServletRequest request, HttpServletResponse response) {
+        MfaSession session = getSessionOrCreateError(request);
+        if (session.hasError()) return session;
+
         // Clear any previous error for this factor
         MfaFactorState factorState = session.getOrCreateFactorState(factorType);
         factorState.setError(null);
@@ -267,22 +276,12 @@ public class MfaServiceImpl implements MfaService {
 
     @Override
     public MfaSession verifyFactor(String factorType, Serializable verificationData, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
-        MfaSession session = getMfaSession(httpServletRequest);
-        if (session == null) {
-            // Cannot proceed without a session
-            logger.error("Attempt to prepare factor without active session");
-            MfaSession errorSession = createErrorSession("unknown", null);
-            errorSession.setError(new MfaError("no_active_session"));
-            return errorSession;
-        }
+        MfaSession session = getSessionOrCreateError(httpServletRequest);
+        if (session.hasError()) return session;
 
-        // TODO check no session error?
-        // clear any previous session error? TODO
-//        session.setError(null);
         // Clear any previous error for this factor
-        session.getOrCreateFactorState(factorType).setError(null);
-
         MfaFactorState factorState = session.getOrCreateFactorState(factorType);
+        factorState.setError(null);
         try {
             if (!factorState.isPrepared()) {
                 factorState.setError(new MfaError("verify.factor_not_prepared", Map.of("factorType", factorType)));
