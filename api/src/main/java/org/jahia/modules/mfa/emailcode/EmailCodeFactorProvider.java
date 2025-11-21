@@ -106,9 +106,35 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
         return new PreparationResult(code, maskedEmail);
     }
 
+    /**
+     * Masks an email address for privacy while keeping it recognizable.
+     * <p>
+     * Examples:
+     * <ul>
+     *   <li>john.doe@example.com → j***e@example.com</li>
+     *   <li>ab@example.com → a***@example.com</li>
+     *   <li>a@example.com → a***@example.com</li>
+     * </ul>
+     *
+     * @param emailAddress the email address to mask
+     * @return the masked email address, or "***" if the email is invalid
+     */
     private static String getMaskedEmail(String emailAddress) {
+        // Validate email contains "@"
+        if (StringUtils.isEmpty(emailAddress) || !emailAddress.contains("@")) {
+            logger.warn("Invalid email address format, cannot mask: {}", emailAddress);
+            return "***";
+        }
+
         String localPart = StringUtils.substringBefore(emailAddress, "@");
         String domain = StringUtils.substringAfter(emailAddress, "@");
+
+        // Additional validation
+        if (StringUtils.isEmpty(localPart) || StringUtils.isEmpty(domain)) {
+            logger.warn("Invalid email address format (empty local part or domain), cannot mask: {}", emailAddress);
+            return "***";
+        }
+
         String maskedEmail;
 
         if (localPart.length() <= 2) {
