@@ -5,15 +5,24 @@ mutation prepareCustomFactor {
                 prepare {
                     otherInfo
                     session {
-                        state
+                        error {
+                            code
+                            arguments {
+                                name
+                                value
+                            }
+                        }
                         completedFactors
                         requiredFactors
-                    }
-                    error {
-                        code
-                        arguments {
-                            name
-                            value
+                        factorState(factorType: "custom") {
+                            prepared
+                            preparationError {
+                                code
+                                arguments {
+                                    name
+                                    value
+                                }
+                            }
                         }
                     }
                 }

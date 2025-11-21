@@ -255,7 +255,7 @@ public class MfaServiceImpl implements MfaService {
             factorState.setPreparationResult(preparationResult);
             // Store in cache to prevent same user to generate a new preparationResult for the current factor.
             factorPreparationTimestampsCache.put(cacheKey, now);
-            session.getOrCreateFactorState(provider.getFactorType()).setPrepared(true);
+            factorState.setPrepared(true);
             logger.info("Factor {} preparation completed for context: {}", factorType, session.getContext());
         } catch (MfaException e) {
             MfaError mfaError = new MfaError(e.getCode(), e.getArguments());

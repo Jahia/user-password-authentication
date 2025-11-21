@@ -3321,6 +3321,7 @@ type MfaSession {
     initiated: Boolean
     "List of required MFA factors"
     requiredFactors: [String]
+    suspensionDurationInSeconds: Long
 }
 
 "Root mutation type"

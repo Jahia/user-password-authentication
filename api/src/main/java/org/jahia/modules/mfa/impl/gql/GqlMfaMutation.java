@@ -9,7 +9,6 @@ import org.jahia.modules.graphql.provider.dxm.util.ContextUtil;
 import org.jahia.modules.mfa.MfaException;
 import org.jahia.modules.mfa.MfaService;
 import org.jahia.modules.mfa.MfaSession;
-import org.jahia.modules.mfa.MfaSessionContext;
 import org.jahia.modules.mfa.gql.GqlFactorsMutation;
 import org.jahia.modules.mfa.gql.GqlMfaGenericResponse;
 

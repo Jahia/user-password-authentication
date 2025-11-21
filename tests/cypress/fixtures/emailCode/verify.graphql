@@ -4,18 +4,27 @@ mutation verifyEmailCodeFactor($code: String!) {
             emailCode {
                 verify(code: $code) {
                     session {
-                        state
+                        error {
+                            code
+                            arguments {
+                                name
+                                value
+                            }
+                        }
+                        suspensionDurationInSeconds
                         completedFactors
                         requiredFactors
-                    }
-                    error {
-                        code
-                        arguments {
-                            name
-                            value
+                        factorState(factorType: "email_code") {
+                            verified
+                            verificationError {
+                                code
+                                arguments {
+                                    name
+                                    value
+                                }
+                            }
                         }
                     }
-
                 }
             }
         }

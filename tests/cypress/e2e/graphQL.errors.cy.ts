@@ -5,11 +5,11 @@ import {
     generateWrongCode,
     getVerificationCode,
     initiate,
-    initiateAndExpectError,
+    initiateAndExpectGlobalError, initiateAndExpectSuspended,
     installMFAConfig,
     prepareEmailCodeFactor,
-    prepareEmailCodeFactorAndExpectError,
-    verifyEmailCodeFactorAndExpectError
+    prepareEmailCodeFactorAndExpectFactorError, prepareEmailCodeFactorAndExpectSuspended,
+    verifyEmailCodeFactorAndExpectFactorError, verifyEmailCodeFactorAndExpectSuspended
 } from './utils';
 import {deleteUser} from '@jahia/cypress';
 import {faker} from '@faker-js/faker';
@@ -35,19 +35,19 @@ describe('Error scenarios common to all factors', () => {
     });
 
     it('Should throw an error when an invalid username is provided', () => {
-        initiateAndExpectError('unknownUser', pwd, 'authentication_failed');
+        initiateAndExpectGlobalError('unknownUser', pwd, 'authentication_failed');
     });
 
     it('Should throw an error when an invalid password is provided', () => {
-        initiateAndExpectError(usr, 'myPassword', 'authentication_failed');
+        initiateAndExpectGlobalError(usr, 'myPassword', 'authentication_failed');
     });
 
     it('Should throw an error when an empty username is provided', () => {
-        initiateAndExpectError('', pwd, 'authentication_failed');
+        initiateAndExpectGlobalError('', pwd, 'authentication_failed');
     });
 
     it('Should throw an error when an empty password is provided', () => {
-        initiateAndExpectError(usr, '', 'authentication_failed');
+        initiateAndExpectGlobalError(usr, '', 'authentication_failed');
     });
 
     it('Should throw an error when a factor is requested twice, then should pass after the timeout', () => {
@@ -58,7 +58,7 @@ describe('Error scenarios common to all factors', () => {
         prepareEmailCodeFactor();
 
         cy.log('3- prepare again');
-        prepareEmailCodeFactorAndExpectError('prepare.rate_limit_exceeded', {
+        prepareEmailCodeFactorAndExpectFactorError('prepare.rate_limit_exceeded', {
             nextRetryInSeconds: value => expect(parseInt(value, 10)).to.be.greaterThan(0),
             factorType: value => expect(value).to.eq('email_code'),
             user: value => expect(value).to.eq(usr)
@@ -74,17 +74,15 @@ describe('Error scenarios common to all factors', () => {
     it('Should throw an error when a suspended user tries to initiate the MFA flow', () => {
         suspendUser(usr, pwd, email);
 
-        initiateAndExpectError(usr, pwd, 'suspended_user', {
-            suspensionDurationInHours: value => expect(value).to.eq('1') // 6 seconds rounded up to 1 hour
-        });
+        const suspensionDurationInHours = 1; // 6 seconds rounded up to 1 hour
+        initiateAndExpectSuspended(usr, pwd, suspensionDurationInHours);
     });
 
     it('Should throw an error when a suspended user tries to prepare a factor', () => {
         suspendUser(usr, pwd, email);
 
-        prepareEmailCodeFactorAndExpectError('suspended_user', {
-            suspensionDurationInHours: value => expect(value).to.eq('1') // 6 seconds rounded up to 1 hour
-        });
+        const suspensionDurationInHours = 1; // 6 seconds rounded up to 1 hour
+        prepareEmailCodeFactorAndExpectSuspended(suspensionDurationInHours);
     });
 
     /**
@@ -105,25 +103,24 @@ describe('Error scenarios common to all factors', () => {
         getVerificationCode(userEmail).then(code => {
             // Make 3 failed verification attempts to trigger suspension
             let wrongCode = generateWrongCode(code);
-            verifyEmailCodeFactorAndExpectError(wrongCode, 'verify.verification_failed', {
+            verifyEmailCodeFactorAndExpectFactorError(wrongCode, 'verify.verification_failed', {
                 factorType: value => expect(value).to.eq('email_code')
             });
 
             wrongCode = generateWrongCode(wrongCode);
-            verifyEmailCodeFactorAndExpectError(wrongCode, 'verify.verification_failed', {
+            verifyEmailCodeFactorAndExpectFactorError(wrongCode, 'verify.verification_failed', {
                 factorType: value => expect(value).to.eq('email_code')
             });
 
             wrongCode = generateWrongCode(wrongCode);
-            verifyEmailCodeFactorAndExpectError(wrongCode, 'verify.verification_failed', {
+            verifyEmailCodeFactorAndExpectFactorError(wrongCode, 'verify.verification_failed', {
                 factorType: value => expect(value).to.eq('email_code')
             });
 
             // Final attempt should trigger suspension
             wrongCode = generateWrongCode(wrongCode);
-            verifyEmailCodeFactorAndExpectError(wrongCode, 'suspended_user', {
-                suspensionDurationInHours: value => expect(value).to.eq('1') // 6 seconds rounded up to 1 hour
-            });
+            const expectedSuspensionDurationInHours = 1; // 6 seconds rounded up to 1 hour
+            verifyEmailCodeFactorAndExpectSuspended(wrongCode, expectedSuspensionDurationInHours);
         });
     };
 });

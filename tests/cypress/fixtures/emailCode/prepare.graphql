@@ -1,19 +1,29 @@
-mutation prepareEmailCodeFactor {
+mutation prepareCustomFactor {
     mfa {
         factors {
             emailCode {
                 prepare {
                     maskedEmail
                     session {
-                        state
+                        error {
+                            code
+                            arguments {
+                                name
+                                value
+                            }
+                        }
+                        suspensionDurationInSeconds
                         completedFactors
                         requiredFactors
-                    }
-                    error {
-                        code
-                        arguments {
-                            name
-                            value
+                        factorState(factorType: "email_code") {
+                            prepared
+                            preparationError {
+                                code
+                                arguments {
+                                    name
+                                    value
+                                }
+                            }
                         }
                     }
                 }

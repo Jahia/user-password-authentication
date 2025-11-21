@@ -15,7 +15,8 @@ public class MfaSession implements Serializable {
     private final MfaSessionContext context;
     private boolean initiated;
     private final Map<String, MfaFactorState> factorStates;
-    private long suspensionDurationInSeconds;
+    private long suspensionDurationInSeconds; // TODO might get removed eventually
+    // immutable, session has to be recreated if error is set
     private MfaError error;
 
     public MfaSession(MfaSessionContext context) {
