@@ -42,6 +42,10 @@ public class MfaServiceImpl implements MfaService {
             // TODO disable it until https://github.com/Jahia/jahia-multi-factor-authentication/issues/68 is implemented
             .shouldRememberMe(false)
             .build();
+    protected static final String ERROR_FACTOR_TYPE_NOT_SUPPORTED = "factor_type_not_supported";
+    protected static final String ERROR_RATE_LIMIT_EXCEEDED = "prepare.rate_limit_exceeded";
+    protected static final String ERROR_FACTOR_NOT_PREPARED = "verify.factor_not_prepared";
+    protected static final String ERROR_VERIFICATION_FAILED = "verify.verification_failed";
 
     private JahiaUserManagerService userManagerService;
     private MfaFactorRegistry factorRegistry;
@@ -233,7 +237,7 @@ public class MfaServiceImpl implements MfaService {
         try {
             MfaFactorProvider provider = resolveProvider(factorType);
             if (provider == null) {
-                factorState.setError(new MfaError("factor_type_not_supported", Map.of("factorType", factorType)));
+                factorState.setError(new MfaError(ERROR_FACTOR_TYPE_NOT_SUPPORTED, Map.of("factorType", factorType)));
                 return session;
             }
 
@@ -259,7 +263,7 @@ public class MfaServiceImpl implements MfaService {
                         "factorType", factorType,
                         "user", userNode.getName()
                 );
-                factorState.setError(new MfaError("prepare.rate_limit_exceeded", arguments));
+                factorState.setError(new MfaError(ERROR_RATE_LIMIT_EXCEEDED, arguments));
                 logger.debug("Preparation rate limit exceeded for the factor {} for session context: {}", factorType, session.getContext());
                 return session;
             }
@@ -291,14 +295,14 @@ public class MfaServiceImpl implements MfaService {
         factorState.setError(null);
         try {
             if (!factorState.isPrepared()) {
-                factorState.setError(new MfaError("verify.factor_not_prepared", Map.of("factorType", factorType)));
+                factorState.setError(new MfaError(ERROR_FACTOR_NOT_PREPARED, Map.of("factorType", factorType)));
                 return session;
             }
 
             MfaFactorProvider provider = resolveProvider(factorType);
             if (provider == null) {
                 // TODO should never happen, throw IllegalStateException?
-                factorState.setError(new MfaError("factor_type_not_supported", Map.of("factorType", factorType)));
+                factorState.setError(new MfaError(ERROR_FACTOR_TYPE_NOT_SUPPORTED, Map.of("factorType", factorType)));
                 return session;
             }
 
@@ -324,7 +328,7 @@ public class MfaServiceImpl implements MfaService {
                 logger.info("Factor {} verified successfully for context: {}", factorType, session.getContext());
             } else {
                 trackVerificationFailure(userNode.getPath(), provider);
-                factorState.setError(new MfaError("verify.verification_failed", Map.of("factorType", factorType)));
+                factorState.setError(new MfaError(ERROR_VERIFICATION_FAILED, Map.of("factorType", factorType)));
                 return session;
             }
 

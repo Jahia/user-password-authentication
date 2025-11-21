@@ -46,6 +46,12 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
     public static final String FACTOR_TYPE = "email_code";
     public static final String MAIL_CODE_TEMPLATE_NAME = "mailCodeTemplate";
     private static final SecureRandom random = new SecureRandom();
+    protected static final String ERROR_SENDING_VALIDATION_FAILED = "factor.email_code.sending_validation_code_failed";
+    protected static final String ERROR_VERIFICATION_CODE_REQUIRED = "factor.email_code.verification_code_required";
+    protected static final String ERROR_PREPARATION_CODE_REQUIRED = "factor.email_code.missing_prepared_code";
+    protected static final String ERROR_PREPARATION_FAILED = "factor.email_code.preparation_failed";
+    protected static final String ERROR_EMAIL_NOT_CONFIGURED = "factor.email_code.email_not_configured_for_user";
+    protected static final String ERROR_EMAIL_CONTENT_GENERATION = "factor.email_code.generating_email_content_failed";
 
     private JahiaUserManagerService userManagerService;
     private RenderService renderService;
@@ -100,7 +106,7 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
         if (mailService.sendHtmlMessage(null, emailAddress, null, null, mailSubject, mailContent)) {
             logger.info("Validation code sent to user {} (email: {})", userNode.getName(), emailAddress);
         } else {
-            throw new MfaException("factor.email_code.sending_validation_code_failed", "user", userNode.getName());
+            throw new MfaException(ERROR_SENDING_VALIDATION_FAILED, "user", userNode.getName());
         }
         String maskedEmail = getMaskedEmail(emailAddress);
         return new PreparationResult(code, maskedEmail);
@@ -151,12 +157,12 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
     public boolean verify(VerificationContext verificationContext) throws MfaException {
         String submittedCode = (String) verificationContext.getVerificationData();
         if (StringUtils.isEmpty(submittedCode)) {
-            throw new MfaException("factor.email_code.verification_code_required");
+            throw new MfaException(ERROR_VERIFICATION_CODE_REQUIRED);
         }
         PreparationResult preparationResult = (PreparationResult) verificationContext.getPreparationResult();
         String storedCode = preparationResult != null ? preparationResult.getCode() : null;
         if (StringUtils.isEmpty(storedCode)) {
-            throw new MfaException("factor.email_code.missing_prepared_code");
+            throw new MfaException(ERROR_PREPARATION_CODE_REQUIRED);
         }
         return StringUtils.equals(submittedCode, storedCode);
     }
@@ -174,10 +180,10 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
         try {
             email = user.hasProperty("j:email") ? user.getProperty("j:email").getString() : null;
         } catch (RepositoryException e) {
-            throw new MfaException("factor.email_code.preparation_failed", "user", user.getName());
+            throw new MfaException(ERROR_PREPARATION_FAILED, "user", user.getName());
         }
         if (email == null || email.trim().isEmpty()) {
-            throw new MfaException("factor.email_code.email_not_configured_for_user", "user", user.getName()); // TODO should we skip MFA in this case?
+            throw new MfaException(ERROR_EMAIL_NOT_CONFIGURED, "user", user.getName()); // TODO should we skip MFA in this case?
         }
         return email;
     }
@@ -229,7 +235,7 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
             });
         } catch (RepositoryException e) {
             logger.error("An error occurred while generating mail content for MFA mail code, enable debug log level to get help");
-            throw new MfaException("factor.email_code.generating_email_content_failed");
+            throw new MfaException(ERROR_EMAIL_CONTENT_GENERATION);
         }
     }
 
