@@ -29,7 +29,7 @@ import graphql.annotations.annotationTypes.GraphQLName;
 import org.jahia.modules.mfa.MfaFactorState;
 
 @GraphQLName("MfaFactorState")
-@GraphQLDescription("Details about an MFA factor")
+@GraphQLDescription("State of a single MFA factor: preparation, verification and recoverable factor-level error")
 public class GqlFactorState {
     private final MfaFactorState state;
 
@@ -38,21 +38,23 @@ public class GqlFactorState {
     }
 
     @GraphQLField
-    @GraphQLDescription("Whether the factor has been prepared or not")
+    @GraphQLName("prepared")
+    @GraphQLDescription("True after the factor has been successfully prepared")
     public boolean isPrepared() {
         return state.isPrepared();
     }
 
     @GraphQLField
-    @GraphQLDescription("Whether the factor has been verified or not")
+    @GraphQLName("verified")
+    @GraphQLDescription("True after the factor has been successfully verified")
     public boolean isVerified() {
         return state.isVerified();
     }
 
     @GraphQLField
-    @GraphQLDescription("Factor-level error that is non-fatal and specific to this factor. If not null, this factor encountered a recoverable error (e.g., invalid code, rate limit), but other factors may still be attempted or this factor can be retried. Check session-level error first for irrecoverable failures.")
+    @GraphQLName("error")
+    @GraphQLDescription("Recoverable factor-level error (e.g. invalid code, rate limit). Session-level errors take precedence.")
     public GqlError getError() {
         return state.hasError() ? new GqlError(state.getError()) : null;
     }
-
 }

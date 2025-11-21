@@ -12,7 +12,7 @@ import graphql.annotations.annotationTypes.GraphQLName;
  * @see org.jahia.modules.mfa.emailcode.gql.GqlEmailCodeFactorMutationExtension for an example
  */
 @GraphQLName("MfaFactorsMutation")
-@GraphQLDescription("Access MFA factors specific mutations")
+@GraphQLDescription("Container for factor-specific mutation entry points (extended by individual factor extensions)")
 public class GqlFactorsMutation {
-
+    // Acts as an extension aggregation root; intentionally empty.
 }

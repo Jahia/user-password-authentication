@@ -18,7 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import static org.jahia.modules.mfa.emailcode.EmailCodeFactorProvider.FACTOR_TYPE;
 
 @GraphQLName("MfaEmailCodeFactorMutation")
-@GraphQLDescription("Access to the mutation operations of the email code factor")
+@GraphQLDescription("Mutation operations for the email code factor")
 public class GqlEmailCodeFactorMutation {
     private MfaService mfaService;
 
@@ -30,7 +30,7 @@ public class GqlEmailCodeFactorMutation {
 
     @GraphQLField
     @GraphQLName("prepare")
-    @GraphQLDescription("Prepare the email code factor")
+    @GraphQLDescription("Prepare the email code factor (generates and sends a code)")
     public GqlMfaEmailCodeFactorPreparationResponse prepare(DataFetchingEnvironment environment) {
         HttpServletRequest httpServletRequest = ContextUtil.getHttpServletRequest(environment.getGraphQlContext());
         HttpServletResponse httpServletResponse = ContextUtil.getHttpServletResponse(environment.getGraphQlContext());
@@ -42,7 +42,7 @@ public class GqlEmailCodeFactorMutation {
 
     @GraphQLField
     @GraphQLName("verify")
-    @GraphQLDescription("Verify email code factor")
+    @GraphQLDescription("Verify the email code factor by submitting the received code")
     public GqlMfaGenericResponse verify(@GraphQLName("code") String code, DataFetchingEnvironment environment) {
         HttpServletRequest httpServletRequest = ContextUtil.getHttpServletRequest(environment.getGraphQlContext());
         HttpServletResponse httpServletResponse = ContextUtil.getHttpServletResponse(environment.getGraphQlContext());

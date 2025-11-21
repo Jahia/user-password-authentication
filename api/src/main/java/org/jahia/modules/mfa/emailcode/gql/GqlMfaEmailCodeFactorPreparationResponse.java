@@ -8,7 +8,7 @@ import org.jahia.modules.mfa.emailcode.EmailCodeFactorProvider;
 import org.jahia.modules.mfa.gql.GqlMfaGenericResponse;
 
 @GraphQLName("MfaEmailCodeFactorPreparationResponse")
-@GraphQLDescription("Email code factor preparation result")
+@GraphQLDescription("Email code factor preparation result including masked destination address")
 public class GqlMfaEmailCodeFactorPreparationResponse extends GqlMfaGenericResponse {
 
     private final String maskedEmail;
@@ -19,7 +19,8 @@ public class GqlMfaEmailCodeFactorPreparationResponse extends GqlMfaGenericRespo
     }
 
     @GraphQLField
-    @GraphQLDescription("masked email the verification code has been sent to")
+    @GraphQLName("maskedEmail")
+    @GraphQLDescription("Masked email address where the verification code was sent (redacted for privacy)")
     public String getMaskedEmail() {
         return maskedEmail;
     }

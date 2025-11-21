@@ -31,7 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @GraphQLName("MfaQuery")
-@GraphQLDescription("MFA read-only operations")
+@GraphQLDescription("Read-only MFA operations: availability, factors and current session state")
 public class GqlMfaQuery {
 
     private MfaService mfaService;
@@ -39,38 +39,29 @@ public class GqlMfaQuery {
 
     @Inject
     @GraphQLOsgiService
-    public void setMfaService(MfaService mfaService) {
-        this.mfaService = mfaService;
-    }
+    public void setMfaService(MfaService mfaService) { this.mfaService = mfaService; }
 
     @Inject
     @GraphQLOsgiService
-    public void setMfaConfigurationService(MfaConfigurationService mfaConfigurationService) {
-        this.mfaConfigurationService = mfaConfigurationService;
-    }
+    public void setMfaConfigurationService(MfaConfigurationService mfaConfigurationService) { this.mfaConfigurationService = mfaConfigurationService; }
 
     @GraphQLField
     @GraphQLName("enabled")
-    @GraphQLDescription("Check if MFA is enabled")
-    public boolean enabled() {
-        return mfaConfigurationService.isEnabled();
-    }
+    @GraphQLDescription("True if MFA feature is enabled by configuration")
+    public boolean enabled() { return mfaConfigurationService.isEnabled(); }
 
     @GraphQLField
     @GraphQLName("availableFactors")
-    @GraphQLDescription("Get list of available MFA factors")
-    public List<String> availableFactors() {
-        return mfaService.getAvailableFactors();
-    }
+    @GraphQLDescription("List of factor types currently available and enabled")
+    public List<String> availableFactors() { return mfaService.getAvailableFactors(); }
 
     @GraphQLField
     @GraphQLName("session")
-    @GraphQLDescription("Get current MFA session. Returns a session with an error if no active session exists.")
+    @GraphQLDescription("Current MFA session (returns an error session if none exists)")
     public GqlSession session(DataFetchingEnvironment environment) {
         HttpServletRequest httpServletRequest = ContextUtil.getHttpServletRequest(environment.getGraphQlContext());
         MfaSession session = mfaService.getMfaSession(httpServletRequest);
         if (session == null) {
-            // Return error session for consistency with prepare/verify mutations
             session = mfaService.createNoSessionError();
         }
         return new GqlSession(session);

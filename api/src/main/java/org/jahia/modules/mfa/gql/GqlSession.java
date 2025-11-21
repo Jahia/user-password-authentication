@@ -8,7 +8,7 @@ import org.jahia.modules.mfa.MfaSession;
 import java.util.List;
 
 @GraphQLName("MfaSession")
-@GraphQLDescription("Details about the current MFA session")
+@GraphQLDescription("Details about the current MFA session: initiation status, factors, suspension and errors")
 public class GqlSession {
 
     private final MfaSession session;
@@ -18,37 +18,43 @@ public class GqlSession {
     }
 
     @GraphQLField
-    @GraphQLDescription("Whether the MFA session has been initiated")
+    @GraphQLName("initiated")
+    @GraphQLDescription("True once the username/password phase succeeded and the MFA flow started")
     public boolean isInitiated() {
         return session.isInitiated();
     }
 
     @GraphQLField
-    @GraphQLDescription("Details about the current MFA factor")
+    @GraphQLName("factorState")
+    @GraphQLDescription("Retrieve state for a specific factor (preparation, verification, factor-level error)")
     public GqlFactorState factorState(@GraphQLName("factorType") String factorType) {
         return new GqlFactorState(session.getOrCreateFactorState(factorType));
     }
 
     @GraphQLField
-    @GraphQLDescription("List of required MFA factors")
+    @GraphQLName("requiredFactors")
+    @GraphQLDescription("List of factor types required to complete the MFA flow")
     public List<String> getRequiredFactors() {
         return session.getContext().getRequiredFactors();
     }
 
     @GraphQLField
-    @GraphQLDescription("List of completed MFA factors")
+    @GraphQLName("completedFactors")
+    @GraphQLDescription("List of factor types successfully verified so far")
     public List<String> getCompletedFactors() {
         return session.getVerifiedFactors();
     }
 
     @GraphQLField
-    @GraphQLDescription("Suspension duration in seconds if the user is temporarily suspended due to too many failed attempts. Returns null if not suspended.")
+    @GraphQLName("suspensionDurationInSeconds")
+    @GraphQLDescription("Remaining suspension duration (seconds) if the user is temporarily locked; null if not suspended")
     public Long getSuspensionDurationInSeconds() {
         return session.getSuspensionDurationInSeconds();
     }
 
     @GraphQLField
-    @GraphQLDescription("Session-level error indicating an irrecoverable failure. If not null, the session has permanently failed and must be discarded. A new session must be created to retry authentication. Check this before checking factor-level errors.")
+    @GraphQLName("error")
+    @GraphQLDescription("Irrecoverable session-level error. If non-null the session must be discarded and re-initiated before any factor interaction.")
     public GqlError getError() {
         return session.getError() == null ? null : new GqlError(session.getError());
     }
