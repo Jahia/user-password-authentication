@@ -70,7 +70,9 @@ export function initiateAndExpectSuspended(username: string, password: string, s
         }
     }).then(response => {
         cy.log('Response for initiateAndExpectSuspended():', JSON.stringify(response, null, 2));
-        expect(response?.data?.mfa?.initiate?.session?.suspensionDurationInSeconds).eq(suspensionDurationInSeconds);
+        const actualDuration = response?.data?.mfa?.initiate?.session?.suspensionDurationInSeconds;
+        expect(actualDuration).to.not.be.null;
+        expect(actualDuration).eq(suspensionDurationInSeconds);
     });
 }
 

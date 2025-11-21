@@ -232,7 +232,9 @@ export function verifyEmailCodeFactorAndExpectSuspended(
         }
     }).then(response => {
         cy.log('Response for verifyEmailCodeFactorAndExpectSuspended():', JSON.stringify(response, null, 2));
-        expect(response?.data?.mfa?.factors?.emailCode?.verify?.session?.suspensionDurationInSeconds).eq(expectedSuspensionDurationInSeconds);
+        const actualDuration = response?.data?.mfa?.factors?.emailCode?.verify?.session?.suspensionDurationInSeconds;
+        expect(actualDuration).to.not.be.null;
+        expect(actualDuration).eq(expectedSuspensionDurationInSeconds);
     });
 }
 

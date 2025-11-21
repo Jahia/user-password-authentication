@@ -275,7 +275,7 @@ describe('Tests for the UI module', () => {
         });
     });
 
-    it.only('Should be suspended when reaching the limit of INVALID attempts; when restarting the login flow, should remain suspended', () => {
+    it('Should be suspended when reaching the limit of INVALID attempts; when restarting the login flow, should remain suspended', () => {
         installMFAConfig('sample-ui-long-suspension.yml');
         LoginStep.triggerRedirect(SITE_KEY);
         LoginStep.login(username, password);

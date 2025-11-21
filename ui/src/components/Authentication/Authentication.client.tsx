@@ -14,7 +14,9 @@ enum Step {
 
 export default function ({ apiRoot, content }: { apiRoot: string; content: Props }) {
   const [step, setStep] = useState<Step>(Step.LOGIN);
-  const [suspensionDurationInSeconds, setSuspensionDurationInSeconds] = useState<number>(0);
+  const [suspensionDurationInSeconds, setSuspensionDurationInSeconds] = useState<number | null>(
+    null,
+  );
 
   const handleVerifySuccess = () => {
     setStep(Step.COMPLETE);
@@ -23,7 +25,7 @@ export default function ({ apiRoot, content }: { apiRoot: string; content: Props
 
   return (
     <ApiRootContext value={apiRoot}>
-      {step === Step.SUSPENDED && (
+      {step === Step.SUSPENDED && suspensionDurationInSeconds !== null && (
         <SuspensionScreen suspensionDurationInSeconds={suspensionDurationInSeconds} />
       )}
       {step === Step.LOGIN && (

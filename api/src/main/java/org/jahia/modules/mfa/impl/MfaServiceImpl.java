@@ -166,10 +166,10 @@ public class MfaServiceImpl implements MfaService {
         }
 
         // Validate user not suspended
-        int suspensionDuration = getUserSuspension(user.getUserKey());
-        if (suspensionDuration > 0) {
+        Integer suspensionDuration = getUserSuspension(user.getUserKey());
+        if (suspensionDuration != null) {
             MfaSession session = createErrorSession(username, siteKey);
-            session.setSuspensionDurationInSeconds(suspensionDuration); // TODO review hours vs seconds
+            session.setSuspensionDurationInSeconds(suspensionDuration.longValue());
             return session;
         }
 
@@ -227,9 +227,9 @@ public class MfaServiceImpl implements MfaService {
                 return session;
             }
 
-            int suspensionDuration = validateUserCanAuthenticate(userNode, provider, session);
-            if (suspensionDuration > 0) {
-                session.setSuspensionDurationInSeconds(suspensionDuration); // TODO review hours vs seconds
+            Integer suspensionDuration = validateUserCanAuthenticate(userNode, provider, session);
+            if (suspensionDuration != null) {
+                session.setSuspensionDurationInSeconds(suspensionDuration.longValue());
                 return session;
             }
 
@@ -302,9 +302,9 @@ public class MfaServiceImpl implements MfaService {
                 return session;
             }
 
-            int suspensionDuration = validateUserCanAuthenticate(userNode, provider, session);
-            if (suspensionDuration > 0) {
-                session.setSuspensionDurationInSeconds(suspensionDuration); // TODO review hours vs seconds
+            Integer suspensionDuration = validateUserCanAuthenticate(userNode, provider, session);
+            if (suspensionDuration != null) {
+                session.setSuspensionDurationInSeconds(suspensionDuration.longValue());
                 return session;
             }
 
@@ -362,9 +362,9 @@ public class MfaServiceImpl implements MfaService {
     }
 
     // TODO find a better name and review this method
-    private int validateUserCanAuthenticate(JCRUserNode user, MfaFactorProvider provider, MfaSession session) {
-        int suspensionDuration = getUserSuspension(user.getPath());
-        if (suspensionDuration > 0) {
+    private Integer validateUserCanAuthenticate(JCRUserNode user, MfaFactorProvider provider, MfaSession session) {
+        Integer suspensionDuration = getUserSuspension(user.getPath());
+        if (suspensionDuration != null) {
             return suspensionDuration;
         }
 
@@ -373,20 +373,20 @@ public class MfaServiceImpl implements MfaService {
             return getSuspensionDuration();
         }
 
-        return 0;
+        return null;
     }
 
-    // get in hours, 0 if not suspended
-    private int getUserSuspension(String userNodePath) {
+    // Returns suspension duration in hours, or null if not suspended
+    private Integer getUserSuspension(String userNodePath) {
         if (isUserSuspended(userNodePath)) {
             logger.warn("User {} is suspended", userNodePath);
             return getSuspensionDuration();
         }
-        return 0;
+        return null;
     }
 
-    private int getSuspensionDuration() {
-        // convert and round up suspension in seconds to hours
+    private Integer getSuspensionDuration() {
+        // Convert and round up suspension in seconds to hours
         return (int) Math.ceil(mfaConfigurationService.getUserTemporarySuspensionSeconds() / 3600.0);
     }
 

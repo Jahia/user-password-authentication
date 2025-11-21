@@ -42,8 +42,8 @@ public class GqlSession {
     }
 
     @GraphQLField
-    @GraphQLDescription("Suspension duration in seconds if the user is temporarily suspended due to too many failed attempts. Returns 0 if not suspended.")
-    public long getSuspensionDurationInSeconds() {
+    @GraphQLDescription("Suspension duration in seconds if the user is temporarily suspended due to too many failed attempts. Returns null if not suspended.")
+    public Long getSuspensionDurationInSeconds() {
         return session.getSuspensionDurationInSeconds();
     }
 
