@@ -51,13 +51,9 @@ public class GqlFactorState {
     }
 
     @GraphQLField
-    public GqlError preparationError() {
-        return state.getPreparationError() == null ? null : new GqlError(state.getPreparationError());
-    }
-
-    @GraphQLField
-    public GqlError verificationError() {
-        return state.getVerificationError() == null ? null : new GqlError(state.getVerificationError());
+    @GraphQLDescription("Error that may occur during preparation or verification")
+    public GqlError getError() {
+        return state.getError() == null ? null : new GqlError(state.getError());
     }
 
 }

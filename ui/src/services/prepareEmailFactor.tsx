@@ -31,7 +31,7 @@ export default async function prepareEmailFactor(
                     suspensionDurationInSeconds
                     factorState(factorType: $factorType) {
                       prepared
-                      preparationError {
+                      error {
                         code
                         arguments {
                           name
@@ -53,15 +53,14 @@ export default async function prepareEmailFactor(
   const result = await response.json();
   if (
     result?.data?.mfa?.factors?.emailCode?.prepare?.session?.factorState?.prepared &&
-    !result?.data?.mfa?.factors?.emailCode?.prepare?.session?.factorState?.preparationError
+    !result?.data?.mfa?.factors?.emailCode?.prepare?.session?.factorState?.error
   ) {
     return {
       success: true,
       maskedEmail: result?.data?.mfa?.factors?.emailCode?.prepare?.maskedEmail,
     };
   } else {
-    const error = result?.data?.mfa?.factors?.emailCode?.prepare?.session?.factorState
-      ?.preparationError ||
+    const error = result?.data?.mfa?.factors?.emailCode?.prepare?.session?.factorState?.error ||
       result?.data?.mfa?.factors?.emailCode?.prepare?.session?.error || {
         code: "unexpected_error",
         arguments: [],

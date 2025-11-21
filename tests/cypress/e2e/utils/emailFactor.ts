@@ -110,11 +110,11 @@ export function prepareEmailCodeFactorAndExpectFactorError(
         queryFile: 'emailCode/prepare.graphql'
     }).then(response => {
         cy.log('Response for prepareEmailCodeFactorAndExpectError():', JSON.stringify(response, null, 2));
-        expect(response?.data?.mfa?.factors?.emailCode?.prepare?.session?.factorState?.preparationError?.code).eq(errorCode);
+        expect(response?.data?.mfa?.factors?.emailCode?.prepare?.session?.factorState?.error?.code).eq(errorCode);
 
         // Assert on error arguments if provided
         if (argumentAssertions) {
-            const errorArguments = response?.data?.mfa?.factors?.emailCode?.prepare?.session?.factorState?.preparationError?.arguments;
+            const errorArguments = response?.data?.mfa?.factors?.emailCode?.prepare?.session?.factorState?.error?.arguments;
             expect(errorArguments).to.be.a('array');
 
             Object.entries(argumentAssertions).forEach(([argName, assertion]) => {
@@ -123,7 +123,7 @@ export function prepareEmailCodeFactorAndExpectFactorError(
                 assertion(argument.value);
             });
         } else {
-            expect(response?.data?.mfa?.factors?.emailCode?.prepare?.session?.factorState?.preparationError?.arguments).to.be.empty;
+            expect(response?.data?.mfa?.factors?.emailCode?.prepare?.session?.factorState?.error?.arguments).to.be.empty;
         }
     });
 }
@@ -202,11 +202,11 @@ export function verifyEmailCodeFactorAndExpectFactorError(
         }
     }).then(response => {
         cy.log('Response for verifyEmailCodeFactorAndExpectError():', JSON.stringify(response, null, 2));
-        expect(response?.data?.mfa?.factors?.emailCode?.verify?.session?.factorState?.verificationError?.code).eq(errorCode);
+        expect(response?.data?.mfa?.factors?.emailCode?.verify?.session?.factorState?.error?.code).eq(errorCode);
 
         // Assert on error arguments if provided
         if (argumentAssertions) {
-            const errorArguments = response?.data?.mfa?.factors?.emailCode?.verify?.session?.factorState?.verificationError?.arguments;
+            const errorArguments = response?.data?.mfa?.factors?.emailCode?.verify?.session?.factorState?.error?.arguments;
             expect(errorArguments).to.be.a('array');
 
             Object.entries(argumentAssertions).forEach(([argName, assertion]) => {
@@ -215,7 +215,7 @@ export function verifyEmailCodeFactorAndExpectFactorError(
                 assertion(argument.value);
             });
         } else {
-            expect(response?.data?.mfa?.factors?.emailCode?.verify?.session?.factorState?.verificationError?.arguments).to.be.empty;
+            expect(response?.data?.mfa?.factors?.emailCode?.verify?.session?.factorState?.error?.arguments).to.be.empty;
         }
     });
 }

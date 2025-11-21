@@ -21,7 +21,7 @@ export default async function verifyEmailCodeFactor(
                   session {
                     factorState(factorType: $factorType) {
                       verified
-                      verificationError {
+                      error {
                         code
                         arguments {
                           name
@@ -52,8 +52,7 @@ export default async function verifyEmailCodeFactor(
     return { success: true };
   } else {
     console.log(result);
-    const error = result?.data?.mfa?.factors?.emailCode?.verify?.session?.factorState
-      ?.verificationError ||
+    const error = result?.data?.mfa?.factors?.emailCode?.verify?.session?.factorState?.error ||
       result?.data?.mfa?.factors?.emailCode?.verify?.session?.error || {
         code: "unexpected_error",
         arguments: [],

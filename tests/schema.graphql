@@ -3266,10 +3266,10 @@ type MfaErrorArgument {
 
 "Details about an MFA factor"
 type MfaFactorState {
-    preparationError: MfaError
+    "Error that may occur during preparation or verification"
+    error: MfaError
     "Whether the factor has been prepared or not"
     prepared: Boolean
-    verificationError: MfaError
     "Whether the factor has been verified or not"
     verified: Boolean
 }

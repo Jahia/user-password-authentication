@@ -212,13 +212,13 @@ public class MfaServiceImpl implements MfaService {
 //        session.setError(null);
         // Clear any previous error for this factor
         MfaFactorState factorState = session.getOrCreateFactorState(factorType);
-        factorState.setPreparationError(null);
+        factorState.setError(null);
 
         try {
             MfaFactorProvider provider = resolveProvider(factorType);
             if (provider == null) {
                 // TODO the factorType param is no longer needed
-                factorState.setPreparationError(new MfaError("factor_type_not_supported", Map.of("factorType", factorType)));
+                factorState.setError(new MfaError("factor_type_not_supported", Map.of("factorType", factorType)));
                 return session;
             }
 
@@ -244,7 +244,7 @@ public class MfaServiceImpl implements MfaService {
                         "factorType", factorType,
                         "user", userNode.getName()
                 );
-                factorState.setPreparationError(new MfaError("prepare.rate_limit_exceeded", arguments));
+                factorState.setError(new MfaError("prepare.rate_limit_exceeded", arguments));
                 logger.debug("Preparation rate limit exceeded for the factor {} for session context: {}", factorType, session.getContext());
                 return session;
             }
@@ -259,7 +259,7 @@ public class MfaServiceImpl implements MfaService {
             logger.info("Factor {} preparation completed for context: {}", factorType, session.getContext());
         } catch (MfaException e) {
             MfaError mfaError = new MfaError(e.getCode(), e.getArguments());
-            factorState.setPreparationError(mfaError);
+            factorState.setError(mfaError);
 
             logger.error("Factor {} preparation failed for context: {}", factorType, session.getContext(), e);
         }
@@ -281,19 +281,19 @@ public class MfaServiceImpl implements MfaService {
         // clear any previous session error? TODO
 //        session.setError(null);
         // Clear any previous error for this factor
-        session.getOrCreateFactorState(factorType).setVerificationError(null);
+        session.getOrCreateFactorState(factorType).setError(null);
 
         MfaFactorState factorState = session.getOrCreateFactorState(factorType);
         try {
             if (!factorState.isPrepared()) {
-                factorState.setVerificationError(new MfaError("verify.factor_not_prepared", Map.of("factorType", factorType)));
+                factorState.setError(new MfaError("verify.factor_not_prepared", Map.of("factorType", factorType)));
                 return session;
             }
 
             MfaFactorProvider provider = resolveProvider(factorType);
             if (provider == null) {
                 // TODO should never happen, throw IllegalStateException?
-                factorState.setVerificationError(new MfaError("factor_type_not_supported", Map.of("factorType", factorType)));
+                factorState.setError(new MfaError("factor_type_not_supported", Map.of("factorType", factorType)));
                 return session;
             }
 
@@ -319,7 +319,7 @@ public class MfaServiceImpl implements MfaService {
                 logger.info("Factor {} verified successfully for context: {}", factorType, session.getContext());
             } else {
                 trackFailure(userNode.getPath(), provider); // TODO rename trackVerificationFailure?
-                factorState.setVerificationError(new MfaError("verify.verification_failed", Map.of("factorType", factorType)));
+                factorState.setError(new MfaError("verify.verification_failed", Map.of("factorType", factorType)));
                 return session;
             }
 
@@ -329,7 +329,7 @@ public class MfaServiceImpl implements MfaService {
                 failuresCache.invalidate(userNode.getPath()); // clear any failure attempts for that user
             }
         } catch (MfaException e) {
-            factorState.setVerificationError(new MfaError(e.getCode(), e.getArguments()));
+            factorState.setError(new MfaError(e.getCode(), e.getArguments()));
             logger.error("Factor {} verification failed for context: {}", factorType, session.getContext(), e);
         }
 

@@ -16,7 +16,7 @@ mutation verifyEmailCodeFactor($code: String!) {
                         requiredFactors
                         factorState(factorType: "email_code") {
                             verified
-                            verificationError {
+                            error {
                                 code
                                 arguments {
                                     name

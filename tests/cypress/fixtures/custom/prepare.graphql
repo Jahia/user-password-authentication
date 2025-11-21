@@ -16,7 +16,7 @@ mutation prepareCustomFactor {
                         requiredFactors
                         factorState(factorType: "custom") {
                             prepared
-                            preparationError {
+                            error {
                                 code
                                 arguments {
                                     name

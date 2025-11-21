@@ -9,8 +9,7 @@ import java.io.Serializable;
 public class MfaFactorState implements Serializable {
     private boolean prepared = false;
     private boolean verified = false;
-    private MfaError preparationError;
-    private MfaError verificationError;
+    private MfaError error;
     private Serializable preparationResult;
 
     public boolean isPrepared() {
@@ -33,20 +32,12 @@ public class MfaFactorState implements Serializable {
         return prepared && verified;
     }
 
-    public MfaError getPreparationError() {
-        return preparationError;
+    public MfaError getError() {
+        return error;
     }
 
-    public void setPreparationError(MfaError preparationError) {
-        this.preparationError = preparationError;
-    }
-
-    public MfaError getVerificationError() {
-        return verificationError;
-    }
-
-    public void setVerificationError(MfaError verificationError) {
-        this.verificationError = verificationError;
+    public void setError(MfaError error) {
+        this.error = error;
     }
 
     public Serializable getPreparationResult() {

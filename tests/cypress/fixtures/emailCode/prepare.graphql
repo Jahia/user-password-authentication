@@ -17,7 +17,7 @@ mutation prepareCustomFactor {
                         requiredFactors
                         factorState(factorType: "email_code") {
                             prepared
-                            preparationError {
+                            error {
                                 code
                                 arguments {
                                     name
