@@ -28,10 +28,6 @@ public class MfaFactorState implements Serializable {
         this.verified = verified;
     }
 
-    public boolean isCompleted() {
-        return prepared && verified;
-    }
-
     public MfaError getError() {
         return error;
     }

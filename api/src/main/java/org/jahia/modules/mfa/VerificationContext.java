@@ -1,8 +1,7 @@
 package org.jahia.modules.mfa;
 
-import org.jahia.services.content.decorator.JCRUserNode;
-
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.Serializable;
 
 /**
@@ -10,44 +9,37 @@ import java.io.Serializable;
  * Provides access to the user, HTTP request, preparation result, and verification data.
  */
 public class VerificationContext {
-    // TODO store the MfaSession here?
-    private final JCRUserNode user;
-    private final HttpServletRequest httpServletRequest; // TODO should we keep it?
-    // TODO add response?
+    private final MfaSessionContext sessionContext;
     private final Serializable preparationResult;
     private final Serializable verificationData;
+    private final HttpServletRequest httpServletRequest;
+    private final HttpServletResponse httpServletResponse;
 
     /**
-     * Constructs a new VerificationContext.
+     * Constructs a new VerificationContext with the provided session context, preparation result,
+     * verification data, HTTP request, and HTTP response.
      *
-     * @param user               the user for whom MFA verification is being performed
-     * @param httpServletRequest the HTTP request associated with the verification
-     * @param preparationResult  the result from the preparation step
-     * @param verificationData   the data provided for verification
+     * @param sessionContext      the MFA session context containing user and session-specific data
+     * @param preparationResult   the result of the preparation step, typically used for initializing verification
+     * @param verificationData    the data provided for factor verification, often provided by the user
+     * @param httpServletRequest  the HTTP servlet request associated with the current operation
+     * @param httpServletResponse the HTTP servlet response associated with the current operation
      */
-    public VerificationContext(JCRUserNode user, HttpServletRequest httpServletRequest, Serializable preparationResult, Serializable verificationData) {
-        this.user = user;
-        this.httpServletRequest = httpServletRequest;
+    public VerificationContext(MfaSessionContext sessionContext, Serializable preparationResult, Serializable verificationData, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
+        this.sessionContext = sessionContext;
         this.preparationResult = preparationResult;
         this.verificationData = verificationData;
+        this.httpServletRequest = httpServletRequest;
+        this.httpServletResponse = httpServletResponse;
     }
 
     /**
-     * Returns the user associated with this context (the user being authenticated).
+     * Returns the MFA session context containing user and session-specific data.
      *
-     * @return the JCRUserNode representing the user
+     * @return the MFA session context
      */
-    public JCRUserNode getUser() {
-        return user;
-    }
-
-    /**
-     * Returns the HTTP request associated with this context.
-     *
-     * @return the HttpServletRequest for the verification step
-     */
-    public HttpServletRequest getHttpServletRequest() {
-        return httpServletRequest;
+    public MfaSessionContext getSessionContext() {
+        return sessionContext;
     }
 
     /**
@@ -66,5 +58,23 @@ public class VerificationContext {
      */
     public Serializable getVerificationData() {
         return verificationData;
+    }
+
+    /**
+     * Returns the HTTP request associated with this context.
+     *
+     * @return the {@link HttpServletRequest} for the verification step
+     */
+    public HttpServletRequest getHttpServletRequest() {
+        return httpServletRequest;
+    }
+
+    /**
+     * Returns the HTTP response associated with this context.
+     *
+     * @return the {@link HttpServletResponse} for the verification step
+     */
+    public HttpServletResponse getHttpServletResponse() {
+        return httpServletResponse;
     }
 }

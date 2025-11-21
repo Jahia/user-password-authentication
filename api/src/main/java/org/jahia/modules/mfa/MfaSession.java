@@ -58,9 +58,9 @@ public class MfaSession implements Serializable {
         this.error = error;
     }
 
-    public List<String> getCompletedFactors() {
+    public List<String> getVerifiedFactors() {
         return factorStates.entrySet().stream()
-                .filter(entry -> entry.getValue().isCompleted())
+                .filter(entry -> entry.getValue().isVerified())
                 .map(Map.Entry::getKey)
                 .collect(toList());
     }

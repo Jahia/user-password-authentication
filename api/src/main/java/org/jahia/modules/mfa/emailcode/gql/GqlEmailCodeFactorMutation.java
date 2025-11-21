@@ -45,7 +45,8 @@ public class GqlEmailCodeFactorMutation {
     @GraphQLDescription("Verify email code factor")
     public GqlMfaGenericResponse verify(@GraphQLName("code") String code, DataFetchingEnvironment environment) {
         HttpServletRequest httpServletRequest = ContextUtil.getHttpServletRequest(environment.getGraphQlContext());
-        MfaSession session = mfaService.verifyFactor(FACTOR_TYPE, httpServletRequest, code);
+        HttpServletResponse httpServletResponse = ContextUtil.getHttpServletResponse(environment.getGraphQlContext());
+        MfaSession session = mfaService.verifyFactor(FACTOR_TYPE, code, httpServletRequest, httpServletResponse);
         return new GqlMfaGenericResponse(session);
     }
 

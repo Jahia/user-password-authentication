@@ -46,7 +46,7 @@ public interface MfaService {
      *
      * @return MfaSession with updated state and potential error information
      */
-    MfaSession verifyFactor(String factorType, HttpServletRequest request, Serializable verificationData);
+    MfaSession verifyFactor(String factorType, Serializable verificationData, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse);
 
     /**
      * Gets the current MFA session for the request.

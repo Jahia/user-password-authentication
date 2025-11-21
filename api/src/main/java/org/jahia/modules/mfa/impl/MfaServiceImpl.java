@@ -267,8 +267,8 @@ public class MfaServiceImpl implements MfaService {
     }
 
     @Override
-    public MfaSession verifyFactor(String factorType, HttpServletRequest request, Serializable verificationData) {
-        MfaSession session = getMfaSession(request);
+    public MfaSession verifyFactor(String factorType, Serializable verificationData, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
+        MfaSession session = getMfaSession(httpServletRequest);
         if (session == null) {
             // Cannot proceed without a session
             logger.error("Attempt to prepare factor without active session");
@@ -310,7 +310,7 @@ public class MfaServiceImpl implements MfaService {
             }
 
             Serializable preparationResult = factorState.getPreparationResult();
-            VerificationContext verificationContext = new VerificationContext(userNode, request, preparationResult, verificationData);
+            VerificationContext verificationContext = new VerificationContext(session.getContext(), preparationResult, verificationData, httpServletRequest, httpServletResponse);
 
             if (provider.verify(verificationContext)) {
                 factorState.setVerified(true);
@@ -325,7 +325,7 @@ public class MfaServiceImpl implements MfaService {
 
             if (areAllRequiredFactorsCompleted(session)) {
                 logger.info("All MFA factors completed for context: {}, proceed with authentication", session.getContext());
-                authenticateUser(request, userNode);
+                authenticateUser(httpServletRequest, userNode);
                 failuresCache.invalidate(userNode.getPath()); // clear any failure attempts for that user
             }
         } catch (MfaException e) {
@@ -501,7 +501,7 @@ public class MfaServiceImpl implements MfaService {
     private boolean areAllRequiredFactorsCompleted(MfaSession session) {
         // For now, we require at least one factor to be completed
         // This can be made configurable later
-        return !session.getCompletedFactors().isEmpty();
+        return !session.getVerifiedFactors().isEmpty();
     }
 
     private static String getCacheKey(JCRUserNode user, MfaFactorProvider provider) {

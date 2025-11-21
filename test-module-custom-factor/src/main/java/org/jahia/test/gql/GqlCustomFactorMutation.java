@@ -50,8 +50,9 @@ public class GqlCustomFactorMutation {
     @GraphQLDescription("Verify the custom factor")
     public GqlMfaGenericResponse verify(@GraphQLName("number") Integer number, DataFetchingEnvironment environment) {
         HttpServletRequest httpServletRequest = ContextUtil.getHttpServletRequest(environment.getGraphQlContext());
+        HttpServletResponse httpServletResponse = ContextUtil.getHttpServletResponse(environment.getGraphQlContext());
         VerificationData verificationData = new VerificationData(number);
-        MfaSession session = mfaService.verifyFactor(FACTOR_TYPE, httpServletRequest, verificationData);
+        MfaSession session = mfaService.verifyFactor(FACTOR_TYPE, verificationData, httpServletRequest, httpServletResponse);
         return new GqlMfaGenericResponse(session);
 
     }

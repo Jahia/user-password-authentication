@@ -38,7 +38,7 @@ public class GqlSession {
     @GraphQLField
     @GraphQLDescription("List of completed MFA factors")
     public List<String> getCompletedFactors() {
-        return session.getCompletedFactors();
+        return session.getVerifiedFactors();
     }
 
     @GraphQLField
