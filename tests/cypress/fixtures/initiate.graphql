@@ -1,15 +1,16 @@
 mutation initiate($username: String!, $password: String!, $site: String) {
     mfa {
         initiate(username: $username, password: $password, site: $site) {
-            error {
-                code
-                arguments {
-                    name
-                    value
-                }
-            }
             session {
-                state
+                initiated
+                error {
+                    code
+                    arguments {
+                        name
+                        value
+                    }
+                }
+                suspensionDurationInSeconds
                 requiredFactors
                 completedFactors
             }

@@ -4,18 +4,26 @@ mutation verifyCustomFactor($number: Int!) {
             custom {
                 verify(number: $number) {
                     session {
-                        state
+                        error {
+                            code
+                            arguments {
+                                name
+                                value
+                            }
+                        }
                         completedFactors
                         requiredFactors
-                    }
-                    error {
-                        code
-                        arguments {
-                            name
-                            value
+                        factorState(factorType: "custom") {
+                            verified
+                            verificationError {
+                                code
+                                arguments {
+                                    name
+                                    value
+                                }
+                            }
                         }
                     }
-
                 }
             }
         }

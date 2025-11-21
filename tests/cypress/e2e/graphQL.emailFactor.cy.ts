@@ -12,9 +12,10 @@ import {
     initiate,
     installMFAConfig,
     prepareEmailCodeFactor,
-    prepareEmailCodeFactorAndExpectError,
+    prepareEmailCodeFactorAndExpectFactorError, prepareEmailCodeFactorAndExpectGlobalError,
     verifyEmailCodeFactor,
-    verifyEmailCodeFactorAndExpectError
+    verifyEmailCodeFactorAndExpectFactorError, verifyEmailCodeFactorAndExpectGlobalError,
+    verifyEmailCodeFactorAndExpectSuspended
 } from './utils';
 import {faker} from '@faker-js/faker';
 
@@ -135,7 +136,7 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
         cy.log('3- verification using a wrong code');
         getVerificationCode(TEST_USER.email).then(code => {
             const wrongCode = generateWrongCode(code);
-            verifyEmailCodeFactorAndExpectError(wrongCode, 'verify.verification_failed', {
+            verifyEmailCodeFactorAndExpectFactorError(wrongCode, 'verify.verification_failed', {
                 factorType: value => expect(value).to.eq('email_code')
             });
         });
@@ -149,7 +150,7 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
         prepareEmailCodeFactor();
 
         cy.log('3- verification without a code');
-        verifyEmailCodeFactorAndExpectError('', 'factor.email_code.verification_code_required');
+        verifyEmailCodeFactorAndExpectFactorError('', 'factor.email_code.verification_code_required');
     });
 
     it('Should throw an error when the user does not have an email', () => {
@@ -157,7 +158,7 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
         initiate(TEST_USER_NO_EMAIL.username(), TEST_USER_NO_EMAIL.password);
 
         cy.log('2- prepare');
-        prepareEmailCodeFactorAndExpectError('factor.email_code.email_not_configured_for_user', {
+        prepareEmailCodeFactorAndExpectFactorError('factor.email_code.email_not_configured_for_user', {
             user: value => expect(value).to.eq(TEST_USER_NO_EMAIL.username())
         });
     });
@@ -165,12 +166,12 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
     it('Should throw an error when preparing without initiating the factor', () => {
         cy.log('2- prepare');
         // Prepare('email_code', 'email_code', 'Failed to prepare factor: No active MFA session found');
-        prepareEmailCodeFactorAndExpectError('no_active_session');
+        prepareEmailCodeFactorAndExpectGlobalError('no_active_session');
     });
 
     it('Should throw an error when verifying without preparing the factor', () => {
         initiate(TEST_USER.username(), TEST_USER.password);
-        verifyEmailCodeFactorAndExpectError('123456', 'verify.factor_not_prepared', {
+        verifyEmailCodeFactorAndExpectFactorError('123456', 'verify.factor_not_prepared', {
             factorType: value => expect(value).to.eq('email_code')
         });
     });
@@ -194,34 +195,31 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
         getVerificationCode(TEST_USER.email).then(code => {
             wrongCode = generateWrongCode(code);
             cy.log('1st attempt: ' + wrongCode);
-            verifyEmailCodeFactorAndExpectError(wrongCode, 'verify.verification_failed', {
+            verifyEmailCodeFactorAndExpectFactorError(wrongCode, 'verify.verification_failed', {
                 factorType: value => expect(value).to.eq('email_code')
             });
             wrongCode = generateWrongCode(wrongCode);
             cy.log('2nd attempt: ' + wrongCode);
-            verifyEmailCodeFactorAndExpectError(wrongCode, 'verify.verification_failed', {
+            verifyEmailCodeFactorAndExpectFactorError(wrongCode, 'verify.verification_failed', {
                 factorType: value => expect(value).to.eq('email_code')
             });
             wrongCode = generateWrongCode(wrongCode);
             cy.log('3rd attempt: ' + wrongCode);
-            verifyEmailCodeFactorAndExpectError(wrongCode, 'verify.verification_failed', {
+            verifyEmailCodeFactorAndExpectFactorError(wrongCode, 'verify.verification_failed', {
                 factorType: value => expect(value).to.eq('email_code')
             });
             wrongCode = generateWrongCode(wrongCode);
             cy.log('4th attempt: ' + wrongCode);
-            verifyEmailCodeFactorAndExpectError(wrongCode, 'suspended_user', {
-                suspensionDurationInHours: value => expect(value).to.eq('1') // 6 seconds rounded up to 1 hour
-            });
+            const expectedSuspensionDurationInHours = 1; // 6 seconds rounded up to 1 hour
+            verifyEmailCodeFactorAndExpectSuspended(wrongCode, expectedSuspensionDurationInHours);
             assertIsSuspended(TEST_USER.username());
             cy.log('Even the valid code is not accepted: ' + code);
-            verifyEmailCodeFactorAndExpectError(wrongCode, 'suspended_user', {
-                suspensionDurationInHours: value => expect(value).to.eq('1') // 6 seconds rounded up to 1 hour
-            });
+            verifyEmailCodeFactorAndExpectSuspended(wrongCode, expectedSuspensionDurationInHours);
             // Wait until the suspension expires
             // eslint-disable-next-line cypress/no-unnecessary-waiting
             cy.wait(6000);
             // The (valid) code obtained before being suspended can't be used anymore
-            verifyEmailCodeFactorAndExpectError(code, 'factor.email_code.missing_prepared_code');
+            verifyEmailCodeFactorAndExpectFactorError(code, 'factor.email_code.missing_prepared_code');
         });
     });
 
@@ -244,7 +242,7 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
         getVerificationCode(TEST_USER.email).then(code => {
             wrongCode = generateWrongCode(code);
             cy.log('1st attempt: ' + wrongCode);
-            verifyEmailCodeFactorAndExpectError(wrongCode, 'verify.verification_failed', {
+            verifyEmailCodeFactorAndExpectFactorError(wrongCode, 'verify.verification_failed', {
                 factorType: value => expect(value).to.eq('email_code')
             });
             cy.log('wait 2 seconds to isolate the first attempt');
@@ -252,12 +250,12 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
             cy.wait(2000);
             wrongCode = generateWrongCode(wrongCode);
             cy.log('2nd attempt: ' + wrongCode);
-            verifyEmailCodeFactorAndExpectError(wrongCode, 'verify.verification_failed', {
+            verifyEmailCodeFactorAndExpectFactorError(wrongCode, 'verify.verification_failed', {
                 factorType: value => expect(value).to.eq('email_code')
             });
             wrongCode = generateWrongCode(wrongCode);
             cy.log('3rd attempt: ' + wrongCode);
-            verifyEmailCodeFactorAndExpectError(wrongCode, 'verify.verification_failed', {
+            verifyEmailCodeFactorAndExpectFactorError(wrongCode, 'verify.verification_failed', {
                 factorType: value => expect(value).to.eq('email_code')
             });
             cy.log('wait until the first attempt is out of the authFailuresWindowSeconds');
@@ -266,7 +264,7 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
             wrongCode = generateWrongCode(wrongCode);
             cy.log('4th attempt: ' + wrongCode);
             // Should now be allowed to enter a new code
-            verifyEmailCodeFactorAndExpectError(wrongCode, 'verify.verification_failed', {
+            verifyEmailCodeFactorAndExpectFactorError(wrongCode, 'verify.verification_failed', {
                 factorType: value => expect(value).to.eq('email_code')
             });
         });
@@ -285,7 +283,7 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
 
         getVerificationCode(email).then(code => {
         // Request the code a second time without waiting for the rate limit to expire
-            prepareEmailCodeFactorAndExpectError('prepare.rate_limit_exceeded', {
+            prepareEmailCodeFactorAndExpectFactorError('prepare.rate_limit_exceeded', {
                 nextRetryInSeconds: value => expect(parseInt(value, 10)).to.be.greaterThan(0),
                 factorType: value => expect(value).to.eq('email_code'),
                 user: value => expect(value).to.eq(username)

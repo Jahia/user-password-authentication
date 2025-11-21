@@ -1,12 +1,5 @@
 import {deleteSite, deleteUser} from '@jahia/cypress';
-import {
-    createSiteWithLoginPage,
-    createUserForMFA,
-    deleteAllEmails,
-    initiate,
-    installMFAConfig,
-    SessionState
-} from './utils';
+import {createSiteWithLoginPage, createUserForMFA, deleteAllEmails, initiate, installMFAConfig} from './utils';
 import {faker} from '@faker-js/faker';
 
 describe('Tests for the GraphQL APIs related to the CustomFactorProvider', () => {
@@ -58,10 +51,10 @@ function prepareCustomFactor(offset: number) {
         }
     }).then(response => {
         cy.log('Response for prepareCustomFactor():', JSON.stringify(response, null, 2));
-        expect(response?.data?.mfa?.factors?.custom?.prepare?.session?.state).to.eq(SessionState.PREPARED);
+        expect(response?.data?.mfa?.factors?.custom?.prepare?.session?.factorState?.prepared).to.be.true;
         expect(response?.data?.mfa?.factors?.custom?.prepare?.session?.requiredFactors).to.be.a('array').and.have.length(1);
         expect(response?.data?.mfa?.factors?.custom?.prepare?.session?.requiredFactors[0]).to.eq('custom');
-        expect(response?.data?.mfa?.factors?.custom?.prepare?.error).to.be.null;
+        expect(response?.data?.mfa?.factors?.custom?.prepare?.session?.error).to.be.null;
     });
 }
 
@@ -74,9 +67,9 @@ function verifyCustomFactor(number: number) {
         }
     }).then(response => {
         cy.log('Response for verifyCustomFactor():', JSON.stringify(response, null, 2));
-        expect(response?.data?.mfa?.factors?.custom?.verify?.session?.state).to.eq(SessionState.COMPLETED);
+        expect(response?.data?.mfa?.factors?.custom?.verify?.session?.factorState?.verified).to.be.true;
         expect(response?.data?.mfa?.factors?.custom?.verify?.session?.requiredFactors).to.be.a('array').and.have.length(1);
         expect(response?.data?.mfa?.factors?.custom?.verify?.session?.requiredFactors[0]).to.eq('custom');
-        expect(response?.data?.mfa?.factors?.custom?.verify?.error).to.be.null;
+        expect(response?.data?.mfa?.factors?.custom?.verify?.session?.error).to.be.null;
     });
 }
