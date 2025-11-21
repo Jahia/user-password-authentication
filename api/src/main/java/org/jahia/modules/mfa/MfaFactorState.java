@@ -47,6 +47,18 @@ public class MfaFactorState implements Serializable {
     }
 
     /**
+     * Checks if this factor has an error.
+     * <p>
+     * This is a convenience method equivalent to {@code getError() != null}.
+     *
+     * @return true if a factor-level error exists, false otherwise
+     * @see #getError() to retrieve the error details
+     */
+    public boolean hasError() {
+        return error != null;
+    }
+
+    /**
      * Sets a factor-level error for this specific factor.
      * <p>
      * This should be called for errors that affect only this factor and do not invalidate

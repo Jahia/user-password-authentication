@@ -159,7 +159,7 @@ public class MfaServiceImpl implements MfaService {
         } catch (IllegalArgumentException | LoginException e) {
             logger.warn("Unable to authenticate the user: {}", username);
             logger.debug("Authentication error", e);
-            MfaSession errorSession = createErrorSession(username, siteKey);
+            MfaSession errorSession = createNoSessionError();
             errorSession.setError(new MfaError("authentication_failed"));
             return errorSession;
         }
@@ -167,7 +167,7 @@ public class MfaServiceImpl implements MfaService {
         // Validate user not suspended
         Integer suspensionDuration = getUserSuspension(user.getUserKey());
         if (suspensionDuration != null) {
-            MfaSession session = createErrorSession(username, siteKey);
+            MfaSession session = createNoSessionError();
             session.setSuspensionDurationInSeconds(suspensionDuration.longValue());
             return session;
         }
@@ -187,11 +187,19 @@ public class MfaServiceImpl implements MfaService {
     }
 
     /**
-     * Creates a minimal error session when we can't create a proper session.
+     * Creates a minimal error session with "no_active_session" error.
+     * <p>
+     * This is useful when operations require a session but none exists.
+     * Instead of returning null, this provides a consistent error response.
+     *
+     * @return a new MfaSession with "no_active_session" error set
      */
-    private MfaSession createErrorSession(String username, String siteKey) {
-        MfaSessionContext sessionContext = new MfaSessionContext(username, Locale.getDefault(), siteKey, getAvailableFactors());
-        return new MfaSession(sessionContext);
+    @Override
+    public MfaSession createNoSessionError() {
+        MfaSessionContext sessionContext = new MfaSessionContext("unknown", Locale.getDefault(), null, getAvailableFactors());
+        MfaSession errorSession = new MfaSession(sessionContext);
+        errorSession.setError(new MfaError("no_active_session"));
+        return errorSession;
     }
 
     /**
@@ -206,9 +214,8 @@ public class MfaServiceImpl implements MfaService {
     private MfaSession getSessionOrCreateError(HttpServletRequest request) {
         MfaSession session = getMfaSession(request);
         if (session == null) {
-            MfaSession errorSession = createErrorSession("unknown", null);
-            errorSession.setError(new MfaError("no_active_session"));
-            return errorSession;
+            logger.error("Attempt to perform MFA operation without active session");
+            return createNoSessionError();
         }
         return session;
     }

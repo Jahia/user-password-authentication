@@ -21,7 +21,7 @@ public interface MfaService {
      * Initiates MFA authentication for a user with username/password.
      * <p>
      * If an error occurs, it will be recorded in the returned session's error state.
-     * Check {@link MfaSession#getSessionError()} to determine if the operation succeeded.
+     * Check {@link MfaSession#getError()} to determine if the operation succeeded.
      *
      * @param siteKey is optional and can be null
      * @return MfaSession with error state if authentication failed, or a valid session if successful
@@ -32,7 +32,8 @@ public interface MfaService {
      * Prepares a specific MFA factor for verification.
      * <p>
      * If an error occurs, it will be recorded in the returned session's error state.
-     * Check {@link MfaSession#getFactorError(String)} to determine if the operation succeeded.
+     * Check {@link MfaSession#getError()} for session-level errors or
+     * {@link MfaFactorState#getError()} for factor-specific errors.
      *
      * @return MfaSession with updated state and potential error information
      */
@@ -42,7 +43,8 @@ public interface MfaService {
      * Verifies a specific MFA factor with the provided verification data.
      * <p>
      * If an error occurs, it will be recorded in the returned session's error state.
-     * Check {@link MfaSession#getFactorError(String)} to determine if the operation succeeded.
+     * Check {@link MfaSession#getError()} for session-level errors or
+     * {@link MfaFactorState#getError()} for factor-specific errors.
      *
      * @return MfaSession with updated state and potential error information
      */
@@ -57,4 +59,14 @@ public interface MfaService {
      * Clears the current MFA session.
      */
     void clearMfaSession(HttpServletRequest request);
+
+    /**
+     * Creates a minimal error session with {@code "no_active_session"} error.
+     * <p>
+     * This is useful when operations require an {@link MfaSession} but none exists.
+     * Instead of returning {@code null}, this provides a consistent error response.
+     *
+     * @return a new MfaSession with {@code "no_active_session"} error coe set
+     */
+    MfaSession createNoSessionError();
 }

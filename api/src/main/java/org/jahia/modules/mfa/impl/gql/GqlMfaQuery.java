@@ -23,7 +23,7 @@ import org.jahia.modules.graphql.provider.dxm.osgi.annotations.GraphQLOsgiServic
 import org.jahia.modules.graphql.provider.dxm.util.ContextUtil;
 import org.jahia.modules.mfa.MfaService;
 import org.jahia.modules.mfa.MfaSession;
-import org.jahia.modules.mfa.gql.GqlMfaGenericResponse;
+import org.jahia.modules.mfa.gql.GqlSession;
 import org.jahia.modules.mfa.impl.MfaConfigurationService;
 
 import javax.inject.Inject;
@@ -64,11 +64,15 @@ public class GqlMfaQuery {
     }
 
     @GraphQLField
-    @GraphQLName("sessionStatus")
-    @GraphQLDescription("Get current MFA session status")
-    public GqlMfaGenericResponse sessionStatus(DataFetchingEnvironment environment) {
+    @GraphQLName("session")
+    @GraphQLDescription("Get current MFA session. Returns a session with an error if no active session exists.")
+    public GqlSession session(DataFetchingEnvironment environment) {
         HttpServletRequest httpServletRequest = ContextUtil.getHttpServletRequest(environment.getGraphQlContext());
         MfaSession session = mfaService.getMfaSession(httpServletRequest);
-        return new GqlMfaGenericResponse(session);
+        if (session == null) {
+            // Return error session for consistency with prepare/verify mutations
+            session = mfaService.createNoSessionError();
+        }
+        return new GqlSession(session);
     }
 }

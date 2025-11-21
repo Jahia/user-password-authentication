@@ -13,7 +13,7 @@ public class GqlSession {
 
     private final MfaSession session;
 
-    protected GqlSession(MfaSession session) {
+    public GqlSession(MfaSession session) {
         this.session = session;
     }
 
