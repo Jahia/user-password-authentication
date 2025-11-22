@@ -4,12 +4,12 @@ import java.util.Collections;
 import java.util.Map;
 
 /**
- * Checked exception used by factor providers and MFA service logic to signal errors during
- * preparation or verification steps. It is transformed into an {@link MfaError} for transport
- * to clients. Use stable string constants for the <code>code</code> parameter (e.g. verify_factor_not_prepared).
+ * Exception thrown by MFA factor providers during preparation or verification.
  * <p>
- * Constructors offer convenience overloads for up to three key/value argument pairs;
- * for more arguments use the map-based constructor.
+ * This checked exception is used to signal errors in factor-specific operations.
+ * The MFA service catches these exceptions and converts them into {@link MfaError}
+ * objects that are attached to the session or factor state.
+ * <p>
  */
 public class MfaException extends Exception {
     private final String code;
@@ -17,7 +17,8 @@ public class MfaException extends Exception {
 
     /**
      * Creates an exception with a code and no arguments.
-     * @param code stable error code
+     *
+     * @param code error code
      */
     public MfaException(String code) {
         super();
@@ -27,8 +28,9 @@ public class MfaException extends Exception {
 
     /**
      * Creates an exception with a code and argument map.
-     * @param code stable error code
-     * @param arguments contextual key/value pairs (never null; if null an empty map should be provided externally)
+     *
+     * @param code      error code
+     * @param arguments contextual key/value pairs (never null)
      */
     public MfaException(String code, Map<String, String> arguments) {
         super();
@@ -38,6 +40,10 @@ public class MfaException extends Exception {
 
     /**
      * Convenience constructor for one argument.
+     *
+     * @param code          error code
+     * @param argumentKey   the argument key
+     * @param argumentValue the argument value
      */
     public MfaException(String code, String argumentKey, String argumentValue) {
         this(code, Map.of(argumentKey, argumentValue));
@@ -45,6 +51,12 @@ public class MfaException extends Exception {
 
     /**
      * Convenience constructor for two arguments.
+     *
+     * @param code           error code
+     * @param argument1Key   first argument key
+     * @param argument1Value first argument value
+     * @param argument2Key   second argument key
+     * @param argument2Value second argument value
      */
     public MfaException(String code, String argument1Key, String argument1Value, String argument2Key, String argument2Value) {
         this(code, Map.of(argument1Key, argument1Value, argument2Key, argument2Value));
@@ -52,20 +64,32 @@ public class MfaException extends Exception {
 
     /**
      * Convenience constructor for three arguments.
+     *
+     * @param code           error code
+     * @param argument1Key   first argument key
+     * @param argument1Value first argument value
+     * @param argument2Key   second argument key
+     * @param argument2Value second argument value
+     * @param argument3Key   third argument key
+     * @param argument3Value third argument value
      */
     public MfaException(String code, String argument1Key, String argument1Value, String argument2Key, String argument2Value, String argument3Key, String argument3Value) {
         this(code, Map.of(argument1Key, argument1Value, argument2Key, argument2Value, argument3Key, argument3Value));
     }
 
     /**
-     * Returns the stable error code.
+     * Returns the error code.
+     *
+     * @return the error code
      */
     public String getCode() {
         return code;
     }
 
     /**
-     * Returns immutable argument map (may be empty, never null).
+     * Returns the argument map with contextual details.
+     *
+     * @return an immutable map of arguments (may be empty, never null)
      */
     public Map<String, String> getArguments() {
         return arguments;

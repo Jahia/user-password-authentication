@@ -3228,7 +3228,7 @@ type MfaCustomFactorMutation {
 "Custom factor preparation result"
 type MfaCustomFactorPreparation {
     otherInfo: String
-    "Current MFA session if any"
+    "Current MFA session (may contain errors or suspension info)"
     session: MfaSession
 }
 
@@ -3244,7 +3244,7 @@ type MfaEmailCodeFactorMutation {
 type MfaEmailCodeFactorPreparation {
     "Masked email address where the verification code was sent (redacted for privacy)"
     maskedEmail: String
-    "Current MFA session if any"
+    "Current MFA session (may contain errors or suspension info)"
     session: MfaSession
 }
 
@@ -3305,9 +3305,9 @@ type MfaQuery {
     session: MfaSession
 }
 
-"Base response for MFA operations exposing the current session"
+"Result wrapper exposing the current MFA session state"
 type MfaResult {
-    "Current MFA session if any"
+    "Current MFA session (may contain errors or suspension info)"
     session: MfaSession
 }
 

@@ -8,8 +8,14 @@ import java.util.Map;
 import static java.util.stream.Collectors.*;
 
 /**
- * Comprehensive MFA session that serves as the single source of truth for all MFA state.
- * Includes factor preparation status, verification results, and error tracking.
+ * Represents an active MFA authentication session for a user.
+ * <p>
+ * This class is the central state container for the entire multi-factor authentication flow.
+ * It tracks session initialization, factor preparation and verification states, suspension
+ * status, and any session-level or factor-level errors.
+ * <p>
+ * The session is created during {@link MfaService#initiate} and persists throughout the
+ * authentication process until all required factors are verified or an error occurs.
  */
 public class MfaSession implements Serializable {
     private final MfaSessionContext context;
@@ -33,6 +39,11 @@ public class MfaSession implements Serializable {
      */
     private MfaError error;
 
+    /**
+     * Creates a new MFA session with the provided context.
+     *
+     * @param context the session context containing user and authentication details
+     */
     public MfaSession(MfaSessionContext context) {
         this.context = context;
         this.factorStates = new HashMap<>();
@@ -40,18 +51,44 @@ public class MfaSession implements Serializable {
         this.error = null;
     }
 
+    /**
+     * Returns the immutable session context containing user and authentication details.
+     *
+     * @return the session context
+     */
     public MfaSessionContext getContext() {
         return context;
     }
 
+    /**
+     * Checks whether the MFA session has been successfully initiated.
+     * <p>
+     * A session is considered initiated after the user's username and password have been
+     * validated. This must be true before any factors can be prepared or verified.
+     *
+     * @return true if the session is initiated, false otherwise
+     */
     public boolean isInitiated() {
         return initiated;
     }
 
+    /**
+     * Sets the initiation status of this MFA session.
+     *
+     * @param initiated true to mark the session as initiated, false otherwise
+     */
     public void setInitiated(boolean initiated) {
         this.initiated = initiated;
     }
 
+    /**
+     * Retrieves or creates the factor state for a specific factor type.
+     * <p>
+     * If no state exists for the given factor type, a new one is created and stored.
+     *
+     * @param factorType the factor type identifier
+     * @return the factor state for the specified type
+     */
     public MfaFactorState getOrCreateFactorState(String factorType) {
         return factorStates.computeIfAbsent(factorType, k -> new MfaFactorState());
     }

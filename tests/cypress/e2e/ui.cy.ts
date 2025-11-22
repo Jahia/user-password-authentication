@@ -471,11 +471,9 @@ describe('Tests for the UI module', () => {
             deleteAllEmails();
 
             // Re-start the flow from the beginning
-            cy.log('restarting 1');
             LoginStep.triggerRedirect(SITE_KEY);
             LoginStep.login(username, password);
             LoginStep.selectEmailCodeFactor();
-            cy.log('restarting 2');
 
             // User is still rate-limited even when re-starting the flow
             // Note: time left can vary depending on execution speed, so we check only the pattern here
@@ -491,7 +489,6 @@ describe('Tests for the UI module', () => {
             // Wait for the rate-limit to expire
             // eslint-disable-next-line cypress/no-unnecessary-waiting
             cy.wait(2000);
-            cy.log('after wait 2s');
 
             // Re-start the flow from the beginning
             LoginStep.triggerRedirect(SITE_KEY);

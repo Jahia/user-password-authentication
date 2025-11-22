@@ -5,16 +5,18 @@ import java.util.Collections;
 import java.util.Map;
 
 /**
- * Represents an error that occurred during Multi-Factor Authentication (MFA) operations.
+ * Represents an error that occurred during Multi-Factor Authentication operations.
  * <p>
- * Errors can originate at either the <b>session level</b> (fatal / irrecoverable) or the
- * <b>factor level</b> (recoverable, scoped to a single factor).
+ * Errors can occur at two levels:
  * <ul>
- *   <li><b>Session-level errors</b> (stored in {@link MfaSession#getError()}) terminate the whole MFA flow and
- *   require starting a new session (for example: <code>no_active_session</code>, <code>authentication_failed</code>).</li>
- *   <li><b>Factor-level errors</b> (stored in {@link MfaFactorState#getError()}) only affect the specific factor and may be retried
- *   or a different factor can be attempted (for example: invalid code, rate limit exceeded).</li>
+ *   <li><b>Session-level errors</b> - Fatal errors that invalidate the entire MFA session
+ *   (e.g., authentication_failed, no_active_session)</li>
+ *   <li><b>Factor-level errors</b> - Recoverable errors specific to a single factor
+ *   (e.g., invalid verification code, rate limit exceeded)</li>
  * </ul>
+ * <p>
+ * Each error consists of an error code (for client-side i18n and logic branching)
+ * and optional arguments that provide contextual details.
  */
 public class MfaError implements Serializable {
     private final String code;
@@ -22,7 +24,8 @@ public class MfaError implements Serializable {
 
     /**
      * Creates an error with a code and optional arguments.
-     * @param code error code
+     *
+     * @param code      error code
      * @param arguments contextual key/value pairs (never null, may be empty)
      */
     public MfaError(String code, Map<String, String> arguments) {
@@ -32,21 +35,31 @@ public class MfaError implements Serializable {
 
     /**
      * Creates an error with just a code (no arguments).
-     * @param code stable error code
+     *
+     * @param code error code
      */
     public MfaError(String code) {
         this(code, Collections.emptyMap());
     }
 
     /**
-     * Returns the stable error code to be used by clients for i18n / branching logic.
+     * Returns the error code for this error.
+     * <p>
+     * The error code should be used by clients for i18n lookups.
+     *
+     * @return the error code
      */
     public String getCode() {
         return code;
     }
 
     /**
-     * Returns immutable argument map providing contextual details (may be empty, never null).
+     * Returns the contextual arguments for this error.
+     * <p>
+     * Arguments provide additional details that can be interpolated into error messages
+     * or used for debugging purposes.
+     *
+     * @return an immutable map of argument key-value pairs (never null, may be empty)
      */
     public Map<String, String> getArguments() {
         return arguments;

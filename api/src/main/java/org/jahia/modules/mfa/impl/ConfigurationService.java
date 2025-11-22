@@ -37,10 +37,10 @@ import org.slf4j.LoggerFactory;
  * Internal configuration service for the MFA module.
  * This is an implementation detail and is not meant to be used outside of this module (hence, not exported).
  */
-@Component(configurationPid = "org.jahia.modules.mfa", service = MfaConfigurationService.class, immediate = true, configurationPolicy = ConfigurationPolicy.REQUIRE)
-@Designate(ocd = MfaConfigurationService.Config.class)
-public class MfaConfigurationService {
-    private static final Logger logger = LoggerFactory.getLogger(MfaConfigurationService.class);
+@Component(configurationPid = "org.jahia.modules.mfa", service = ConfigurationService.class, immediate = true, configurationPolicy = ConfigurationPolicy.REQUIRE)
+@Designate(ocd = ConfigurationService.Config.class)
+public class ConfigurationService {
+    private static final Logger logger = LoggerFactory.getLogger(ConfigurationService.class);
     private Config config;
 
     @ObjectClassDefinition(name = "%configName", description = "%configDesc", localization = "OSGI-INF/l10n/config")
@@ -76,7 +76,7 @@ public class MfaConfigurationService {
         int userTemporarySuspensionSeconds();
 
         @AttributeDefinition(
-                name="%factorStartRateLimitSeconds",
+                name = "%factorStartRateLimitSeconds",
                 description = "%factorStartRateLimitSecondsDesc",
                 defaultValue = "30"
         )

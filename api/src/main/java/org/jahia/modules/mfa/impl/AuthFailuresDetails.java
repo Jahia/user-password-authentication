@@ -58,7 +58,7 @@ final class AuthFailuresDetails implements Serializable {
     /**
      * Removes failure attempts for the specified MFA provider type that are outside the given time window.
      *
-     * @param factorType              the MFA provider type (see {@link org.jahia.modules.mfa.MfaFactorProvider#getFactorType()})
+     * @param factorType               the MFA provider type (see {@link org.jahia.modules.mfa.MfaFactorProvider#getFactorType()})
      * @param authFailuresWindowMillis the time window in milliseconds
      * @return {@code true} if any attempts were removed, {@code false} otherwise
      */

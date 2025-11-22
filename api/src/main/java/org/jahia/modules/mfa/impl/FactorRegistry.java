@@ -18,9 +18,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * Uses OSGI dynamic services to automatically discover and register factor providers.
  * This is an implementation detail - MfaService provides the public API.
  */
-@Component(service = MfaFactorRegistry.class, immediate = true)
-public class MfaFactorRegistry {
-    private static final Logger logger = LoggerFactory.getLogger(MfaFactorRegistry.class);
+@Component(service = FactorRegistry.class, immediate = true)
+public class FactorRegistry {
+    private static final Logger logger = LoggerFactory.getLogger(FactorRegistry.class);
 
     private final Map<String, MfaFactorProvider> providers = new ConcurrentHashMap<>();
 

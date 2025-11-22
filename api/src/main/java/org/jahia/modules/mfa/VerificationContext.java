@@ -5,8 +5,15 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.Serializable;
 
 /**
- * Context object containing all necessary data for verifying an MFA factor.
- * Provided to {@link MfaFactorProvider#verify(VerificationContext)} implementations.
+ * Context object provided to factor providers during the verification phase.
+ * <p>
+ * Contains all necessary information for verifying an MFA factor, including:
+ * <ul>
+ *   <li>Session context (user ID, locale, site)</li>
+ *   <li>Preparation result from the earlier prepare step</li>
+ *   <li>Verification data provided by the user</li>
+ *   <li>HTTP request/response objects</li>
+ * </ul>
  */
 public class VerificationContext {
     private final MfaSessionContext sessionContext;
@@ -16,16 +23,15 @@ public class VerificationContext {
     private final HttpServletResponse httpServletResponse;
 
     /**
-     * Constructs a new VerificationContext with the provided session context, preparation result,
-     * verification data, HTTP request, and HTTP response.
+     * Creates a new verification context.
      *
-     * @param sessionContext      the MFA session context containing user and session-specific data
-     * @param preparationResult   the result of the preparation step, typically used for initializing verification
-     * @param verificationData    the data provided for factor verification, often provided by the user
-     * @param httpServletRequest  the HTTP servlet request associated with the current operation
-     * @param httpServletResponse the HTTP servlet response associated with the current operation
+     * @param sessionContext      the session context containing user and site information
+     * @param preparationResult   the result from the prepare step (may be null if not prepared)
+     * @param verificationData    the verification data submitted by the user
+     * @param httpServletRequest  the HTTP request associated with the verification
+     * @param httpServletResponse the HTTP response associated with the verification
      */
-    public VerificationContext(MfaSessionContext sessionContext, Serializable preparationResult, Serializable verificationData, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
+    public VerificationContext(MfaSessionContext sessionContext, Serializable preparationResult, Serializable verificationData, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) { // param type updated
         this.sessionContext = sessionContext;
         this.preparationResult = preparationResult;
         this.verificationData = verificationData;
@@ -34,45 +40,55 @@ public class VerificationContext {
     }
 
     /**
-     * Returns the MFA session context containing user and session-specific data.
+     * Returns the session context containing user ID, locale, site key, and required factors.
      *
-     * @return the MFA session context
+     * @return the session context
      */
-    public MfaSessionContext getSessionContext() {
+    public MfaSessionContext getSessionContext() { // return type updated
         return sessionContext;
     }
 
     /**
-     * Returns the result from the preparation step.
+     * Returns the result from the factor preparation step.
+     * <p>
+     * This typically contains data generated during preparation that is needed for verification
+     * (e.g., the generated code to compare against, challenge data).
      *
-     * @return the serializable preparation result
+     * @return the preparation result, or null if the factor was not prepared
      */
     public Serializable getPreparationResult() {
         return preparationResult;
     }
 
     /**
-     * Returns the data provided for verification.
+     * Returns the verification data submitted by the user.
+     * <p>
+     * The format of this data depends on the factor type (e.g., a String code for email factors,
+     * a custom object for other factor types).
      *
-     * @return the serializable verification data
+     * @return the verification data
      */
     public Serializable getVerificationData() {
         return verificationData;
     }
 
     /**
-     * Returns the HTTP request associated with this context.
+     * Returns the HTTP request associated with the verification.
+     * <p>
+     * Factor providers can use this to read request attributes or headers for additional context.
      *
-     * @return the {@link HttpServletRequest} for the verification step
+     * @return the HTTP servlet request
      */
     public HttpServletRequest getHttpServletRequest() {
         return httpServletRequest;
     }
 
     /**
-     * Returns the HTTP response associated with this context.
+     * Returns the HTTP response associated with the verification.
+     * <p>
+     * Factor providers can use this to set response headers or cookies if needed.
      *
-     * @return the {@link HttpServletResponse} for the verification step
+     * @return the HTTP servlet response
      */
     public HttpServletResponse getHttpServletResponse() {
         return httpServletResponse;

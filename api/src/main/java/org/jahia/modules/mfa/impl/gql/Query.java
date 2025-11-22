@@ -24,7 +24,7 @@ import org.jahia.modules.graphql.provider.dxm.util.ContextUtil;
 import org.jahia.modules.mfa.MfaService;
 import org.jahia.modules.mfa.MfaSession;
 import org.jahia.modules.mfa.gql.Session;
-import org.jahia.modules.mfa.impl.MfaConfigurationService;
+import org.jahia.modules.mfa.impl.ConfigurationService;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -35,25 +35,33 @@ import java.util.List;
 public class Query {
 
     private MfaService mfaService;
-    private MfaConfigurationService mfaConfigurationService;
+    private ConfigurationService configurationService;
 
     @Inject
     @GraphQLOsgiService
-    public void setMfaService(MfaService mfaService) { this.mfaService = mfaService; }
+    public void setMfaService(MfaService mfaService) {
+        this.mfaService = mfaService;
+    }
 
     @Inject
     @GraphQLOsgiService
-    public void setMfaConfigurationService(MfaConfigurationService mfaConfigurationService) { this.mfaConfigurationService = mfaConfigurationService; }
+    public void setConfigurationService(ConfigurationService configurationService) {
+        this.configurationService = configurationService;
+    }
 
     @GraphQLField
     @GraphQLName("enabled")
     @GraphQLDescription("True if MFA feature is enabled by configuration")
-    public boolean enabled() { return mfaConfigurationService.isEnabled(); }
+    public boolean enabled() {
+        return configurationService.isEnabled();
+    }
 
     @GraphQLField
     @GraphQLName("availableFactors")
     @GraphQLDescription("List of factor types currently available and enabled")
-    public List<String> availableFactors() { return mfaService.getAvailableFactors(); }
+    public List<String> availableFactors() {
+        return mfaService.getAvailableFactors();
+    }
 
     @GraphQLField
     @GraphQLName("session")

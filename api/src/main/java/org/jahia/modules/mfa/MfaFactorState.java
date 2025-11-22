@@ -3,9 +3,13 @@ package org.jahia.modules.mfa;
 import java.io.Serializable;
 
 /**
- * Represents the state of a single MFA factor within a session.
- * Tracks preparation and completion statuses plus any recoverable factor-level error.
- * Factor-level errors use codes such as verify_factor_not_prepared or verify_verification_failed.
+ * Tracks the state of a single MFA factor within a session.
+ * <p>
+ * Each factor type has its own state instance that records whether the factor has been
+ * prepared and verified, stores any preparation results, and tracks factor-level errors.
+ * <p>
+ * Factor-level errors are recoverable and specific to this factor (e.g., invalid code),
+ * allowing users to retry the same factor or attempt a different one.
  */
 public class MfaFactorState implements Serializable {
     private boolean prepared = false;
@@ -13,18 +17,38 @@ public class MfaFactorState implements Serializable {
     private MfaError error;
     private Serializable preparationResult;
 
+    /**
+     * Checks whether this factor has been successfully prepared.
+     *
+     * @return true if prepared, false otherwise
+     */
     public boolean isPrepared() {
         return prepared;
     }
 
+    /**
+     * Sets the preparation status for this factor.
+     *
+     * @param prepared true if the factor has been prepared, false otherwise
+     */
     public void setPrepared(boolean prepared) {
         this.prepared = prepared;
     }
 
+    /**
+     * Checks whether this factor has been successfully verified.
+     *
+     * @return true if verified, false otherwise
+     */
     public boolean isVerified() {
         return verified;
     }
 
+    /**
+     * Sets the verification status for this factor.
+     *
+     * @param verified true if the factor has been verified, false otherwise
+     */
     public void setVerified(boolean verified) {
         this.verified = verified;
     }
@@ -84,10 +108,23 @@ public class MfaFactorState implements Serializable {
         this.error = error;
     }
 
+    /**
+     * Returns the result of the preparation step for this factor.
+     * <p>
+     * This is typically set by the factor provider during preparation and may contain
+     * data needed for verification (e.g., masked email address, challenge data).
+     *
+     * @return the preparation result, or null if not yet prepared
+     */
     public Serializable getPreparationResult() {
         return preparationResult;
     }
 
+    /**
+     * Sets the result of the preparation step for this factor.
+     *
+     * @param preparationResult the preparation result to store
+     */
     public void setPreparationResult(Serializable preparationResult) {
         this.preparationResult = preparationResult;
     }
