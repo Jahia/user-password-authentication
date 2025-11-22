@@ -3220,31 +3220,31 @@ type Metadata {
 
 type MfaCustomFactorMutation {
     "Prepare the custom factor"
-    prepare: MfaCustomFactorPreparationResponse
+    prepare: MfaCustomFactorPreparation
     "Verify the custom factor"
-    verify(number: Int): MfaGenericResponse
+    verify(number: Int): MfaResult
 }
 
 "Custom factor preparation result"
-type MfaCustomFactorPreparationResponse {
+type MfaCustomFactorPreparation {
     otherInfo: String
-    "Details about the MFA session when the operation succeeds"
+    "Current MFA session if any"
     session: MfaSession
 }
 
-"Access to the mutation operations of the email code factor"
+"Mutation operations for the email code factor"
 type MfaEmailCodeFactorMutation {
-    "Prepare the email code factor"
-    prepare: MfaEmailCodeFactorPreparationResponse
-    "Verify email code factor"
-    verify(code: String): MfaGenericResponse
+    "Prepare the email code factor (generates and sends a code)"
+    prepare: MfaEmailCodeFactorPreparation
+    "Verify the email code factor by submitting the received code"
+    verify(code: String): MfaResult
 }
 
-"Email code factor preparation result"
-type MfaEmailCodeFactorPreparationResponse {
-    "masked email the verification code has been sent to"
+"Email code factor preparation result including masked destination address"
+type MfaEmailCodeFactorPreparation {
+    "Masked email address where the verification code was sent (redacted for privacy)"
     maskedEmail: String
-    "Details about the MFA session when the operation succeeds"
+    "Current MFA session if any"
     session: MfaSession
 }
 
@@ -3264,64 +3264,67 @@ type MfaErrorArgument {
     value: String
 }
 
-"Details about an MFA factor"
+"State of a single MFA factor: preparation, verification and recoverable factor-level error"
 type MfaFactorState {
-    "Error that may occur during preparation or verification"
+    "Recoverable factor-level error (e.g. invalid code, rate limit). Session-level errors take precedence."
     error: MfaError
-    "Whether the factor has been prepared or not"
+    "True after the factor has been successfully prepared"
     prepared: Boolean
-    "Whether the factor has been verified or not"
+    "True after the factor has been successfully verified"
     verified: Boolean
 }
 
-"Access MFA factors specific mutations"
+"Container for factor-specific mutation entry points (extended by individual factor extensions)"
 type MfaFactorsMutation {
     custom: MfaCustomFactorMutation
+    "Mutation entry point for the email code factor"
     emailCode: MfaEmailCodeFactorMutation
     "Prepare the custom factor"
-    prepare: MfaCustomFactorPreparationResponse
+    prepare: MfaCustomFactorPreparation
     "Verify the custom factor"
-    verify(number: Int): MfaGenericResponse
-}
-
-"Generic response for MFA operations"
-type MfaGenericResponse {
-    "Details about the MFA session when the operation succeeds"
-    session: MfaSession
+    verify(number: Int): MfaResult
 }
 
 "MFA state-modifying operations"
 type MfaMutation {
     "Clear current MFA session"
-    clear: MfaGenericResponse
+    clear: MfaResult
     "Access MFA factors specific mutations"
     factors: MfaFactorsMutation
     "Initiate MFA authentication"
-    initiate(password: String, site: String, username: String): MfaGenericResponse
+    initiate(password: String, site: String, username: String): MfaResult
 }
 
-"MFA read-only operations"
+"Read-only MFA operations: availability, factors and current session state"
 type MfaQuery {
-    "Get list of available MFA factors"
+    "List of factor types currently available and enabled"
     availableFactors: [String]
-    "Check if MFA is enabled"
+    "True if MFA feature is enabled by configuration"
     enabled: Boolean
-    "Get current MFA session status"
-    sessionStatus: MfaGenericResponse
+    "Current MFA session (returns an error session if none exists)"
+    session: MfaSession
 }
 
-"Details about the current MFA session"
+"Base response for MFA operations exposing the current session"
+type MfaResult {
+    "Current MFA session if any"
+    session: MfaSession
+}
+
+"Details about the current MFA session: initiation status, factors, suspension and errors"
 type MfaSession {
-    "List of completed MFA factors"
-    completedFactors: [String]
+    "Irrecoverable session-level error. If non-null the session must be discarded and re-initiated before any factor interaction."
     error: MfaError
-    "Details about the current MFA factor"
+    "Retrieve state for a specific factor (preparation, verification, factor-level error)"
     factorState(factorType: String): MfaFactorState
-    "List of required MFA factors"
+    "Whether the MFA flow has been initiated (the username/password credentials have been validated)"
     initiated: Boolean
-    "List of required MFA factors"
+    "List of factor types required to complete the MFA flow"
     requiredFactors: [String]
+    "Suspension duration (in seconds) if the user is temporarily locked, null if not suspended"
     suspensionDurationInSeconds: Long
+    "List of factor types successfully verified so far"
+    verifiedFactors: [String]
 }
 
 "Root mutation type"

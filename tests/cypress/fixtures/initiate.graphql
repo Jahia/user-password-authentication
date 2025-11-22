@@ -12,7 +12,7 @@ mutation initiate($username: String!, $password: String!, $site: String) {
                 }
                 suspensionDurationInSeconds
                 requiredFactors
-                completedFactors
+                verifiedFactors
             }
         }
     }

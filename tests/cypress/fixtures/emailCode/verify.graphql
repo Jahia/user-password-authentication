@@ -12,7 +12,7 @@ mutation verifyEmailCodeFactor($code: String!) {
                             }
                         }
                         suspensionDurationInSeconds
-                        completedFactors
+                        verifiedFactors
                         requiredFactors
                         factorState(factorType: "email_code") {
                             verified

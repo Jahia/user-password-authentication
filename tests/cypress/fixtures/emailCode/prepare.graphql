@@ -13,7 +13,7 @@ mutation prepareCustomFactor {
                             }
                         }
                         suspensionDurationInSeconds
-                        completedFactors
+                        verifiedFactors
                         requiredFactors
                         factorState(factorType: "email_code") {
                             prepared

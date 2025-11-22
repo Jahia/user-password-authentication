@@ -7,12 +7,12 @@ import graphql.annotations.annotationTypes.GraphQLTypeExtension;
 import org.jahia.modules.graphql.provider.dxm.DXGraphQLProvider;
 
 @GraphQLTypeExtension(DXGraphQLProvider.Query.class)
-public class GqlMfaQueryExtension {
+public class QueryExtension {
 
     @GraphQLField
     @GraphQLName("mfa")
     @GraphQLDescription("Main access to MFA read-only API")
-    public static GqlMfaQuery mfa() {
-        return new GqlMfaQuery();
+    public static Query mfa() {
+        return new Query();
     }
 }

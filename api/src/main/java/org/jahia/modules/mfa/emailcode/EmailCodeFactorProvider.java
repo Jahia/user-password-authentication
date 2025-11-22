@@ -90,9 +90,10 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
 
     @Override
     public Serializable prepare(PreparationContext preparationContext) throws MfaException {
-        JCRUserNode userNode = userManagerService.lookupUser(preparationContext.getSessionContext().getUserId());
+        String userId = preparationContext.getSessionContext().getUserId();
+        JCRUserNode userNode = userManagerService.lookupUser(userId);
         if (userNode == null) {
-            throw new IllegalStateException("User not found for path: " + preparationContext.getSessionContext().getUserId());
+            throw new IllegalStateException("User " + userId + " not found");
         }
         String emailAddress = getUserEmailAddress(userNode);
 

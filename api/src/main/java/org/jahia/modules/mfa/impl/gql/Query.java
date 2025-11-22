@@ -23,7 +23,7 @@ import org.jahia.modules.graphql.provider.dxm.osgi.annotations.GraphQLOsgiServic
 import org.jahia.modules.graphql.provider.dxm.util.ContextUtil;
 import org.jahia.modules.mfa.MfaService;
 import org.jahia.modules.mfa.MfaSession;
-import org.jahia.modules.mfa.gql.GqlSession;
+import org.jahia.modules.mfa.gql.Session;
 import org.jahia.modules.mfa.impl.MfaConfigurationService;
 
 import javax.inject.Inject;
@@ -32,7 +32,7 @@ import java.util.List;
 
 @GraphQLName("MfaQuery")
 @GraphQLDescription("Read-only MFA operations: availability, factors and current session state")
-public class GqlMfaQuery {
+public class Query {
 
     private MfaService mfaService;
     private MfaConfigurationService mfaConfigurationService;
@@ -58,12 +58,12 @@ public class GqlMfaQuery {
     @GraphQLField
     @GraphQLName("session")
     @GraphQLDescription("Current MFA session (returns an error session if none exists)")
-    public GqlSession session(DataFetchingEnvironment environment) {
+    public Session session(DataFetchingEnvironment environment) {
         HttpServletRequest httpServletRequest = ContextUtil.getHttpServletRequest(environment.getGraphQlContext());
         MfaSession session = mfaService.getMfaSession(httpServletRequest);
         if (session == null) {
             session = mfaService.createNoSessionError();
         }
-        return new GqlSession(session);
+        return new Session(session);
     }
 }

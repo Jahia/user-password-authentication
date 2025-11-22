@@ -5,15 +5,15 @@ import graphql.annotations.annotationTypes.GraphQLField;
 import graphql.annotations.annotationTypes.GraphQLName;
 import org.jahia.modules.mfa.MfaSession;
 import org.jahia.modules.mfa.emailcode.EmailCodeFactorProvider;
-import org.jahia.modules.mfa.gql.GqlMfaGenericResponse;
+import org.jahia.modules.mfa.gql.Result;
 
-@GraphQLName("MfaEmailCodeFactorPreparationResponse")
+@GraphQLName("MfaEmailCodeFactorPreparation")
 @GraphQLDescription("Email code factor preparation result including masked destination address")
-public class GqlMfaEmailCodeFactorPreparationResponse extends GqlMfaGenericResponse {
+public class EmailCodeFactorPreparation extends Result {
 
     private final String maskedEmail;
 
-    public GqlMfaEmailCodeFactorPreparationResponse(MfaSession session, EmailCodeFactorProvider.PreparationResult preparationResult) {
+    public EmailCodeFactorPreparation(MfaSession session, EmailCodeFactorProvider.PreparationResult preparationResult) {
         super(session);
         this.maskedEmail = preparationResult != null ? preparationResult.getMaskedEmail() : null;
     }

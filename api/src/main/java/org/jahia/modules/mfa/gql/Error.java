@@ -13,12 +13,12 @@ import java.util.stream.Collectors;
 
 @GraphQLName("MfaError")
 @GraphQLDescription("Error that may occur during an MFA operation")
-public class GqlError {
-    private static final Logger logger = LoggerFactory.getLogger(GqlError.class);
+public class Error {
+    private static final Logger logger = LoggerFactory.getLogger(Error.class);
 
     private final MfaError error;
 
-    public GqlError(MfaError error) {
+    public Error(MfaError error) {
         this.error = error;
     }
 

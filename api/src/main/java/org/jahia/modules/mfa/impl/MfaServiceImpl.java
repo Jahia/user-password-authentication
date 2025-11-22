@@ -42,10 +42,13 @@ public class MfaServiceImpl implements MfaService {
             // TODO disable it until https://github.com/Jahia/jahia-multi-factor-authentication/issues/68 is implemented
             .shouldRememberMe(false)
             .build();
-    protected static final String ERROR_FACTOR_TYPE_NOT_SUPPORTED = "factor_type_not_supported";
-    protected static final String ERROR_RATE_LIMIT_EXCEEDED = "prepare.rate_limit_exceeded";
-    protected static final String ERROR_FACTOR_NOT_PREPARED = "verify.factor_not_prepared";
-    protected static final String ERROR_VERIFICATION_FAILED = "verify.verification_failed";
+    private static final String ERROR_FACTOR_TYPE_NOT_SUPPORTED = "factor_type_not_supported";
+    private static final String ERROR_RATE_LIMIT_EXCEEDED = "prepare.rate_limit_exceeded";
+    private static final String ERROR_FACTOR_NOT_PREPARED = "verify.factor_not_prepared";
+    private static final String ERROR_VERIFICATION_FAILED = "verify.verification_failed";
+    private static final String ERROR_USER_NOT_FOUND = "user_not_found";
+    private static final String ERROR_AUTHENTICATION_FAILED = "authentication_failed";
+    private static final String ERROR_NO_SESSION = "no_active_session";
 
     private JahiaUserManagerService userManagerService;
     private MfaFactorRegistry factorRegistry;
@@ -164,7 +167,7 @@ public class MfaServiceImpl implements MfaService {
             logger.warn("Unable to authenticate the user: {}", username);
             logger.debug("Authentication error", e);
             MfaSession errorSession = createNoSessionError();
-            errorSession.setError(new MfaError("authentication_failed"));
+            errorSession.setError(new MfaError(ERROR_AUTHENTICATION_FAILED));
             return errorSession;
         }
 
@@ -202,7 +205,7 @@ public class MfaServiceImpl implements MfaService {
     public MfaSession createNoSessionError() {
         MfaSessionContext sessionContext = new MfaSessionContext("unknown", Locale.getDefault(), null, getAvailableFactors());
         MfaSession errorSession = new MfaSession(sessionContext);
-        errorSession.setError(new MfaError("no_active_session"));
+        errorSession.setError(new MfaError(ERROR_NO_SESSION));
         return errorSession;
     }
 
@@ -243,7 +246,7 @@ public class MfaServiceImpl implements MfaService {
 
             JCRUserNode userNode = resolveUserNode(session);
             if (userNode == null) {
-                session.setError(new MfaError("user_not_found"));
+                session.setError(new MfaError(ERROR_USER_NOT_FOUND));
                 return session;
             }
 
@@ -308,7 +311,7 @@ public class MfaServiceImpl implements MfaService {
 
             JCRUserNode userNode = resolveUserNode(session);
             if (userNode == null) {
-                session.setError(new MfaError("user_not_found"));
+                session.setError(new MfaError(ERROR_USER_NOT_FOUND));
                 return session;
             }
 

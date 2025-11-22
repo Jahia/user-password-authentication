@@ -9,20 +9,20 @@ import org.jahia.modules.mfa.MfaSession;
  * GraphQL response type for MFA operations.
  * Wraps the underlying session so clients can inspect errors, suspension status, and factor states.
  */
-@GraphQLName("MfaGenericResponse")
-@GraphQLDescription("Generic response wrapper for MFA operations exposing the current session state")
-public class GqlMfaGenericResponse {
+@GraphQLName("MfaResult")
+@GraphQLDescription("Base response for MFA operations exposing the current session")
+public class Result {
 
-    private final GqlSession session;
+    private final Session session;
 
     @GraphQLField
     @GraphQLName("session")
-    @GraphQLDescription("Current MFA session state (may contain an irrecoverable session error or factor-specific errors)")
-    public GqlSession getSession() {
+    @GraphQLDescription("Current MFA session if any")
+    public Session getSession() {
         return session;
     }
 
-    public GqlMfaGenericResponse(MfaSession session) {
-        this.session = new GqlSession(session);
+    public Result(MfaSession session) {
+        this.session = new Session(session);
     }
 }

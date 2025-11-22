@@ -179,8 +179,8 @@ export function verifyEmailCodeFactor(code: string) {
     }).then(response => {
         cy.log('Response for verifyEmailCodeFactor():', JSON.stringify(response, null, 2));
         expect(response?.data?.mfa?.factors?.emailCode?.verify?.session?.factorState?.verified).to.be.true;
-        expect(response?.data?.mfa?.factors?.emailCode?.verify?.session?.completedFactors).to.be.a('array').and.have.length(1);
-        expect(response?.data?.mfa?.factors?.emailCode?.verify?.session?.completedFactors[0]).eq('email_code');
+        expect(response?.data?.mfa?.factors?.emailCode?.verify?.session?.verifiedFactors).to.be.a('array').and.have.length(1);
+        expect(response?.data?.mfa?.factors?.emailCode?.verify?.session?.verifiedFactors[0]).eq('email_code');
         expect(response?.data?.mfa?.factors?.emailCode?.verify?.session?.requiredFactors).a('array').and.have.length(1);
         expect(response?.data?.mfa?.factors?.emailCode?.verify?.session?.requiredFactors[0]).eq('email_code');
         expect(response?.data?.mfa?.factors?.emailCode?.verify?.session?.error).to.be.null;

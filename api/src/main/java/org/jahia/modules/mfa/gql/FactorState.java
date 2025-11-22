@@ -30,10 +30,10 @@ import org.jahia.modules.mfa.MfaFactorState;
 
 @GraphQLName("MfaFactorState")
 @GraphQLDescription("State of a single MFA factor: preparation, verification and recoverable factor-level error")
-public class GqlFactorState {
+public class FactorState {
     private final MfaFactorState state;
 
-    public GqlFactorState(MfaFactorState state) {
+    public FactorState(MfaFactorState state) {
         this.state = state;
     }
 
@@ -54,7 +54,7 @@ public class GqlFactorState {
     @GraphQLField
     @GraphQLName("error")
     @GraphQLDescription("Recoverable factor-level error (e.g. invalid code, rate limit). Session-level errors take precedence.")
-    public GqlError getError() {
-        return state.hasError() ? new GqlError(state.getError()) : null;
+    public Error getError() {
+        return state.hasError() ? new Error(state.getError()) : null;
     }
 }
