@@ -68,34 +68,3 @@ export function initiateAndExpectSuspended(username: string, password: string, s
         expect(actualDuration).eq(suspensionDurationInSeconds);
     });
 }
-
-// TODO review if needed
-export function initiateAndExpectSpecificError(username: string, password: string, errorCode: string,
-    argumentAssertions?: { [key: string]: (value: string) => void }) {
-    cy.log('Initiating MFA process for user ' + username + ' and asserting failure...');
-    cy.apollo({
-        queryFile: 'initiate.graphql',
-        variables: {
-            username: username,
-            password: password
-        }
-    }).then(response => {
-        cy.log('Response for initiateAndExpectError():', JSON.stringify(response, null, 2));
-        expect(response?.data?.mfa?.initiate?.error?.code).to.contain(errorCode);
-
-        // Assert on error arguments if provided
-        if (argumentAssertions) {
-            const errorArguments = response?.data?.mfa?.initiate?.error?.arguments;
-            expect(errorArguments).to.be.a('array');
-
-            Object.entries(argumentAssertions).forEach(([argName, assertion]) => {
-                const argument = errorArguments.find(arg => arg.name === argName);
-                expect(argument).to.exist;
-                assertion(argument.value);
-            });
-        } else {
-            expect(response?.data?.mfa?.initiate?.error?.arguments).to.be.empty;
-        }
-    });
-}
-
