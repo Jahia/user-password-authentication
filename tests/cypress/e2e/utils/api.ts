@@ -54,17 +54,7 @@ export function initiateAndExpectGlobalError(username: string, password: string,
 }
 
 export function initiateAndExpectSuspended(username: string, password: string, suspensionDurationInSeconds: number) {
-    cy.log('Initiating MFA process for user ' + username + ' and asserting user is suspended...');
-    cy.apollo({
-        queryFile: 'initiate.graphql',
-        variables: {
-            username: username,
-            password: password
-        }
-    }).then(response => {
-        cy.log('Response for initiateAndExpectSuspended():', JSON.stringify(response, null, 2));
-        const actualDuration = response?.data?.mfa?.initiate?.session?.suspensionDurationInSeconds;
-        expect(actualDuration).to.not.be.null;
-        expect(actualDuration).eq(suspensionDurationInSeconds);
+    initiateAndExpectGlobalError(username, password, 'suspended_user', {
+        suspensionDurationInSeconds: value => expect(Number.parseInt(value, 10)).eq(suspensionDurationInSeconds)
     });
 }

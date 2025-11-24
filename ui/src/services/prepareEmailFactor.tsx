@@ -1,4 +1,4 @@
-import type { BaseError, BaseSuccess } from "./common";
+import { type BaseError, type BaseSuccess, createError } from "./common";
 
 interface PrepareEmailFactorResultSuccess extends BaseSuccess {
   maskedEmail: string;
@@ -28,7 +28,6 @@ export default async function prepareEmailFactor(
                         value
                       }
                     }
-                    suspensionDurationInSeconds
                     factorState(factorType: $factorType) {
                       prepared
                       error {
@@ -51,25 +50,20 @@ export default async function prepareEmailFactor(
     }),
   });
   const result = await response.json();
-  if (
-    result?.data?.mfa?.factors?.emailCode?.prepare?.session?.factorState?.prepared &&
-    !result?.data?.mfa?.factors?.emailCode?.prepare?.session?.factorState?.error
-  ) {
+  const preparationResult = result?.data?.mfa?.factors?.emailCode?.prepare;
+  const success =
+    preparationResult?.session?.factorState?.prepared &&
+    !preparationResult?.session?.factorState?.error &&
+    preparationResult?.maskedEmail;
+  if (success) {
     return {
       success: true,
-      maskedEmail: result?.data?.mfa?.factors?.emailCode?.prepare?.maskedEmail,
+      maskedEmail: preparationResult.maskedEmail,
     };
   } else {
-    const error = result?.data?.mfa?.factors?.emailCode?.prepare?.session?.factorState?.error ||
-      result?.data?.mfa?.factors?.emailCode?.prepare?.session?.error || {
-        code: "unexpected_error",
-        arguments: [],
-      };
-    return {
-      success: false,
-      error: error,
-      suspensionDurationInSeconds:
-        result?.data?.mfa?.factors?.emailCode?.prepare?.session?.suspensionDurationInSeconds,
-    };
+    return createError(
+      preparationResult?.session?.error,
+      preparationResult?.session?.factorState?.error,
+    );
   }
 }

@@ -219,8 +219,8 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
             // Wait until the suspension expires
             // eslint-disable-next-line cypress/no-unnecessary-waiting
             cy.wait(6000);
-            // The (valid) code obtained before being suspended can't be used anymore
-            verifyEmailCodeFactorAndExpectFactorError(code, 'factor.email_code.missing_prepared_code');
+            // The (valid) code obtained before being suspended can't be used anymore, the user remains suspended
+            verifyEmailCodeFactorAndExpectSuspended(code, expectedSuspensionDurationInSeconds);
         });
     });
 

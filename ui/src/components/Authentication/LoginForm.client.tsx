@@ -4,14 +4,15 @@ import { useApiRoot } from "../../hooks/ApiRootContext.jsx";
 import ErrorMessage from "./ErrorMessage.client";
 import type { Props } from "./types";
 import { tError } from "../../services/i18n";
+import type { MfaError } from "../../services/common";
 
 interface LoginFormProps {
   content: Props;
   onSuccess: (username: string) => void;
-  onSuspended: (suspensionDurationInSeconds: number) => void;
+  onFatalError: (error: MfaError) => void;
 }
 
-export default function (props: LoginFormProps) {
+export default function LoginForm(props: Readonly<LoginFormProps>) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -27,8 +28,8 @@ export default function (props: LoginFormProps) {
         if (result.success) {
           props.onSuccess(username);
           setError("");
-        } else if (result.suspensionDurationInSeconds) {
-          props.onSuspended(result.suspensionDurationInSeconds);
+        } else if (result?.fatalError) {
+          props.onFatalError(result.error);
         } else {
           setError(tError(result.error));
         }

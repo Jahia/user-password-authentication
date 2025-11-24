@@ -8,13 +8,14 @@ import clsx from "clsx";
 import { tError } from "../../services/i18n";
 import { Trans } from "react-i18next";
 import { t } from "i18next";
+import type { MfaError } from "../../services/common";
 
 interface EmailCodeVerificationFormProps {
   content: Props;
   onSuccess: () => void;
-  onSuspended: (suspensionDurationInSeconds: number) => void;
+  onFatalError: (error: MfaError) => void;
 }
-export default function EmailCodeVerificationForm(props: EmailCodeVerificationFormProps) {
+export default function EmailCodeVerificationForm(props: Readonly<EmailCodeVerificationFormProps>) {
   const [loading, setLoading] = useState(true);
   const [code, setCode] = useState("");
   const [maskedEmail, setMaskedEmail] = useState("");
@@ -33,8 +34,8 @@ export default function EmailCodeVerificationForm(props: EmailCodeVerificationFo
         if (result.success) {
           setError("");
           setMaskedEmail(result.maskedEmail);
-        } else if (result?.suspensionDurationInSeconds) {
-          props.onSuspended(result.suspensionDurationInSeconds);
+        } else if (result?.fatalError) {
+          props.onFatalError(result.error);
         } else {
           setError(tError(result.error));
         }
@@ -57,7 +58,7 @@ export default function EmailCodeVerificationForm(props: EmailCodeVerificationFo
   const codeSlots = code.padEnd(codeLength, " ").slice(0, codeLength).split("");
 
   const handleCodeInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, "").slice(0, codeLength);
+    const value = e.target.value.replaceAll(/\D/g, "").slice(0, codeLength);
     setCode(value);
   };
 
@@ -78,8 +79,8 @@ export default function EmailCodeVerificationForm(props: EmailCodeVerificationFo
         if (result.success) {
           setError("");
           props.onSuccess();
-        } else if (result?.suspensionDurationInSeconds) {
-          props.onSuspended(result.suspensionDurationInSeconds);
+        } else if (result?.fatalError) {
+          props.onFatalError(result.error);
         } else {
           setError(tError(result.error));
         }

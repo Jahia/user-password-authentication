@@ -1,4 +1,4 @@
-import type { BaseError, BaseSuccess } from "./common";
+import { type BaseError, type BaseSuccess, createError } from "./common";
 
 type VerifyEmailFactorResultSuccess = BaseSuccess;
 type VerifyEmailFactorResultError = BaseError;
@@ -36,7 +36,6 @@ export default async function verifyEmailCodeFactor(
                         value
                       }
                     }
-                    suspensionDurationInSeconds
                   }
                 }
               }
@@ -48,20 +47,14 @@ export default async function verifyEmailCodeFactor(
     }),
   });
   const result = await response.json();
-  if (result?.data?.mfa?.factors?.emailCode?.verify?.session?.factorState?.verified) {
+  const verificationResult = result?.data?.mfa?.factors?.emailCode?.verify;
+  const success = verificationResult?.session?.factorState?.verified;
+  if (success) {
     return { success: true };
   } else {
-    console.log(result);
-    const error = result?.data?.mfa?.factors?.emailCode?.verify?.session?.factorState?.error ||
-      result?.data?.mfa?.factors?.emailCode?.verify?.session?.error || {
-        code: "unexpected_error",
-        arguments: [],
-      };
-    return {
-      success: false,
-      error: error,
-      suspensionDurationInSeconds:
-        result?.data?.mfa?.factors?.emailCode?.verify?.session?.suspensionDurationInSeconds,
-    };
+    return createError(
+      verificationResult?.session?.error,
+      verificationResult?.session?.factorState?.error,
+    );
   }
 }

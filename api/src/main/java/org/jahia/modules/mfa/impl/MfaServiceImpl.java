@@ -49,7 +49,9 @@ public class MfaServiceImpl implements MfaService {
     private static final String ERROR_USER_NOT_FOUND = "user_not_found";
     private static final String ERROR_AUTHENTICATION_FAILED = "authentication_failed";
     private static final String ERROR_NO_SESSION = "no_active_session";
+    private static final String ERROR_SUSPENDED_USER = "suspended_user";
     protected static final String ARG_FACTOR_TYPE = "factorType";
+    protected static final String ARG_SUSPENSION_DURATION_IN_SECONDS = "suspensionDurationInSeconds";
 
     private JahiaUserManagerService userManagerService;
     private FactorRegistry factorRegistry;
@@ -164,14 +166,6 @@ public class MfaServiceImpl implements MfaService {
             return errorSession;
         }
 
-        // Validate user not suspended
-        Integer suspensionDuration = getUserSuspension(user.getUserKey());
-        if (suspensionDuration != null) {
-            MfaSession session = createNoSessionError();
-            session.setSuspensionDurationInSeconds(suspensionDuration.longValue());
-            return session;
-        }
-
         HttpSession httpSession = request.getSession();
         Locale userLocale;
         String preferredLanguage = user.getProperty("preferredLanguage");
@@ -179,6 +173,15 @@ public class MfaServiceImpl implements MfaService {
         List<String> requiredFactors = getAvailableFactors(); // for now just use all available factors
         MfaSessionContext sessionContext = new MfaSessionContext(username, userLocale, siteKey, requiredFactors);
         MfaSession session = new MfaSession(sessionContext);
+
+        // Validate user not suspended
+        Integer suspensionDuration = getUserSuspension(user.getUserKey());
+        if (suspensionDuration != null) {
+            session.setError(new MfaError(ERROR_SUSPENDED_USER, Map.of(ARG_SUSPENSION_DURATION_IN_SECONDS, suspensionDuration.toString())));
+            return session;
+        }
+
+        // Complete initiation
         session.setInitiated(true);
         httpSession.setAttribute(MFA_SESSION_KEY, session);
 
@@ -336,7 +339,7 @@ public class MfaServiceImpl implements MfaService {
         String userPath = userNode.getPath();
         Integer suspensionDuration = getSuspensionDuration(userPath, provider, session);
         if (suspensionDuration != null) {
-            session.setSuspensionDurationInSeconds(suspensionDuration.longValue());
+            session.setError(new MfaError(ERROR_SUSPENDED_USER, Map.of(ARG_SUSPENSION_DURATION_IN_SECONDS, suspensionDuration.toString())));
             return null;
         }
 

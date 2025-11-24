@@ -1,4 +1,4 @@
-import type { BaseError, BaseSuccess } from "./common";
+import { type BaseError, type BaseSuccess, createError } from "./common";
 
 type ClearResultSuccess = BaseSuccess;
 type ClearResultError = BaseError;
@@ -30,19 +30,13 @@ export default async function clear(apiRoot: string): Promise<ClearResult> {
     }),
   });
   const result = await response.json();
-  console.log("result", result);
-  if (result?.data?.mfa?.clear?.session?.initiated === false) {
+  // once cleared, the session is expected to not be initiated anymore
+  const success = result?.data?.mfa?.clear?.session?.initiated === false;
+  if (success) {
     return {
       success: true,
     };
   } else {
-    return {
-      success: false,
-      error: {
-        code: result?.data?.mfa?.clear?.error?.code || "unexpected_error",
-        arguments: result?.data?.mfa?.clear?.error?.arguments || [],
-      },
-      suspensionDurationInSeconds: result?.data?.mfa?.clear?.session?.suspensionDurationInSeconds,
-    };
+    return createError(result?.data?.mfa?.clear?.session?.error);
   }
 }

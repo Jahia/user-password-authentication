@@ -10,7 +10,6 @@ mutation initiate($username: String!, $password: String!, $site: String) {
                         value
                     }
                 }
-                suspensionDurationInSeconds
                 requiredFactors
                 verifiedFactors
             }
