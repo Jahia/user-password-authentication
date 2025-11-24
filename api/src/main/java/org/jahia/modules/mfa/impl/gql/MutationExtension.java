@@ -9,6 +9,10 @@ import org.jahia.modules.graphql.provider.dxm.DXGraphQLProvider;
 @GraphQLTypeExtension(DXGraphQLProvider.Mutation.class)
 public class MutationExtension {
 
+    private MutationExtension() {
+        // no need to be instantiated
+    }
+
     @GraphQLField
     @GraphQLName("mfa")
     @GraphQLDescription("Main access to MFA API")

@@ -8,6 +8,10 @@ import org.jahia.modules.mfa.gql.FactorsMutation;
 @GraphQLTypeExtension(FactorsMutation.class)
 public class CustomFactorMutationExtension {
 
+    private CustomFactorMutationExtension() {
+        // no need to be instantiated
+    }
+
     @GraphQLField
     @GraphQLName("custom")
     public static CustomFactorMutation emailCode() {

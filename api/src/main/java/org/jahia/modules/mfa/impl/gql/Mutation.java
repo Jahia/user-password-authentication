@@ -43,12 +43,9 @@ public class Mutation {
     @GraphQLName("clear")
     @GraphQLDescription("Clear current MFA session")
     public Result clear(DataFetchingEnvironment environment) {
-        Result response;
         HttpServletRequest httpServletRequest = ContextUtil.getHttpServletRequest(environment.getGraphQlContext());
         mfaService.clearMfaSession(httpServletRequest);
-        // TODO review
         return new Result(new MfaSession(null));
-
     }
 
     @GraphQLField

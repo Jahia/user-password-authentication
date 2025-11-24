@@ -23,6 +23,7 @@
  */
 package org.jahia.modules.mfa;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Locale;
 
@@ -30,7 +31,7 @@ import java.util.Locale;
  * Immutable context containing user and session-specific information for an MFA authentication flow.
  * This context is created during session initiation and remains unchanged throughout the MFA process.
  */
-public class MfaSessionContext {
+public class MfaSessionContext implements Serializable {
     private final String userId;
     private final Locale userPreferredLanguage;
     private final String siteKey;
@@ -91,7 +92,9 @@ public class MfaSessionContext {
     public String toString() {
         return "MfaSessionContext{" +
                 "userId='" + userId + '\'' +
+                ", userPreferredLanguage=" + userPreferredLanguage +
                 ", siteKey='" + siteKey + '\'' +
+                ", requiredFactors=" + requiredFactors +
                 '}';
     }
 }

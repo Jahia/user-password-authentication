@@ -4,8 +4,6 @@ import graphql.annotations.annotationTypes.GraphQLDescription;
 import graphql.annotations.annotationTypes.GraphQLField;
 import graphql.annotations.annotationTypes.GraphQLName;
 import org.jahia.modules.mfa.MfaError;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -14,24 +12,23 @@ import java.util.stream.Collectors;
 @GraphQLName("MfaError")
 @GraphQLDescription("Error that may occur during an MFA operation")
 public class Error {
-    private static final Logger logger = LoggerFactory.getLogger(Error.class);
 
-    private final MfaError error;
+    private final MfaError mfaError;
 
-    public Error(MfaError error) {
-        this.error = error;
+    public Error(MfaError mfaError) {
+        this.mfaError = mfaError;
     }
 
     @GraphQLField
     @GraphQLDescription("Error code that can be used to load i18n error message")
     public String code() {
-        return error.getCode();
+        return mfaError.getCode();
     }
 
     @GraphQLField
     @GraphQLDescription("Optional arguments of the error that can be used to generate the i18n error message")
     public List<GqlArgument> arguments() {
-        return error.getArguments().entrySet().stream()
+        return mfaError.getArguments().entrySet().stream()
                 .map(GqlArgument::new)
                 .collect(Collectors.toList());
     }
