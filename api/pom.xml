@@ -135,7 +135,8 @@
                             *
                         </Import-Package>
                         <Export-Package>
-                            org.jahia.modules.mfa
+                            org.jahia.modules.mfa,
+                            org.jahia.modules.mfa.gql
                         </Export-Package>
                     </instructions>
                 </configuration>

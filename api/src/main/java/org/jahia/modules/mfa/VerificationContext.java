@@ -1,68 +1,96 @@
 package org.jahia.modules.mfa;
 
-import org.jahia.services.content.decorator.JCRUserNode;
-
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.Serializable;
 
 /**
- * Context object containing all necessary data for verifying an MFA factor.
- * Provides access to the user, HTTP request, preparation result, and verification data.
+ * Context object provided to factor providers during the verification phase.
+ * <p>
+ * Contains all necessary information for verifying an MFA factor, including:
+ * <ul>
+ *   <li>Session context (user ID, locale, site)</li>
+ *   <li>Preparation result from the earlier prepare step</li>
+ *   <li>Verification data provided by the user</li>
+ *   <li>HTTP request/response objects</li>
+ * </ul>
  */
 public class VerificationContext {
-    private final JCRUserNode user;
-    private final HttpServletRequest httpServletRequest; // TODO should we keep it?
+    private final MfaSessionContext sessionContext;
     private final Serializable preparationResult;
     private final Serializable verificationData;
+    private final HttpServletRequest httpServletRequest;
+    private final HttpServletResponse httpServletResponse;
 
     /**
-     * Constructs a new VerificationContext.
+     * Creates a new verification context.
      *
-     * @param user               the user for whom MFA verification is being performed
-     * @param httpServletRequest the HTTP request associated with the verification
-     * @param preparationResult  the result from the preparation step
-     * @param verificationData   the data provided for verification
+     * @param sessionContext      the session context containing user and site information
+     * @param preparationResult   the result from the prepare step (may be null if not prepared)
+     * @param verificationData    the verification data submitted by the user
+     * @param httpServletRequest  the HTTP request associated with the verification
+     * @param httpServletResponse the HTTP response associated with the verification
      */
-    public VerificationContext(JCRUserNode user, HttpServletRequest httpServletRequest, Serializable preparationResult, Serializable verificationData) {
-        this.user = user;
-        this.httpServletRequest = httpServletRequest;
+    public VerificationContext(MfaSessionContext sessionContext, Serializable preparationResult, Serializable verificationData, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) { // param type updated
+        this.sessionContext = sessionContext;
         this.preparationResult = preparationResult;
         this.verificationData = verificationData;
+        this.httpServletRequest = httpServletRequest;
+        this.httpServletResponse = httpServletResponse;
     }
 
     /**
-     * Returns the user associated with this context (the user being authenticated).
+     * Returns the session context containing user ID, locale, site key, and required factors.
      *
-     * @return the JCRUserNode representing the user
+     * @return the session context
      */
-    public JCRUserNode getUser() {
-        return user;
+    public MfaSessionContext getSessionContext() { // return type updated
+        return sessionContext;
     }
 
     /**
-     * Returns the HTTP request associated with this context.
+     * Returns the result from the factor preparation step.
+     * <p>
+     * This typically contains data generated during preparation that is needed for verification
+     * (e.g., the generated code to compare against, challenge data).
      *
-     * @return the HttpServletRequest for the verification step
-     */
-    public HttpServletRequest getHttpServletRequest() {
-        return httpServletRequest;
-    }
-
-    /**
-     * Returns the result from the preparation step.
-     *
-     * @return the serializable preparation result
+     * @return the preparation result, or null if the factor was not prepared
      */
     public Serializable getPreparationResult() {
         return preparationResult;
     }
 
     /**
-     * Returns the data provided for verification.
+     * Returns the verification data submitted by the user.
+     * <p>
+     * The format of this data depends on the factor type (e.g., a String code for email factors,
+     * a custom object for other factor types).
      *
-     * @return the serializable verification data
+     * @return the verification data
      */
     public Serializable getVerificationData() {
         return verificationData;
+    }
+
+    /**
+     * Returns the HTTP request associated with the verification.
+     * <p>
+     * Factor providers can use this to read request attributes or headers for additional context.
+     *
+     * @return the HTTP servlet request
+     */
+    public HttpServletRequest getHttpServletRequest() {
+        return httpServletRequest;
+    }
+
+    /**
+     * Returns the HTTP response associated with the verification.
+     * <p>
+     * Factor providers can use this to set response headers or cookies if needed.
+     *
+     * @return the HTTP servlet response
+     */
+    public HttpServletResponse getHttpServletResponse() {
+        return httpServletResponse;
     }
 }

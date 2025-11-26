@@ -1,0 +1,32 @@
+mutation verifyEmailCodeFactor($code: String!) {
+    mfa {
+        factors {
+            emailCode {
+                verify(code: $code) {
+                    session {
+                        error {
+                            code
+                            arguments {
+                                name
+                                value
+                            }
+                        }
+                        suspensionDurationInSeconds
+                        verifiedFactors
+                        requiredFactors
+                        factorState(factorType: "email_code") {
+                            verified
+                            error {
+                                code
+                                arguments {
+                                    name
+                                    value
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

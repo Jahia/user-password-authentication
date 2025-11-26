@@ -16,4 +16,5 @@ export interface BaseError {
     code: string;
     arguments: Array<{ name: string; value: string }>;
   };
+  suspensionDurationInSeconds: number | null;
 }

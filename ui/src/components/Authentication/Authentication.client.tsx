@@ -4,7 +4,7 @@ import { ApiRootContext } from "../../hooks/ApiRootContext.jsx";
 import EmailCodeVerificationForm from "./EmailCodeVerificationForm.client.jsx";
 import type { Props } from "./types";
 import { redirect } from "../../services";
-import SuspensionScreen from "./SuspendedUser.client.jsx";
+import SuspensionScreen from "./SuspensionScreen.client.js";
 enum Step {
   LOGIN,
   VERIFY,
@@ -14,9 +14,9 @@ enum Step {
 
 export default function ({ apiRoot, content }: { apiRoot: string; content: Props }) {
   const [step, setStep] = useState<Step>(Step.LOGIN);
-  const [suspendedErrorArguments, setSuspendedErrorArguments] = useState<
-    Array<{ name: string; value: string }>
-  >([]);
+  const [suspensionDurationInSeconds, setSuspensionDurationInSeconds] = useState<number | null>(
+    null,
+  );
 
   const handleVerifySuccess = () => {
     setStep(Step.COMPLETE);
@@ -25,8 +25,8 @@ export default function ({ apiRoot, content }: { apiRoot: string; content: Props
 
   return (
     <ApiRootContext value={apiRoot}>
-      {step === Step.SUSPENDED && (
-        <SuspensionScreen suspensionErrorArguments={suspendedErrorArguments} />
+      {step === Step.SUSPENDED && suspensionDurationInSeconds !== null && (
+        <SuspensionScreen suspensionDurationInSeconds={suspensionDurationInSeconds} />
       )}
       {step === Step.LOGIN && (
         <LoginForm
@@ -34,8 +34,8 @@ export default function ({ apiRoot, content }: { apiRoot: string; content: Props
           onSuccess={() => {
             setStep(Step.VERIFY);
           }}
-          onSuspended={(args) => {
-            setSuspendedErrorArguments(args);
+          onSuspended={(suspensionDurationInSeconds) => {
+            setSuspensionDurationInSeconds(suspensionDurationInSeconds);
             setStep(Step.SUSPENDED);
           }}
         />
@@ -46,8 +46,8 @@ export default function ({ apiRoot, content }: { apiRoot: string; content: Props
           onSuccess={() => {
             handleVerifySuccess();
           }}
-          onSuspended={(args) => {
-            setSuspendedErrorArguments(args);
+          onSuspended={(suspensionDurationInSeconds) => {
+            setSuspensionDurationInSeconds(suspensionDurationInSeconds);
             setStep(Step.SUSPENDED);
           }}
         />

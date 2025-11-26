@@ -1,0 +1,7 @@
+---
+mfa:
+  grants:
+  - api: "graphql.MfaCustomFactorPreparation"
+  - api: "graphql.MfaCustomFactorMutation"
+  auto_apply:
+  - always: "true"

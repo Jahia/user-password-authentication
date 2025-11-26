@@ -13,16 +13,16 @@ import javax.servlet.http.HttpServletRequest;
 public class MfaLoginUrlProvider implements LoginUrlProvider {
 
     @Reference
-    private MfaConfigurationService mfaConfigurationService;
+    private ConfigurationService configurationService;
 
     @Reference
-    public void setMfaConfigurationService(MfaConfigurationService mfaConfigurationService) {
-        this.mfaConfigurationService = mfaConfigurationService;
+    public void setConfigurationService(ConfigurationService configurationService) {
+        this.configurationService = configurationService;
     }
 
     @Override
     public String getLoginUrl(HttpServletRequest httpServletRequest) {
-        return mfaConfigurationService.getLoginUrl();
+        return configurationService.getLoginUrl();
     }
 
     @Override

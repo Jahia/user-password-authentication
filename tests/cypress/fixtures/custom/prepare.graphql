@@ -1,0 +1,32 @@
+mutation prepareCustomFactor {
+    mfa {
+        factors {
+            custom {
+                prepare {
+                    otherInfo
+                    session {
+                        error {
+                            code
+                            arguments {
+                                name
+                                value
+                            }
+                        }
+                        verifiedFactors
+                        requiredFactors
+                        factorState(factorType: "custom") {
+                            prepared
+                            error {
+                                code
+                                arguments {
+                                    name
+                                    value
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,33 @@
+mutation prepareCustomFactor {
+    mfa {
+        factors {
+            emailCode {
+                prepare {
+                    maskedEmail
+                    session {
+                        error {
+                            code
+                            arguments {
+                                name
+                                value
+                            }
+                        }
+                        suspensionDurationInSeconds
+                        verifiedFactors
+                        requiredFactors
+                        factorState(factorType: "email_code") {
+                            prepared
+                            error {
+                                code
+                                arguments {
+                                    name
+                                    value
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

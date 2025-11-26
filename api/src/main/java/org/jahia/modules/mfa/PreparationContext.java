@@ -1,61 +1,64 @@
 package org.jahia.modules.mfa;
 
-import org.jahia.services.content.decorator.JCRUserNode;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Holds the information needed during multi-factor authentication preparation for a user.
- * This includes the user account, the current site, and the HTTP servlet request details.
+ * Context object provided to factor providers during the preparation phase.
  * <p>
- * Note: The HTTP servlet request is always included because some custom mfa factor
- * may need to pass additional data from the front-end application targeting the preparation.
- * (In such cases, request attributes can be useful to transport additional data.)
+ * Contains all necessary information for preparing an MFA factor, including the session
+ * context (user ID, locale, site) and HTTP request/response objects for accessing
+ * additional data or setting response headers.
+ * <p>
+ * Factor providers can read request attributes to access custom data supplied by clients.
  */
 public class PreparationContext {
-    private final JCRUserNode user;
+    private final MfaSessionContext sessionContext;
     private final HttpServletRequest httpServletRequest;
     private final HttpServletResponse httpServletResponse;
-    private final MfaSession mfaSession;
 
     /**
-     * Creates a new context for MFA preparation.
+     * Creates a new preparation context.
      *
-     * @param user               the user account for which MFA preparation is needed
-     * @param httpServletRequest the HTTP servlet request with any additional preparation data
+     * @param sessionContext      the immutable session context containing user and site information
+     * @param httpServletRequest  the HTTP request that triggered the preparation
+     * @param httpServletResponse the HTTP response for setting headers or cookies if needed
      */
-    public PreparationContext(MfaSession session, JCRUserNode user,
-                              HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
-        this.mfaSession = session;
-        this.user = user;
+    public PreparationContext(MfaSessionContext sessionContext,
+                              HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) { // constructor param type
+        this.sessionContext = sessionContext;
         this.httpServletRequest = httpServletRequest;
         this.httpServletResponse = httpServletResponse;
     }
 
     /**
-     * Returns the user for MFA preparation.
+     * Returns the session context containing user ID, locale, site key, and required factors.
      *
-     * @return the user for whom multi-factor authentication is being prepared
+     * @return the session context
      */
-    public JCRUserNode getUser() {
-        return user;
-    }
+    public MfaSessionContext getSessionContext() {
+        return sessionContext;
+    } // return type updated
 
     /**
-     * Returns the HTTP servlet request that triggered MFA preparation.
+     * Returns the HTTP request that triggered the preparation.
+     * <p>
+     * Factor providers can use this to read request attributes or headers for additional context.
      *
-     * @return the HTTP servlet request containing any additional preparation data
+     * @return the HTTP servlet request
      */
     public HttpServletRequest getHttpServletRequest() {
         return httpServletRequest;
     }
 
+    /**
+     * Returns the HTTP response associated with the preparation request.
+     * <p>
+     * Factor providers can use this to set response headers or cookies if needed.
+     *
+     * @return the HTTP servlet response
+     */
     public HttpServletResponse getHttpServletResponse() {
         return httpServletResponse;
-    }
-
-    public MfaSession getMfaSession() {
-        return mfaSession;
     }
 }

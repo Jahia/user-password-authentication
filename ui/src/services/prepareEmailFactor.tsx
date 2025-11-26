@@ -15,39 +15,61 @@ export default async function prepareEmailFactor(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       query: /* GraphQL */ `
-        mutation prepareEmailCodeFactor {
+        mutation prepareEmailCodeFactor($factorType: String!) {
           mfa {
             factors {
-              prepareEmailCodeFactor {
-                success
-                maskedEmail
-                error {
-                  code
-                  arguments {
-                    name
-                    value
+              emailCode {
+                prepare {
+                  session {
+                    error {
+                      code
+                      arguments {
+                        name
+                        value
+                      }
+                    }
+                    suspensionDurationInSeconds
+                    factorState(factorType: $factorType) {
+                      prepared
+                      error {
+                        code
+                        arguments {
+                          name
+                          value
+                        }
+                      }
+                    }
                   }
+                  maskedEmail
                 }
               }
             }
           }
         }
       `,
+      variables: { factorType: "email_code" },
     }),
   });
   const result = await response.json();
-  if (result?.data?.mfa?.factors?.prepareEmailCodeFactor?.success === true) {
+  if (
+    result?.data?.mfa?.factors?.emailCode?.prepare?.session?.factorState?.prepared &&
+    !result?.data?.mfa?.factors?.emailCode?.prepare?.session?.factorState?.error
+  ) {
     return {
       success: true,
-      maskedEmail: result?.data?.mfa?.factors?.prepareEmailCodeFactor?.maskedEmail,
+      maskedEmail: result?.data?.mfa?.factors?.emailCode?.prepare?.maskedEmail,
     };
   } else {
+    const error = result?.data?.mfa?.factors?.emailCode?.prepare?.session?.factorState?.error ||
+      result?.data?.mfa?.factors?.emailCode?.prepare?.session?.error || {
+        code: "unexpected_error",
+        arguments: [],
+      };
     return {
       success: false,
-      error: {
-        code: result?.data?.mfa?.factors?.prepareEmailCodeFactor?.error?.code || "unexpected_error",
-        arguments: result?.data?.mfa?.factors?.prepareEmailCodeFactor?.error?.arguments || [],
-      },
+      error: error,
+      suspensionDurationInSeconds:
+        result?.data?.mfa?.factors?.emailCode?.prepare?.session?.suspensionDurationInSeconds,
     };
   }
 }

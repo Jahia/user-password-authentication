@@ -2,13 +2,15 @@ package org.jahia.modules.mfa.impl;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import org.apache.commons.lang3.StringUtils;
 import org.jahia.modules.mfa.*;
 import org.jahia.services.content.JCRPropertyWrapper;
 import org.jahia.services.content.JCRTemplate;
 import org.jahia.services.content.decorator.JCRNodeDecorator;
 import org.jahia.services.content.decorator.JCRUserNode;
-import org.jahia.services.security.*;
+import org.jahia.services.security.AuthenticationOptions;
+import org.jahia.services.security.AuthenticationRequest;
+import org.jahia.services.security.AuthenticationService;
+import org.jahia.services.security.InvalidSessionLoginException;
 import org.jahia.services.usermanager.JahiaUser;
 import org.jahia.services.usermanager.JahiaUserManagerService;
 import org.osgi.service.component.annotations.*;
@@ -40,10 +42,18 @@ public class MfaServiceImpl implements MfaService {
             // TODO disable it until https://github.com/Jahia/jahia-multi-factor-authentication/issues/68 is implemented
             .shouldRememberMe(false)
             .build();
+    private static final String ERROR_FACTOR_TYPE_NOT_SUPPORTED = "factor_type_not_supported";
+    private static final String ERROR_RATE_LIMIT_EXCEEDED = "prepare.rate_limit_exceeded";
+    private static final String ERROR_FACTOR_NOT_PREPARED = "verify.factor_not_prepared";
+    private static final String ERROR_VERIFICATION_FAILED = "verify.verification_failed";
+    private static final String ERROR_USER_NOT_FOUND = "user_not_found";
+    private static final String ERROR_AUTHENTICATION_FAILED = "authentication_failed";
+    private static final String ERROR_NO_SESSION = "no_active_session";
+    protected static final String ARG_FACTOR_TYPE = "factorType";
 
     private JahiaUserManagerService userManagerService;
-    private MfaFactorRegistry factorRegistry;
-    private volatile MfaConfigurationService mfaConfigurationService;
+    private FactorRegistry factorRegistry;
+    private volatile ConfigurationService configurationService;
     private AuthenticationService authenticationService;
 
     /**
@@ -65,55 +75,16 @@ public class MfaServiceImpl implements MfaService {
      * users from generating new verification codes too frequently. The cache key combines
      * the user path, factor type, and provider hash code.
      * <p>
-     * Entries automatically expire after {@link MfaConfigurationService#getFactorStartRateLimitSeconds()}
+     * Entries automatically expire after {@link ConfigurationService#getFactorStartRateLimitSeconds()}
      * seconds, allowing new preparation requests once the rate limit window has passed.
      */
     private volatile Cache<String, Long> factorPreparationTimestampsCache;
-
-    @Reference
-    public void setUserManagerService(JahiaUserManagerService userManagerService) {
-        this.userManagerService = userManagerService;
-    }
-
-    @Reference
-    public void setFactorRegistry(MfaFactorRegistry factorRegistry) {
-        this.factorRegistry = factorRegistry;
-    }
-
-    @Reference(
-            policy = ReferencePolicy.DYNAMIC,
-            policyOption = ReferencePolicyOption.GREEDY,
-            updated = "setOrUpdateMfaConfigurationService"
-    )
-    public void setOrUpdateMfaConfigurationService(MfaConfigurationService mfaConfigurationService) {
-        this.mfaConfigurationService = mfaConfigurationService;
-        logger.info("Updating Caffeine cache for MFA auth failures...");
-        createCaffeineCache();
-        logger.info("Caffeine cache updated.");
-    }
-
-    public void unsetOrUpdateMfaConfigurationService(MfaConfigurationService mfaConfigurationService) {
-        this.mfaConfigurationService = null;
-    }
-
-    @Reference
-    public void setAuthenticationService(AuthenticationService authenticationService) {
-        this.authenticationService = authenticationService;
-    }
 
     @Activate
     protected void activate() {
         logger.info("Initializing Caffeine cache for MFA auth failures...");
         createCaffeineCache();
         logger.info("Caffeine cache initialized.");
-    }
-
-    private void createCaffeineCache() {
-        failuresCache = Caffeine.newBuilder()
-                .expireAfterWrite(mfaConfigurationService.getAuthFailuresWindowSeconds(), TimeUnit.SECONDS)
-                .build();
-        factorPreparationTimestampsCache = Caffeine.newBuilder()
-                .expireAfterWrite(mfaConfigurationService.getFactorStartRateLimitSeconds(), TimeUnit.SECONDS).build();
     }
 
     @Deactivate
@@ -126,11 +97,42 @@ public class MfaServiceImpl implements MfaService {
         logger.info("Caffeine cache cleared.");
     }
 
+    @Reference
+    public void setUserManagerService(JahiaUserManagerService userManagerService) {
+        this.userManagerService = userManagerService;
+    }
+
+    @Reference
+    public void setFactorRegistry(FactorRegistry factorRegistry) {
+        this.factorRegistry = factorRegistry;
+    }
+
+    @Reference(
+            policy = ReferencePolicy.DYNAMIC,
+            policyOption = ReferencePolicyOption.GREEDY,
+            updated = "setOrUpdateConfigurationService"
+    )
+    public void setOrUpdateConfigurationService(ConfigurationService configurationService) {
+        this.configurationService = configurationService;
+        logger.info("Updating Caffeine cache for MFA auth failures...");
+        createCaffeineCache();
+        logger.info("Caffeine cache updated.");
+    }
+
+    public void unsetOrUpdateConfigurationService(ConfigurationService configurationService) {
+        this.configurationService = null;
+    }
+
+    @Reference
+    public void setAuthenticationService(AuthenticationService authenticationService) {
+        this.authenticationService = authenticationService;
+    }
+
     // ===== PUBLIC INTERFACE IMPLEMENTATION =====
 
     @Override
     public List<String> getAvailableFactors() {
-        String[] enabledFactorsConfig = mfaConfigurationService.getEnabledFactors();
+        String[] enabledFactorsConfig = configurationService.getEnabledFactors();
         if (enabledFactorsConfig == null || enabledFactorsConfig.length == 0) {
             return Collections.emptyList(); // Return an empty list if no factors configured
         }
@@ -147,7 +149,7 @@ public class MfaServiceImpl implements MfaService {
     }
 
     @Override
-    public MfaSession initiateMfa(String username, String password, String siteKey, HttpServletRequest request) throws MfaException {
+    public MfaSession initiate(String username, String password, String siteKey, HttpServletRequest request) {
         logger.info("Initiating MFA for user: {}", username);
 
         AuthenticationRequest authenticationRequest = new AuthenticationRequest(username, password, siteKey, true);
@@ -157,235 +159,120 @@ public class MfaServiceImpl implements MfaService {
         } catch (IllegalArgumentException | LoginException e) {
             logger.warn("Unable to authenticate the user: {}", username);
             logger.debug("Authentication error", e);
-            throw new MfaException("authentication_failed");
+            MfaSession errorSession = createNoSessionError();
+            errorSession.setError(new MfaError(ERROR_AUTHENTICATION_FAILED));
+            return errorSession;
         }
 
-        validateUserNotSuspended(user.getUserKey());
+        // Validate user not suspended
+        Integer suspensionDuration = getUserSuspension(user.getUserKey());
+        if (suspensionDuration != null) {
+            MfaSession session = createNoSessionError();
+            session.setSuspensionDurationInSeconds(suspensionDuration.longValue());
+            return session;
+        }
 
         HttpSession httpSession = request.getSession();
         Locale userLocale;
         String preferredLanguage = user.getProperty("preferredLanguage");
         userLocale = preferredLanguage != null ? new Locale(preferredLanguage) : Locale.ENGLISH;
-        MfaSession mfaSession = new MfaSession(username, userLocale, siteKey);
-        mfaSession.setState(MfaSessionState.IN_PROGRESS);
-        httpSession.setAttribute(MFA_SESSION_KEY, mfaSession);
+        List<String> requiredFactors = getAvailableFactors(); // for now just use all available factors
+        MfaSessionContext sessionContext = new MfaSessionContext(username, userLocale, siteKey, requiredFactors);
+        MfaSession session = new MfaSession(sessionContext);
+        session.setInitiated(true);
+        httpSession.setAttribute(MFA_SESSION_KEY, session);
 
-        logger.info("MFA session created for user: {}", username);
-        return mfaSession;
+        logger.info("MFA session initiated for user: {}", username);
+        return session;
     }
 
     @Override
-    public MfaSession prepareFactor(String factorType, HttpServletRequest request, HttpServletResponse response) throws MfaException {
-        MfaSession session = getMfaSession(request);
-        if (session == null) {
-            throw new MfaException("no_active_session");
-        }
+    public MfaSession prepareFactor(String factorType, HttpServletRequest request, HttpServletResponse response) {
+        MfaSession session = getSessionOrCreateError(request);
+        if (session.hasError()) return session;
+
+        MfaFactorState factorState = session.getOrCreateFactorState(factorType);
+        factorState.setError(null);
 
         try {
-            MfaFactorProvider provider = resolveProvider(factorType);
-            JCRUserNode user = resolveUserNode(session);
-            validateUserCanAuthenticate(request, user, provider);
+            ValidationResult validation = performCommonValidation(session, factorType, factorState);
+            if (validation == null) return session;
 
-            String cacheKey = getCacheKey(user, provider);
+            String userPath = validation.userNode.getPath();
+            String cacheKey = getCacheKey(userPath, validation.provider);
             Long startedPrepareTime = factorPreparationTimestampsCache.getIfPresent(cacheKey);
             long now = System.currentTimeMillis();
+
             if (startedPrepareTime != null) {
-                long nextRetryInSeconds = mfaConfigurationService.getFactorStartRateLimitSeconds() - (now - startedPrepareTime) / 1000;
-                throw new MfaPreparationRateLimitException(factorType, user, nextRetryInSeconds);
+                long nextRetryInSeconds = configurationService.getFactorStartRateLimitSeconds() - (now - startedPrepareTime) / 1000;
+                Map<String, String> arguments = Map.of(
+                        "nextRetryInSeconds", String.valueOf(nextRetryInSeconds),
+                        ARG_FACTOR_TYPE, factorType,
+                        "user", validation.userNode.getName()
+                );
+                factorState.setError(new MfaError(ERROR_RATE_LIMIT_EXCEEDED, arguments));
+                logger.debug("Preparation rate limit exceeded for the factor {} for session context: {}", factorType, session.getContext());
+                return session;
             }
-            PreparationContext preparationContext = new PreparationContext(session, user, request, response);
-            Serializable preparationResult = provider.prepare(preparationContext);
-            session.setPreparationResult(preparationResult);
-            // Store in cache to prevent same user to generate a new preparationResult for the current factor.
+
+            factorState.setPrepared(false);
+            PreparationContext preparationContext = new PreparationContext(session.getContext(), request, response);
+            Serializable preparationResult = validation.provider.prepare(preparationContext);
+            factorState.setPreparationResult(preparationResult);
             factorPreparationTimestampsCache.put(cacheKey, now);
-            request.getSession().setAttribute(getAttributeKey(factorType), preparationResult);
-            session.markFactorPrepared(provider.getFactorType());
-            logger.info("Factor {} preparation completed for user: {}", factorType, session.getUserId());
-        } catch (MfaPreparationRateLimitException preparationRateLimitException) {
-            // the session is not mark as failed in this specific case
-            logger.debug("Preparation rate limit exceeded for the factor {} for user: {}", factorType, session.getUserId());
-            throw preparationRateLimitException;
-        } catch (Exception e) {
-            session.markFactorPreparationFailed(factorType);
-            throw e;
+            factorState.setPrepared(true);
+            logger.info("Factor {} preparation completed for context: {}", factorType, session.getContext());
+        } catch (MfaException e) {
+            factorState.setError(new MfaError(e.getCode(), e.getArguments()));
+            logger.error("Factor {} preparation failed for context: {}", factorType, session.getContext(), e);
         }
         return session;
     }
 
     @Override
-    public MfaSession verifyFactor(String factorType, HttpServletRequest request, Serializable verificationData) throws MfaException {
-        MfaSession session = getMfaSession(request);
-        if (session == null) {
-            throw new MfaException("no_active_session");
-        }
+    public MfaSession verifyFactor(String factorType, Serializable verificationData, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
+        MfaSession session = getSessionOrCreateError(httpServletRequest);
+        if (session.hasError()) return session;
+
+        MfaFactorState factorState = session.getOrCreateFactorState(factorType);
+        factorState.setError(null);
 
         try {
-            if (!session.isFactorPrepared(factorType)) {
-                throw new MfaException("verify.factor_not_prepared", "factorType", factorType);
+            if (!factorState.isPrepared()) {
+                factorState.setError(new MfaError(ERROR_FACTOR_NOT_PREPARED, Map.of(ARG_FACTOR_TYPE, factorType)));
+                return session;
             }
 
-            MfaFactorProvider provider = resolveProvider(factorType);
-            // TODO - reset mfa session if user is not found at this stage, better handling of user recheck during MFA steps
-            JCRUserNode jcrUserNode = resolveUserNode(session);
-            validateUserCanAuthenticate(request, jcrUserNode, provider);
+            ValidationResult validation = performCommonValidation(session, factorType, factorState);
+            if (validation == null) return session;
 
-            Serializable preparationResult = (Serializable) request.getSession().getAttribute(getAttributeKey(factorType));
-            VerificationContext verificationContext = new VerificationContext(jcrUserNode, request, preparationResult, verificationData);
-            if (provider.verify(verificationContext)) {
-                // Clear preparation result after successful verification
-                request.getSession().removeAttribute(getAttributeKey(factorType));
-                session.markFactorCompleted(factorType);
-                // Clean up start cache
-                factorPreparationTimestampsCache.invalidate(getCacheKey(jcrUserNode, provider));
-                logger.info("Factor {} verified successfully for user: {}", factorType, session.getUserId());
+            String userPath = validation.userNode.getPath();
+            Serializable preparationResult = factorState.getPreparationResult();
+            VerificationContext verificationContext = new VerificationContext(
+                    session.getContext(), preparationResult, verificationData, httpServletRequest, httpServletResponse
+            );
+
+            if (validation.provider.verify(verificationContext)) {
+                factorState.setVerified(true);
+                factorPreparationTimestampsCache.invalidate(getCacheKey(userPath, validation.provider));
+                logger.info("Factor {} verified successfully for context: {}", factorType, session.getContext());
             } else {
-                trackFailure(jcrUserNode.getPath(), provider);
-                throw new MfaException("verify.verification_failed", "factorType", factorType);
+                trackVerificationFailure(userPath, validation.provider);
+                factorState.setError(new MfaError(ERROR_VERIFICATION_FAILED, Map.of(ARG_FACTOR_TYPE, factorType)));
+                return session;
             }
-            if (isAllRequiredFactorsCompleted(session)) {
-                session.setState(MfaSessionState.COMPLETED);
-                logger.info("All MFA factors completed for user: {}, proceed with authentication", session.getUserId());
-                authenticateUser(request, jcrUserNode);
-                failuresCache.invalidate(jcrUserNode.getPath()); // clear any failure attempts for that user
+
+            if (areAllRequiredFactorsCompleted(session)) {
+                logger.info("All MFA factors completed for context: {}, proceed with authentication", session.getContext());
+                authenticateUser(httpServletRequest, validation.userNode);
+                failuresCache.invalidate(userPath);
             }
-        } catch (Exception e) {
-            session.markFactorVerificationFailed(factorType);
-            throw e;
+        } catch (MfaException e) {
+            factorState.setError(new MfaError(e.getCode(), e.getArguments()));
+            logger.error("Factor {} verification failed for context: {}", factorType, session.getContext(), e);
         }
 
         return session;
-    }
-
-    private void authenticateUser(HttpServletRequest request, JCRUserNode jcrUserNode) {
-        try {
-            authenticationService.authenticate(jcrUserNode.getPath(), AUTH_OPTIONS, request, null);
-        } catch (InvalidSessionLoginException e) {
-            throw new IllegalStateException("Invalid session login", e);
-        } catch (AccountNotFoundException e) {
-            throw new IllegalStateException("Account not found", e);
-        }
-    }
-
-    private MfaFactorProvider resolveProvider(String factorType) throws MfaException {
-        MfaFactorProvider provider = factorRegistry.lookupProvider(factorType);
-        if (provider == null) {
-            throw new MfaException("factor_type_not_supported", "factorType", factorType);
-        }
-        return provider;
-    }
-
-    private JCRUserNode resolveUserNode(MfaSession session) throws MfaException {
-        JCRUserNode user = userManagerService.lookupUser(session.getUserId());
-        if (user == null) {
-            throw new MfaException("user_not_found");
-        }
-        return user;
-    }
-
-    private void validateUserCanAuthenticate(HttpServletRequest request, JCRUserNode user, MfaFactorProvider provider) throws MfaException {
-        validateUserNotSuspended(user.getPath());
-        if (hasReachedAuthFailuresCountLimit(user.getPath(), provider)) {
-            suspendUser(request, user, provider);
-            throwSuspendedUserException();
-        }
-    }
-
-    private void validateUserNotSuspended(String userNodePath) throws MfaException {
-        if (isUserSuspended(userNodePath)) {
-            logger.warn("User {} is suspended", userNodePath);
-            throwSuspendedUserException();
-        }
-    }
-
-    private void throwSuspendedUserException() throws MfaException {
-        // convert and round up suspension in seconds to hours
-        int suspensionDurationInHours = (int) Math.ceil(mfaConfigurationService.getUserTemporarySuspensionSeconds() / 3600.0);
-        throw new MfaException("suspended_user", "suspensionDurationInHours", Integer.toString(suspensionDurationInHours));
-    }
-
-    private boolean isUserSuspended(String userPath) throws MfaException {
-        try {
-            return JCRTemplate.getInstance().doExecuteWithSystemSession(session -> {
-                JCRUserNode userNode = (JCRUserNode) session.getNode(userPath);
-                if (!userNode.hasProperty(MFA_SUSPENDED_SINCE_PROP)) {
-                    logger.debug("User {} is not suspended", userNode);
-                    return false;
-                }
-                JCRPropertyWrapper suspendedSinceProperty = userNode.getProperty(MFA_SUSPENDED_SINCE_PROP);
-                Calendar suspendedUntil = suspendedSinceProperty.getDate();
-                suspendedUntil.add(Calendar.SECOND, mfaConfigurationService.getUserTemporarySuspensionSeconds());
-                // check if the suspension has expired
-                if (suspendedUntil.compareTo(Calendar.getInstance()) > 0) {
-                    logger.debug("User {} is suspended until {}", userNode, suspendedUntil);
-                    return true;
-                }
-                logger.debug("User {} is no longer suspended, removing its suspension in the JCR", userNode);
-                userNode.removeMixin(MFA_SUSPENDED_USER_MIXIN);
-                suspendedSinceProperty.remove();
-                session.save();
-                return false;
-            });
-        } catch (RepositoryException e) {
-            logger.warn("Failed to check if user {} is suspended", userPath, e);
-            throw new MfaException("failed_to_check_if_user_suspended");
-        }
-    }
-
-    private void suspendUser(HttpServletRequest request, JCRUserNode user, MfaFactorProvider provider) throws MfaException {
-
-        // suspend the user in the JCR
-        try {
-            JCRTemplate.getInstance().doExecuteWithSystemSession(session -> {
-                Calendar suspendedSince = Calendar.getInstance();
-                JCRUserNode userNode = (JCRUserNode) session.getNode(user.getPath());
-                logger.debug("Marking user {} as suspended...", userNode);
-                userNode.addMixin(MFA_SUSPENDED_USER_MIXIN);
-                userNode.setProperty(MFA_SUSPENDED_SINCE_PROP, suspendedSince);
-                logger.debug("Property '{}' set to {}", MFA_SUSPENDED_SINCE_PROP, suspendedSince);
-                session.save();
-                return null;
-            });
-        } catch (RepositoryException e) {
-            logger.warn("Failed to mark user {} as suspended", user.getPath(), e);
-            throw new MfaException("failed_to_mark_user_as_suspended");
-        }
-
-        // clear the caches for that suspended user:
-        failuresCache.invalidate(user.getPath()); // no need to track failures anymore
-        factorPreparationTimestampsCache.invalidate(getCacheKey(user, provider));
-
-        // remove the preparation result from their session:
-        request.getSession().removeAttribute(getAttributeKey(provider.getFactorType()));
-    }
-
-    private void trackFailure(String userNodePath, MfaFactorProvider provider) {
-        AuthFailuresDetails tracker = failuresCache.getIfPresent(userNodePath);
-        if (tracker == null) {
-            tracker = new AuthFailuresDetails();
-        }
-        String factorType = provider.getFactorType();
-        tracker.addFailureAttempt(factorType);
-        if (tracker.getFailureAttemptsCount(factorType) > mfaConfigurationService.getMaxAuthFailuresBeforeLock()) {
-            logger.warn("User {} has failed to authenticate {} times in a row", userNodePath, tracker.getFailureAttemptsCount(factorType));
-        } else {
-            logger.debug("User {} has failed to authenticate {} times in a row", userNodePath, tracker.getFailureAttemptsCount(factorType));
-        }
-        failuresCache.put(userNodePath, tracker);
-    }
-
-    private boolean hasReachedAuthFailuresCountLimit(String userNodePath, MfaFactorProvider provider) {
-        AuthFailuresDetails tracker = failuresCache.getIfPresent(userNodePath);
-        if (tracker == null) {
-            logger.debug("User {} has not failed to authenticate yet", userNodePath);
-            return false;
-        }
-        String factorType = provider.getFactorType();
-        if (tracker.removeAttemptsOutsideWindow(factorType, mfaConfigurationService.getAuthFailuresWindowSeconds() * 1000L)) {
-            logger.debug("Expired timestamps removed for user {}", userNodePath);
-            failuresCache.put(userNodePath, tracker);
-        }
-
-        return tracker.getFailureAttemptsCount(factorType) >= mfaConfigurationService.getMaxAuthFailuresBeforeLock();
     }
 
     @Override
@@ -406,20 +293,213 @@ public class MfaServiceImpl implements MfaService {
         }
     }
 
+    @Override
+    public MfaSession createNoSessionError() {
+        MfaSessionContext sessionContext = new MfaSessionContext("unknown", Locale.getDefault(), null, getAvailableFactors());
+        MfaSession session = new MfaSession(sessionContext);
+        session.setError(new MfaError(ERROR_NO_SESSION));
+        return session;
+    }
+
     // ===== PRIVATE HELPER METHODS =====
 
-    private boolean isAllRequiredFactorsCompleted(MfaSession session) {
+    private void createCaffeineCache() {
+        failuresCache = Caffeine.newBuilder()
+                .expireAfterWrite(configurationService.getAuthFailuresWindowSeconds(), TimeUnit.SECONDS)
+                .build();
+        factorPreparationTimestampsCache = Caffeine.newBuilder()
+                .expireAfterWrite(configurationService.getFactorStartRateLimitSeconds(), TimeUnit.SECONDS).build();
+    }
+
+    private MfaSession getSessionOrCreateError(HttpServletRequest request) {
+        MfaSession session = getMfaSession(request);
+        if (session == null) {
+            logger.error("Attempt to perform MFA operation without active session");
+            return createNoSessionError();
+        }
+        return session;
+    }
+
+    private ValidationResult performCommonValidation(MfaSession session, String factorType, MfaFactorState factorState) {
+        MfaFactorProvider provider = resolveProvider(factorType);
+        if (provider == null) {
+            factorState.setError(new MfaError(ERROR_FACTOR_TYPE_NOT_SUPPORTED, Map.of(ARG_FACTOR_TYPE, factorType)));
+            return null;
+        }
+
+        JCRUserNode userNode = resolveUserNode(session);
+        if (userNode == null) {
+            session.setError(new MfaError(ERROR_USER_NOT_FOUND));
+            return null;
+        }
+
+        String userPath = userNode.getPath();
+        Integer suspensionDuration = getSuspensionDuration(userPath, provider, session);
+        if (suspensionDuration != null) {
+            session.setSuspensionDurationInSeconds(suspensionDuration.longValue());
+            return null;
+        }
+
+        return new ValidationResult(provider, userNode);
+    }
+
+    private MfaFactorProvider resolveProvider(String factorType) {
+        MfaFactorProvider provider = factorRegistry.lookupProvider(factorType);
+        if (provider == null) {
+            logger.warn("Factor type not supported: {}", factorType);
+        }
+        return provider;
+    }
+
+    private JCRUserNode resolveUserNode(MfaSession session) {
+        JCRUserNode user = userManagerService.lookupUser(session.getContext().getUserId());
+        if (user == null) {
+            logger.warn("User not found: {}", session.getContext().getUserId());
+        }
+        return user;
+    }
+
+    private boolean areAllRequiredFactorsCompleted(MfaSession session) {
         // For now, we require at least one factor to be completed
         // This can be made configurable later
-        return !session.getCompletedFactors().isEmpty();
+        return !session.getVerifiedFactors().isEmpty();
     }
 
-
-    private static String getAttributeKey(String factorType) {
-        return String.format("%s.preparationResult.%s", MfaServiceImpl.class.getSimpleName(), factorType);
+    private void authenticateUser(HttpServletRequest request, JCRUserNode jcrUserNode) {
+        try {
+            authenticationService.authenticate(jcrUserNode.getPath(), AUTH_OPTIONS, request, null);
+        } catch (InvalidSessionLoginException e) {
+            throw new IllegalStateException("Invalid session login", e);
+        } catch (AccountNotFoundException e) {
+            throw new IllegalStateException("Account not found", e);
+        }
     }
 
-    private static String getCacheKey(JCRUserNode user, MfaFactorProvider provider) {
-        return String.format("%s-%s@%d", user.getPath(), provider.getFactorType(), provider.hashCode());
+    private Integer getUserSuspension(String userNodePath) {
+        if (isUserSuspended(userNodePath)) {
+            logger.warn("User {} is suspended", userNodePath);
+            return getSuspensionDuration();
+        }
+        return null;
+    }
+
+    private Integer getSuspensionDuration(String userPath, MfaFactorProvider provider, MfaSession session) {
+        Integer suspensionDuration = getUserSuspension(userPath);
+        if (suspensionDuration != null) {
+            return suspensionDuration;
+        }
+
+        if (hasReachedAuthFailuresCountLimit(userPath, provider)) {
+            suspendUser(userPath, provider, session);
+            return getSuspensionDuration();
+        }
+
+        return null;
+    }
+
+    private Integer getSuspensionDuration() {
+        // Return suspension duration in seconds
+        return configurationService.getUserTemporarySuspensionSeconds();
+    }
+
+    private boolean isUserSuspended(String userPath) {
+        try {
+            return JCRTemplate.getInstance().doExecuteWithSystemSession(session -> {
+                JCRUserNode userNode = (JCRUserNode) session.getNode(userPath);
+                if (!userNode.hasProperty(MFA_SUSPENDED_SINCE_PROP)) {
+                    logger.debug("User {} is not suspended", userNode);
+                    return false;
+                }
+                JCRPropertyWrapper suspendedSinceProperty = userNode.getProperty(MFA_SUSPENDED_SINCE_PROP);
+                Calendar suspendedUntil = suspendedSinceProperty.getDate();
+                suspendedUntil.add(Calendar.SECOND, configurationService.getUserTemporarySuspensionSeconds());
+                // check if the suspension has expired
+                if (suspendedUntil.compareTo(Calendar.getInstance()) > 0) {
+                    logger.debug("User {} is suspended until {}", userNode, suspendedUntil);
+                    return true;
+                }
+                logger.debug("User {} is no longer suspended, removing its suspension in the JCR", userNode);
+                userNode.removeMixin(MFA_SUSPENDED_USER_MIXIN);
+                suspendedSinceProperty.remove();
+                session.save();
+                return false;
+            });
+        } catch (RepositoryException e) {
+            logger.warn("Failed to check if user {} is suspended", userPath, e);
+            // In case of error checking suspension, assume user is NOT suspended to allow them to proceed
+            // This is safer than blocking legitimate users
+            return false;
+        }
+    }
+
+    private void suspendUser(String userPath, MfaFactorProvider provider, MfaSession session) {
+        // suspend the user in the JCR
+        try {
+            JCRTemplate.getInstance().doExecuteWithSystemSession(jcrSession -> {
+                Calendar suspendedSince = Calendar.getInstance();
+                JCRUserNode userNode = (JCRUserNode) jcrSession.getNode(userPath);
+                logger.debug("Marking user {} as suspended...", userNode);
+                userNode.addMixin(MFA_SUSPENDED_USER_MIXIN);
+                userNode.setProperty(MFA_SUSPENDED_SINCE_PROP, suspendedSince);
+                logger.debug("Property '{}' set to {}", MFA_SUSPENDED_SINCE_PROP, suspendedSince);
+                jcrSession.save();
+                return null;
+            });
+        } catch (RepositoryException e) {
+            logger.error("Failed to mark user {} as suspended", userPath, e);
+            // Don't throw - the suspension error will still be returned to the user
+        }
+
+        // clear the caches for that suspended user:
+        failuresCache.invalidate(userPath); // no need to track failures anymore
+        factorPreparationTimestampsCache.invalidate(getCacheKey(userPath, provider));
+
+        // remove the preparation result from their session
+        String factorType = provider.getFactorType();
+        session.getOrCreateFactorState(factorType).setPreparationResult(null);
+    }
+
+    private void trackVerificationFailure(String userNodePath, MfaFactorProvider provider) {
+        AuthFailuresDetails tracker = failuresCache.getIfPresent(userNodePath);
+        if (tracker == null) {
+            tracker = new AuthFailuresDetails();
+        }
+        String factorType = provider.getFactorType();
+        tracker.addFailureAttempt(factorType);
+        if (tracker.getFailureAttemptsCount(factorType) > configurationService.getMaxAuthFailuresBeforeLock()) {
+            logger.warn("User {} has failed to authenticate {} times in a row", userNodePath, tracker.getFailureAttemptsCount(factorType));
+        } else {
+            logger.debug("User {} has failed to authenticate {} times in a row", userNodePath, tracker.getFailureAttemptsCount(factorType));
+        }
+        failuresCache.put(userNodePath, tracker);
+    }
+
+    private boolean hasReachedAuthFailuresCountLimit(String userNodePath, MfaFactorProvider provider) {
+        AuthFailuresDetails tracker = failuresCache.getIfPresent(userNodePath);
+        if (tracker == null) {
+            logger.debug("User {} has not failed to authenticate yet", userNodePath);
+            return false;
+        }
+        String factorType = provider.getFactorType();
+        if (tracker.removeAttemptsOutsideWindow(factorType, configurationService.getAuthFailuresWindowSeconds() * 1000L)) {
+            logger.debug("Expired timestamps removed for user {}", userNodePath);
+            failuresCache.put(userNodePath, tracker);
+        }
+
+        return tracker.getFailureAttemptsCount(factorType) >= configurationService.getMaxAuthFailuresBeforeLock();
+    }
+
+    private static String getCacheKey(String userPath, MfaFactorProvider provider) {
+        return String.format("%s-%s@%d", userPath, provider.getFactorType(), provider.hashCode());
+    }
+
+    private static class ValidationResult {
+        private final MfaFactorProvider provider;
+        private final JCRUserNode userNode;
+
+        ValidationResult(MfaFactorProvider provider, JCRUserNode userNode) {
+            this.provider = provider;
+            this.userNode = userNode;
+        }
     }
 }
