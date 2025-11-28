@@ -24,7 +24,7 @@ jsErrorsLogger.enable();
 // Define allowed JS warnings to ignore them in the logs
 jsErrorsLogger.setAllowedJsWarnings([
     'Unsatisfied version',
-    'No satisfying version'
+//    'No satisfying version'
 ]);
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
