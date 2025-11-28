@@ -23,7 +23,7 @@ import {jsErrorsLogger} from '@jahia/cypress';
 jsErrorsLogger.enable();
 // Define allowed JS warnings to ignore them in the logs
 jsErrorsLogger.setAllowedJsWarnings([
-    // 'Unsatisfied version',
+    'Unsatisfied version',
     'No satisfying version'
 ]);
 

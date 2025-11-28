@@ -531,5 +531,5 @@ describe('Tests for the UI module', () => {
         });
     });
 
-    it('Should ensure console errors and warnings absense');
+    it('Should ensure errors and warnings absense in browser console', () => {});
 });
