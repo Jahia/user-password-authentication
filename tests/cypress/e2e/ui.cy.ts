@@ -530,4 +530,6 @@ describe('Tests for the UI module', () => {
             testSuccessfulRedirect(encodeURIComponent(redirectURL), '/');
         });
     });
+
+    it('Should ensure console errors and warnings absense');
 });

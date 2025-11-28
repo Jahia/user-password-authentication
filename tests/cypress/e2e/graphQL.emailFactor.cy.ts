@@ -297,4 +297,6 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
         // Cleanup
         deleteUser(username);
     });
+
+    it('Should ensure console errors and warnings absense');
 });
