@@ -2,6 +2,7 @@
   "name": "jahia-multi-factor-authentication-cypress",
   "version": "1.0.0",
   "description": "Cypress tests for the Jahia MFA (Multi-Factor Authentication) module",
+  "private": "true",
   "devDependencies": {
     "@apollo/client": "^3.14.0",
     "@babel/core": "^7.25.2",
