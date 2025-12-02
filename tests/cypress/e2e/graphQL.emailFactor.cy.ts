@@ -297,4 +297,11 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
         // Cleanup
         deleteUser(username);
     });
+
+    // Dummy test to fail if any errors or warnings appear in the browser console,
+    // providing clearer insight into execution and failure reasons.
+    // Analysis itself will happen inside jsErrorsLogger module (if one is enabled).
+    it('Should ensure errors and warnings absense in browser console', () => {
+        cy.log('Analyze console messages');
+    });
 });
