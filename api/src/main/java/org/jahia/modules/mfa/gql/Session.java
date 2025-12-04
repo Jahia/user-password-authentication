@@ -46,13 +46,6 @@ public class Session {
     }
 
     @GraphQLField
-    @GraphQLName("suspensionDurationInSeconds")
-    @GraphQLDescription("Suspension duration (in seconds) if the user is temporarily locked, null if not suspended")
-    public Long getSuspensionDurationInSeconds() {
-        return mfaSession.getSuspensionDurationInSeconds();
-    }
-
-    @GraphQLField
     @GraphQLName("error")
     @GraphQLDescription("Irrecoverable session-level error. If non-null the session must be discarded and re-initiated before any factor interaction.")
     public Error getError() {

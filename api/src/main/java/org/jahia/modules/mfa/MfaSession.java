@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.toList;
 
 /**
  * Represents an active MFA authentication session for a user.
@@ -91,37 +91,6 @@ public class MfaSession implements Serializable {
      */
     public MfaFactorState getOrCreateFactorState(String factorType) {
         return factorStates.computeIfAbsent(factorType, k -> new MfaFactorState());
-    }
-
-    /**
-     * Returns the suspension duration in seconds if the user is temporarily suspended.
-     * <p>
-     * When this returns a non-null value, the user has exceeded the allowed number of
-     * authentication failures and is temporarily blocked from further MFA attempts.
-     * The returned value indicates how long (in seconds) the suspension will last.
-     * <p>
-     * <b>Note:</b> A null value means the user is not currently suspended and can proceed
-     * with authentication normally.
-     *
-     * @return the suspension duration in seconds, or null if the user is not suspended
-     */
-    public Long getSuspensionDurationInSeconds() {
-        return suspensionDurationInSeconds;
-    }
-
-    /**
-     * Sets the suspension duration in seconds for a temporarily suspended user.
-     * <p>
-     * This should be called when a user has exceeded the allowed number of authentication
-     * failures. Setting a non-null value indicates the user is suspended for the specified
-     * duration (in seconds).
-     * <p>
-     * To clear a suspension, this method can be called with null.
-     *
-     * @param suspensionDurationInSeconds the suspension duration in seconds, or null to clear suspension
-     */
-    public void setSuspensionDurationInSeconds(Long suspensionDurationInSeconds) {
-        this.suspensionDurationInSeconds = suspensionDurationInSeconds;
     }
 
     /**

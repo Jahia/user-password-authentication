@@ -115,11 +115,11 @@ export function prepareEmailCodeFactorAndExpectFactorError(
             const errorArguments = response?.data?.mfa?.factors?.emailCode?.prepare?.session?.factorState?.error?.arguments;
             expect(errorArguments).to.be.a('array');
 
-            Object.entries(argumentAssertions).forEach(([argName, assertion]) => {
+            for (const [argName, assertion] of Object.entries(argumentAssertions)) {
                 const argument = errorArguments.find(arg => arg.name === argName);
                 expect(argument).to.exist;
                 assertion(argument.value);
-            });
+            }
         } else {
             expect(response?.data?.mfa?.factors?.emailCode?.prepare?.session?.factorState?.error?.arguments).to.be.empty;
         }
@@ -142,11 +142,11 @@ export function prepareEmailCodeFactorAndExpectGlobalError(
             const errorArguments = response?.data?.mfa?.factors?.emailCode?.prepare?.session?.error?.arguments;
             expect(errorArguments).to.be.a('array');
 
-            Object.entries(argumentAssertions).forEach(([argName, assertion]) => {
+            for (const [argName, assertion] of Object.entries(argumentAssertions)) {
                 const argument = errorArguments.find(arg => arg.name === argName);
                 expect(argument).to.exist;
                 assertion(argument.value);
-            });
+            }
         } else {
             expect(response?.data?.mfa?.factors?.emailCode?.prepare?.session?.error?.arguments).to.be.empty;
         }
@@ -156,12 +156,8 @@ export function prepareEmailCodeFactorAndExpectGlobalError(
 export function prepareEmailCodeFactorAndExpectSuspended(
     expectedSuspensionDurationInSeconds: number
 ) {
-    cy.log('Preparing email code factor and asserting user is suspended...');
-    cy.apollo({
-        queryFile: 'emailCode/prepare.graphql'
-    }).then(response => {
-        cy.log('Response for prepareEmailCodeFactorAndExpectSuspended():', JSON.stringify(response, null, 2));
-        expect(response?.data?.mfa?.factors?.emailCode?.prepare?.session?.suspensionDurationInSeconds).eq(expectedSuspensionDurationInSeconds);
+    prepareEmailCodeFactorAndExpectGlobalError('suspended_user', {
+        suspensionDurationInSeconds: value => expect(Number.parseInt(value, 10)).eq(expectedSuspensionDurationInSeconds)
     });
 }
 
@@ -207,13 +203,44 @@ export function verifyEmailCodeFactorAndExpectFactorError(
             const errorArguments = response?.data?.mfa?.factors?.emailCode?.verify?.session?.factorState?.error?.arguments;
             expect(errorArguments).to.be.a('array');
 
-            Object.entries(argumentAssertions).forEach(([argName, assertion]) => {
+            for (const [argName, assertion] of Object.entries(argumentAssertions)) {
                 const argument = errorArguments.find(arg => arg.name === argName);
                 expect(argument).to.exist;
                 assertion(argument.value);
-            });
+            }
         } else {
             expect(response?.data?.mfa?.factors?.emailCode?.verify?.session?.factorState?.error?.arguments).to.be.empty;
+        }
+    });
+}
+
+export function verifyEmailCodeFactorAndExpectSessionError(
+    verificationCode: string,
+    errorCode: string,
+    argumentAssertions?: { [key: string]: (value: string) => void }
+) {
+    cy.log('Verifying email code factor and asserting a session error occurred...');
+    cy.apollo({
+        queryFile: 'emailCode/verify.graphql',
+        variables: {
+            code: verificationCode
+        }
+    }).then(response => {
+        cy.log('Response for verifyEmailCodeFactorAndExpectSessionError():', JSON.stringify(response, null, 2));
+        expect(response?.data?.mfa?.factors?.emailCode?.verify?.session?.error?.code).eq(errorCode);
+
+        // Assert on error arguments if provided
+        if (argumentAssertions) {
+            const errorArguments = response?.data?.mfa?.factors?.emailCode?.verify?.session?.error?.arguments;
+            expect(errorArguments).to.be.a('array');
+
+            for (const [argName, assertion] of Object.entries(argumentAssertions)) {
+                const argument = errorArguments.find(arg => arg.name === argName);
+                expect(argument).to.exist;
+                assertion(argument.value);
+            }
+        } else {
+            expect(response?.data?.mfa?.factors?.emailCode?.verify?.session?.error?.arguments).to.be.empty;
         }
     });
 }
@@ -222,17 +249,8 @@ export function verifyEmailCodeFactorAndExpectSuspended(
     verificationCode: string,
     expectedSuspensionDurationInSeconds: number
 ) {
-    cy.log('Verifying email code factor and asserting user is suspended...');
-    cy.apollo({
-        queryFile: 'emailCode/verify.graphql',
-        variables: {
-            code: verificationCode
-        }
-    }).then(response => {
-        cy.log('Response for verifyEmailCodeFactorAndExpectSuspended():', JSON.stringify(response, null, 2));
-        const actualDuration = response?.data?.mfa?.factors?.emailCode?.verify?.session?.suspensionDurationInSeconds;
-        expect(actualDuration).to.not.be.null;
-        expect(actualDuration).eq(expectedSuspensionDurationInSeconds);
+    verifyEmailCodeFactorAndExpectSessionError(verificationCode, 'suspended_user', {
+        suspensionDurationInSeconds: value => expect(Number.parseInt(value, 10)).eq(expectedSuspensionDurationInSeconds)
     });
 }
 
@@ -248,7 +266,7 @@ export const generateWrongCode = (validCode: string) => {
         throw new Error('Code must be a 6-digit string');
     }
 
-    const lastDigit = parseInt(validCode[5], 10);
+    const lastDigit = Number.parseInt(validCode[5], 10);
     const newLastDigit = (lastDigit + 1) % 10;
     return validCode.slice(0, 5) + newLastDigit.toString();
 };

@@ -1,4 +1,4 @@
-import type { BaseError, BaseSuccess } from "./common";
+import { type BaseError, type BaseSuccess, createError } from "./common";
 
 type InitiateResultSuccess = BaseSuccess;
 type InitiateResultError = BaseError;
@@ -26,7 +26,6 @@ export default async function initiate(
                     value
                   }
                 }
-                suspensionDurationInSeconds
               }
             }
           }
@@ -36,18 +35,12 @@ export default async function initiate(
     }),
   });
   const result = await response.json();
-  console.log("result", result);
-  if (result?.data?.mfa?.initiate?.session?.initiated) {
+  const success = result?.data?.mfa?.initiate?.session?.initiated;
+  if (success) {
     return {
       success: true,
     };
   } else {
-    const error = result?.data?.mfa?.initiate?.session?.error || { code: "unexpected_error" };
-    return {
-      success: false,
-      error: error,
-      suspensionDurationInSeconds:
-        result?.data?.mfa?.initiate?.session?.suspensionDurationInSeconds,
-    };
+    return createError(result?.data?.mfa?.initiate?.session?.error);
   }
 }

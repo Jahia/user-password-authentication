@@ -1,6 +1,6 @@
 import classes from "./component.module.css";
 
-export default function ErrorMessage({ message }: { message: string }) {
+export default function ErrorMessage({ message }: Readonly<{ message: string }>) {
   return (
     <div className={classes.errorMessage}>
       {message && (

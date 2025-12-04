@@ -12,7 +12,6 @@ mutation prepareCustomFactor {
                                 value
                             }
                         }
-                        suspensionDurationInSeconds
                         verifiedFactors
                         requiredFactors
                         factorState(factorType: "email_code") {
