@@ -38,6 +38,7 @@
 
     <modules>
         <module>api</module>
+        <module>report-aggregate</module>
         <module>test-module</module>
         <module>test-module-custom-factor</module>
         <module>test-module-custom-mail-code-template</module>
@@ -58,6 +59,7 @@
         <cyclonedx-maven-plugin.version>2.9.1</cyclonedx-maven-plugin.version>
         <jacoco-maven-plugin.version>0.8.13</jacoco-maven-plugin.version>
         <caffeine.version>3.2.2</caffeine.version>
+        <sonar.coverage.jacoco.xmlReportPaths>${project.reporting.outputDirectory}/**/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
     </properties>
 
     <dependencyManagement>
@@ -204,6 +206,25 @@
                     <releaseProfiles>release-perform</releaseProfiles>
                     <useReleaseProfile>true</useReleaseProfile>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
