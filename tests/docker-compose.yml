@@ -26,11 +26,11 @@ services:
             - '8080:8080'
             - '8000:8000'
         environment:
-            - SUPER_USER_PASSWORD=${SUPER_USER_PASSWORD}
-            - JAHIA_LICENSE=${JAHIA_LICENSE}
-            - SMTP_SERVER_URL=smtp://smtp-server:1025
-            - JPDA=true
-            - JAVA_OPTS=-javaagent:/jacoco-data/jacocoagent.jar=destfile=/jacoco-data/jacoco-cypress.exec,append=true,output=file,includes=org.jahia.modules.*
+            SUPER_USER_PASSWORD: ${SUPER_USER_PASSWORD}
+            JAHIA_LICENSE: ${JAHIA_LICENSE}
+            SMTP_SERVER_URL: smtp://smtp-server:1025
+            JPDA: "true"
+            JAVA_OPTS: "-javaagent:/jacoco-data/jacocoagent.jar=destfile=/jacoco-data/jacoco-cypress.exec,append=true,output=file,includes=org.jahia.*"
         extra_hosts:
             - jahia:127.0.0.1
         networks:
