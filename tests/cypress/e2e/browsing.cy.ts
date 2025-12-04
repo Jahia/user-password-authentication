@@ -5,7 +5,7 @@ import {
     createUserForMFA,
     deleteAllEmails,
     installMFAConfig
-} from './utils';
+} from '../e2e.disabled/utils';
 
 const SITE_KEY = 'sample-browsing';
 const PAGE_NAME = 'protected';
