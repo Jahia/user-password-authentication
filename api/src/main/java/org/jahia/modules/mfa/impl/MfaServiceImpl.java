@@ -496,6 +496,10 @@ public class MfaServiceImpl implements MfaService {
         return String.format("%s-%s@%d", userPath, provider.getFactorType(), provider.hashCode());
     }
 
+    static String foo() {
+        return "foo";
+    }
+
     private static class ValidationResult {
         private final MfaFactorProvider provider;
         private final JCRUserNode userNode;
