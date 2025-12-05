@@ -20,7 +20,6 @@ export const I18N = {
     },
     locales: {
         en: {
-            'header.title': 'Two Factor Authentication',
             'unexpected_error': 'An unexpected error occurred',
             'no_active_session': 'No active MFA session found',
             'authentication_failed': 'Invalid username or password',

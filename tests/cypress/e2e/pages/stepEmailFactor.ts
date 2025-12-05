@@ -12,7 +12,6 @@ export class EmailFactorStep extends BasePage {
         // Page title
         pageTitle: 'main>jsm-island>div>h2',
         // Verification code label and input field
-        labelVerificationCode: 'form label[for="verificationCode"]',
         inputVerificationCode: '[data-testid="verification-code"]',
         // Submit button
         buttonSubmit: '[data-testid="verification-submit"]',
@@ -85,7 +84,7 @@ export class EmailFactorStep extends BasePage {
             resendCodeLink: resendCodeLink ?? I18N.labels[I18N.defaultLanguage].emailCodeVerificationAdditionalActionResendLabel
         };
 
-        cy.get(this.selectors.labelVerificationCode).should('have.text', content.verificationCodeLabel);
+        cy.get(this.selectors.pageTitle).should('have.text', content.verificationCodeLabel);
         cy.get(this.selectors.buttonSubmit).should('have.text', content.submitButtonLabel);
         cy.get(this.selectors.additionalAction).should('have.html', content.additionalActionHtml);
         cy.get(this.selectors.linkResendCode).should('have.text', content.resendCodeLink);
@@ -95,7 +94,7 @@ export class EmailFactorStep extends BasePage {
      * Assert that the MFA Code Verification page title matches the expected value
      * @param {string} pageTitle - The expected page title (default: from i18n)
      */
-    static assertHeaderTitleMatches(pageTitle: string = I18N.locales[I18N.defaultLanguage]['header.title']): void {
+    static assertHeaderTitleMatches(pageTitle: string = I18N.labels[I18N.defaultLanguage].emailCodeVerificationLabel): void {
         cy.get(this.selectors.pageTitle).should('have.text', pageTitle);
     }
 
