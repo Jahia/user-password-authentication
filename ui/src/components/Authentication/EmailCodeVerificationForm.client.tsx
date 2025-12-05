@@ -6,7 +6,6 @@ import ErrorMessage from "./ErrorMessage.client";
 import type { Props } from "./types";
 import { tError } from "../../services/i18n";
 import { Trans } from "react-i18next";
-import { t } from "i18next";
 import type { MfaError } from "../../services/common";
 
 interface EmailCodeVerificationFormProps {
@@ -25,7 +24,7 @@ export default function EmailCodeVerificationForm(props: Readonly<EmailCodeVerif
   const maskElementRef = useRef<HTMLDivElement>(null);
   const apiRoot = useApiRoot();
 
-  const codeLength = 8;
+  const codeLength = 6;
 
   const prepareFactor = () => {
     prepareEmailFactor(apiRoot)
