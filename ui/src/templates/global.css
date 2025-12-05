@@ -1,119 +1,111 @@
 * {
-  max-width: 100%;
+    max-width: 100%;
 }
 
 body {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background: linear-gradient(133deg, #140933 0%, #00a0e3 100%);
-  line-height: 1.5;
-  padding-top: 0;
-  font-size: 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(133deg, #140933 0%, #00a0e3 100%);
+    line-height: 1.5;
+    padding-top: 0;
+    font-size: 14px;
 }
 
 .card {
-  padding-top: 80px;
-  margin: 0 auto;
-  text-align: center;
-  background: #01021b;
-  width: 80%;
-  min-width: 300px;
-  max-width: 626px;
-  height: 80vh;
-  min-height: 820px;
-  max-height: 1200px;
-  border-radius: 4px;
-  color: white;
+    padding-top: 80px;
+    margin: 0 auto;
+    text-align: center;
+    background: #01021b;
+    width: 80%;
+    min-width: 300px;
+    max-width: 626px;
+    height: 80vh;
+    min-height: 820px;
+    max-height: 1200px;
+    border-radius: 4px;
+    color: white;
 
-  header {
-    padding: 40px 0;
-  }
-
-  main {
-    form {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-
-      label {
-        align-self: flex-start;
-        margin-left: 10%;
-        margin-top: 1rem;
-      }
-
-      input {
-        width: 80%;
-        padding: 0.5rem;
-        border-radius: 4px;
-        border: 1px solid #ccc;
-        box-sizing: border-box;
-      }
+    header {
+        padding: 40px 0;
     }
 
-    hr {
-      border: none;
-      border-top: 1px solid #333333;
-      width: 60%;
-      margin: 40px auto;
+    main {
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 10%;
+
+            label {
+                align-self: flex-start;
+                margin-top: 1rem;
+            }
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid #333333;
+            width: 60%;
+            margin: 40px auto;
+        }
+
+        .additionalAction {
+            color: white;
+            font-size: 14px;
+            justify-content: center;
+
+            > p {
+                color: rgba(253, 253, 253, 0.6);
+                margin-bottom: 8px;
+            }
+
+            > a {
+                color: white;
+            }
+        }
+
+        .belowPasswordField {
+            align-self: flex-end;
+            margin-right: 10%;
+            margin-top: 4px;
+
+            a {
+                color: white;
+                font-size: 12px;
+            }
+        }
     }
-
-    .additionalAction {
-      color: white;
-      font-size: 14px;
-      justify-content: center;
-
-      > p {
-        color: rgba(253, 253, 253, 0.6);
-        margin-bottom: 8px;
-      }
-
-      > a {
-        color: white;
-      }
-    }
-
-    .belowPasswordField {
-      align-self: flex-end;
-      margin-right: 10%;
-      margin-top: 4px;
-
-      a {
-        color: white;
-        font-size: 12px;
-      }
-    }
-  }
 }
 
 main {
-  width: 80%;
-  height: 252px;
-  margin: 0 auto;
+    width: 80%;
+    height: 252px;
+    margin: 0 auto;
 }
 
 a {
-  color: #06a;
+    color: #06a;
 }
 
 h2 {
-  font-size: 20px;
-  font-family: "Nunito Sans", serif;
-  font-weight: 600;
-  line-height: 24px;
-  word-wrap: break-word;
+    font-size: 20px;
+    font-family: "Nunito Sans", serif;
+    font-weight: 600;
+    line-height: 24px;
+    word-wrap: break-word;
 }
 
 button[type="submit"] {
-  border-radius: 4px;
-  background: #00a0e3;
-  color: #fff;
-  border: none;
-  font-weight: bold;
-  cursor: pointer;
-  margin-top: 3rem;
-  padding: 8px 16px;
-  text-transform: uppercase;
+    border-radius: 4px;
+    background: #00a0e3;
+    color: #fff;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 3rem;
+    padding: 8px 16px;
+    text-transform: uppercase;
 }

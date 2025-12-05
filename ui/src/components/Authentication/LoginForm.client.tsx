@@ -1,5 +1,6 @@
 import { type FormEvent, useState } from "react";
 import { initiate } from "../../services";
+import classes from "./component.module.css"
 import { useApiRoot } from "../../hooks/ApiRootContext.jsx";
 import ErrorMessage from "./ErrorMessage.client";
 import type { Props } from "./types";
@@ -44,6 +45,7 @@ export default function LoginForm(props: Readonly<LoginFormProps>) {
         <input
           id={"username"}
           name={"username"}
+          className={classes.loginInput}
           type="text"
           autoComplete={"username"}
           placeholder="Email"
@@ -54,6 +56,7 @@ export default function LoginForm(props: Readonly<LoginFormProps>) {
         <input
           id={"password"}
           name={"password"}
+          className={classes.loginInput}
           type="password"
           autoComplete={"current-password"}
           placeholder="Password"
