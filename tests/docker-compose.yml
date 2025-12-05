@@ -1,17 +1,36 @@
 services:
+    # JaCoCo agent downloader service
+    jacoco-downloader:
+        image: curlimages/curl:8.13.0
+        container_name: jacoco-setup
+        user: root  # Run as root to ensure write permissions
+        command: sh -c "mkdir -p /jacoco-data && curl -L -o /jacoco-data/jacocoagent.jar https://repo1.maven.org/maven2/org/jacoco/org.jacoco.agent/0.8.8/org.jacoco.agent-0.8.8-runtime.jar && chmod -R 777 /jacoco-data"
+        volumes:
+            - jacoco-data:/jacoco-data
+        healthcheck:
+            test: ["CMD", "test", "-f", "/jacoco-data/jacocoagent.jar"]
+            interval: 1s
+            timeout: 3s
+            retries: 5
+        networks:
+            - stack
     jahia:
         image: '${JAHIA_IMAGE}'
         container_name: jahia
         depends_on:
             - smtp-server
+            - jacoco-downloader
+        volumes:
+          - jacoco-data:/jacoco-data
         ports:
             - '8080:8080'
             - '8000:8000'
         environment:
-            - SUPER_USER_PASSWORD=${SUPER_USER_PASSWORD}
-            - JAHIA_LICENSE=${JAHIA_LICENSE}
-            - SMTP_SERVER_URL=smtp://smtp-server:1025
-            - JPDA=true
+            SUPER_USER_PASSWORD: ${SUPER_USER_PASSWORD}
+            JAHIA_LICENSE: ${JAHIA_LICENSE}
+            SMTP_SERVER_URL: smtp://smtp-server:1025
+            JPDA: 'true'
+            JAVA_OPTS: '-javaagent:/jacoco-data/jacocoagent.jar=destfile=/jacoco-data/jacoco-cypress.exec,append=true,output=file,includes=org.jahia.modules.*'
         extra_hosts:
             - jahia:127.0.0.1
         networks:
@@ -44,3 +63,5 @@ services:
             - stack
 networks:
     stack:
+volumes:
+    jacoco-data:
