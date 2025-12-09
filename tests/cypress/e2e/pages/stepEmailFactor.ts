@@ -33,13 +33,30 @@ export class EmailFactorStep extends BasePage {
     };
 
     /**
-     * Submits verification code
-     * @param code - The 6-digit verification code
+     * Submits verification code entered in the input field
+     * @param code
      */
     static submitVerificationCode(code: string): void {
-        cy.log(`Submitting verification code: "${code}"`);
+        this.enterVerificationCode(code);
+        this.assertSubmitButtonEnabled();
+        this.clickSubmitButton();
+    }
+
+    /**
+     * Enters the verification code into the input field
+     * @param code
+     */
+    static enterVerificationCode(code: string): void {
+        cy.log(`Entering verification code: "${code}"`);
         cy.get(this.selectors.inputVerificationCode).clear();
         cy.get(this.selectors.inputVerificationCode).type(code);
+    }
+
+    /**
+     * Click the submit button
+     */
+    static clickSubmitButton(): void {
+        cy.log('Submitting verification code');
         cy.get(this.selectors.buttonSubmit).click();
     }
 
@@ -55,6 +72,20 @@ export class EmailFactorStep extends BasePage {
      */
     static clickRestartLoginOnSuspension(): void {
         cy.get(this.selectors.linkRestartLogin).click();
+    }
+
+    /**
+     * Assert that the submit button is disabled
+     */
+    static assertSubmitButtonDisabled(): void {
+        cy.get(this.selectors.buttonSubmit).should('be.disabled');
+    }
+
+    /**
+     * Assert that the submit button is enabled
+     */
+    static assertSubmitButtonEnabled(): void {
+        cy.get(this.selectors.buttonSubmit).should('be.enabled');
     }
 
     /**
