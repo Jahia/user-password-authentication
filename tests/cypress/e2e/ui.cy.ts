@@ -257,8 +257,7 @@ describe('Tests for the UI module', () => {
         LoginStep.assertErrorMessage(I18N_LOCALES.authentication_failed);
     });
 
-    // BLOCKED BY: https://github.com/Jahia/jahia-multi-factor-authentication/issues/41
-    it.skip('Should display an error when an INVALID verification code is entered and authenticate afterwards', () => {
+    it('Should display an error when an INVALID verification code is entered and authenticate afterwards', () => {
         LoginStep.triggerRedirect(SITE_KEY);
         LoginStep.login(username, password);
         LoginStep.selectEmailCodeFactor();
