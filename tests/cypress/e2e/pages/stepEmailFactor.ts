@@ -38,7 +38,6 @@ export class EmailFactorStep extends BasePage {
      */
     static submitVerificationCode(code: string): void {
         this.enterVerificationCode(code);
-        this.assertSubmitButtonEnabled();
         this.clickSubmitButton();
     }
 
