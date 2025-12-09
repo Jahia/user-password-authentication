@@ -19,7 +19,6 @@ const SITE_KEY = 'sample-ui';
 const I18N_LOCALES = I18N.locales[I18N.defaultLanguage];
 const FACTOR_TYPE = 'email_code';
 const CODE_LENGTH = 6;
-const INCOMPLETE_CODE_LENGTH = CODE_LENGTH - 2;
 const MAX_INVALID_ATTEMPTS = 3;
 const TIME_BEFORE_NEXT_CODE_MS = 3000;
 const SUSPENSION_TIME_MS = 5000;
@@ -258,8 +257,7 @@ describe('Tests for the UI module', () => {
         LoginStep.assertErrorMessage(I18N_LOCALES.authentication_failed);
     });
 
-    // BLOCKED BY: https://github.com/Jahia/jahia-multi-factor-authentication/issues/41
-    it.skip('Should display an error when an INVALID verification code is entered and authenticate afterwards', () => {
+    it('Should display an error when an INVALID verification code is entered and authenticate afterwards', () => {
         LoginStep.triggerRedirect(SITE_KEY);
         LoginStep.login(username, password);
         LoginStep.selectEmailCodeFactor();
@@ -367,6 +365,27 @@ describe('Tests for the UI module', () => {
 
             EmailFactorStep.submitVerificationCode(wrongCode);
             EmailFactorStep.assertErrorMessage(I18N_LOCALES.suspended_user.replace('{{suspensionDurationInHours}}', '27')); // 97200 seconds = 27 hours
+        });
+    });
+
+    it('Should not allow to use an INCOMPLETE (short) verification code', () => {
+        LoginStep.triggerRedirect(SITE_KEY);
+        LoginStep.login(username, password);
+        LoginStep.selectEmailCodeFactor();
+        getVerificationCode(email).then(code => {
+            // Initially, button should be disabled when no code is entered
+            EmailFactorStep.assertSubmitButtonDisabled();
+
+            // Test with incrementally shorter codes from 1 to CODE_LENGTH-1
+            for (let length = 1; length < CODE_LENGTH; length++) {
+                EmailFactorStep.enterVerificationCode(code.slice(0, length));
+                EmailFactorStep.assertSubmitButtonDisabled();
+            }
+
+            // Now enter the complete code and verify button becomes enabled
+            EmailFactorStep.submitVerificationCode(code);
+            EmailFactorStep.assertSuccessfullyRedirected(SITE_KEY);
+            assertIsLoggedIn(username);
         });
     });
 

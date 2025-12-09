@@ -72,7 +72,13 @@ export default function EmailCodeVerificationForm(props: Readonly<EmailCodeVerif
   const handleFormInput = () => {
     if (formRef.current) {
       updateMask();
-      setIsFormValid(formRef.current.checkValidity());
+      // Check both form validity AND that the code has correct length
+      // Note: HTML5 minLength validation doesn't work properly when values are typed (or set) programmatically
+      //       Also, reading the actual input value from the DOM, to avoid stale state, 
+      //       since the latter might not be updated yet
+      const currentValue = inputRef.current?.value || '';
+      const isValidLength = currentValue.length === codeLength;
+      setIsFormValid(formRef.current.checkValidity() && isValidLength);
     }
   };
 
