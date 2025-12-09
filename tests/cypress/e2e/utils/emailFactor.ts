@@ -188,7 +188,7 @@ export function verifyEmailCodeFactorAndExpectFactorError(
     errorCode: string,
     argumentAssertions?: { [key: string]: (value: string) => void }
 ) {
-    cy.log('Verifying email code factor and asserting failure...');
+    cy.log(`Verifying email code factor with code ${verificationCode} and asserting failure ${errorCode}...`);
     cy.apollo({
         queryFile: 'emailCode/verify.graphql',
         variables: {

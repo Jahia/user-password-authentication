@@ -4,10 +4,8 @@ import { prepareEmailFactor, verifyEmailCodeFactor } from "../../services";
 import classes from "./component.module.css";
 import ErrorMessage from "./ErrorMessage.client";
 import type { Props } from "./types";
-import clsx from "clsx";
 import { tError } from "../../services/i18n";
 import { Trans } from "react-i18next";
-import { t } from "i18next";
 import type { MfaError } from "../../services/common";
 
 interface EmailCodeVerificationFormProps {
@@ -20,13 +18,13 @@ export default function EmailCodeVerificationForm(props: Readonly<EmailCodeVerif
   const [code, setCode] = useState("");
   const [maskedEmail, setMaskedEmail] = useState("");
   const [error, setError] = useState("");
-  const [inProgress, setInProgress] = useState(false);
-  const hiddenInputRef = useRef<HTMLInputElement>(null);
+  const [isFormValid, setIsFormValid] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  const maskElementRef = useRef<HTMLDivElement>(null);
   const apiRoot = useApiRoot();
 
   const codeLength = 6;
-  // 32px per digit, 6px between digits
-  const codeContainerWidth = codeLength * 32 + (codeLength - 1) * 6 + "px";
 
   const prepareFactor = () => {
     prepareEmailFactor(apiRoot)
@@ -40,10 +38,21 @@ export default function EmailCodeVerificationForm(props: Readonly<EmailCodeVerif
           setError(tError(result.error));
         }
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+
+  const updateMask = () => {
+    if (inputRef.current && maskElementRef.current &&   /^\d*$/.test(inputRef.current.value)) {
+      const filledLength = inputRef.current.value.length;
+      maskElementRef.current.textContent = ' '.repeat(filledLength) + '_'.repeat(codeLength - filledLength);
+    }
   };
 
   useEffect(() => {
+    inputRef.current?.focus();
+    updateMask();
     prepareFactor();
   }, []);
 
@@ -55,25 +64,26 @@ export default function EmailCodeVerificationForm(props: Readonly<EmailCodeVerif
     );
   }
 
-  const codeSlots = code.padEnd(codeLength, " ").slice(0, codeLength).split("");
-
   const handleCodeInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replaceAll(/\D/g, "").slice(0, codeLength);
     setCode(value);
   };
 
-  const handleDigitClick = (index: number) => {
-    hiddenInputRef.current?.focus();
-    hiddenInputRef.current?.setSelectionRange(index, index);
+  const handleFormInput = () => {
+    if (formRef.current) {
+      updateMask();
+      setIsFormValid(formRef.current.checkValidity());
+    }
+  };
+
+  const setFormRef = (ref: HTMLFormElement | null) => {
+    formRef.current = ref;
+    updateMask();
+    inputRef.current?.focus();
   };
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    setInProgress(true);
-    if (code.length < codeLength) {
-      setError(t("verify.code_too_short", { codeLength: codeLength }));
-      return;
-    }
     verifyEmailCodeFactor(apiRoot, code)
       .then((result) => {
         if (result.success) {
@@ -85,7 +95,6 @@ export default function EmailCodeVerificationForm(props: Readonly<EmailCodeVerif
           setError(tError(result.error));
         }
       })
-      .finally(() => setInProgress(false));
   };
 
   const handleResendCode = (): void => {
@@ -93,25 +102,10 @@ export default function EmailCodeVerificationForm(props: Readonly<EmailCodeVerif
     prepareFactor();
   };
 
-  const renderDigitBox = (char: string, index: number) => (
-    <div
-      className={clsx(
-        classes.digitBox,
-        code.length === index ? classes.digitBoxActive : classes.digitBoxInactive,
-      )}
-      key={index}
-      onClick={() => handleDigitClick(index)}
-      role="textbox"
-      aria-label={`Digit ${index + 1}`}
-    >
-      {char === " " ? "" : char}
-    </div>
-  );
-
   return (
-    <div>
+    <div className={classes.otpFormWrapper}>
       <h2>
-        <Trans i18nKey="header.title" />
+        <Trans i18nKey={props.content.emailCodeVerificationFieldLabel} />
       </h2>
       {error === "" && (
         <div>
@@ -127,32 +121,33 @@ export default function EmailCodeVerificationForm(props: Readonly<EmailCodeVerif
         </div>
       )}
 
-      <form onSubmit={handleSubmit}>
-        <label htmlFor={"verificationCode"}>{props.content.emailCodeVerificationFieldLabel}</label>
-        <div
-          className={classes.codeContainer}
-          style={{ width: codeContainerWidth }}
-          onClick={() => hiddenInputRef.current?.focus()}
-        >
+      <form ref={setFormRef} onSubmit={handleSubmit} onInput={handleFormInput}>
+        <div style={{  position: 'relative', '--length': codeLength } as React.CSSProperties} className={classes.otp}>
+          <div ref={maskElementRef} aria-hidden="true" />
           <input
-            className={classes.hiddenInput}
-            ref={hiddenInputRef}
+            ref={inputRef}
             id={"verificationCode"}
             name={"verificationCode"}
             type="text"
             inputMode="numeric"
             autoFocus
             maxLength={codeLength}
+            minLength={codeLength}
             value={code}
             onChange={handleCodeInputChange}
-            autoComplete={"one-time-code"}
+            autoComplete="one-time-code"
             aria-label="Enter verification code"
             data-testid="verification-code"
+            required
           />
-          {codeSlots.map(renderDigitBox)}
         </div>
         <ErrorMessage message={error} />
-        <button type="submit" disabled={inProgress} data-testid="verification-submit">
+        <button
+          type="submit"
+          disabled={!isFormValid}
+          data-testid="verification-submit"
+          className={classes.submitButton}
+        >
           {props.content.emailCodeVerificationSubmitButtonLabel}
         </button>
         <hr />

@@ -102,8 +102,9 @@ describe('Error scenarios common to all factors', () => {
 
         getVerificationCode(userEmail).then(code => {
             // Make 3 failed verification attempts to trigger suspension
+            // First fail with a wrong long code length
             let wrongCode = generateWrongCode(code);
-            verifyEmailCodeFactorAndExpectFactorError(wrongCode, 'verify.verification_failed', {
+            verifyEmailCodeFactorAndExpectFactorError(wrongCode.slice(0, 4), 'verify.verification_failed', {
                 factorType: value => expect(value).to.eq('email_code')
             });
 

@@ -370,38 +370,6 @@ describe('Tests for the UI module', () => {
         });
     });
 
-    // BLOCKED BY: https://github.com/Jahia/jahia-multi-factor-authentication/issues/41
-    it.skip('Should display an error when an EMPTY verification code is submitted and authenticate afterwards', () => {
-        LoginStep.triggerRedirect(SITE_KEY);
-        LoginStep.login(username, password);
-        LoginStep.selectEmailCodeFactor();
-        getVerificationCode(email).then(code => {
-            EmailFactorStep.submitVerificationCode('');
-            EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.code_too_short'].replace('{{codeLength}}', CODE_LENGTH.toString()));
-
-            // Now enter the correct code
-            EmailFactorStep.submitVerificationCode(code);
-            EmailFactorStep.assertSuccessfullyRedirected(SITE_KEY);
-            assertIsLoggedIn(username);
-        });
-    });
-
-    // BLOCKED BY: https://github.com/Jahia/jahia-multi-factor-authentication/issues/41
-    it.skip('Should display an error when an INCOMPLETE (short) verification code is entered and authenticate afterwards', () => {
-        LoginStep.triggerRedirect(SITE_KEY);
-        LoginStep.login(username, password);
-        LoginStep.selectEmailCodeFactor();
-        getVerificationCode(email).then(code => {
-            EmailFactorStep.submitVerificationCode(faker.string.numeric(INCOMPLETE_CODE_LENGTH));
-            EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.code_too_short'].replace('{{codeLength}}', CODE_LENGTH.toString()));
-
-            // Now enter the correct code
-            EmailFactorStep.submitVerificationCode(code);
-            EmailFactorStep.assertSuccessfullyRedirected(SITE_KEY);
-            assertIsLoggedIn(username);
-        });
-    });
-
     it('Should display an error when re-sending code to early, and successfully authenticate afterwards', () => {
         LoginStep.triggerRedirect(SITE_KEY);
         LoginStep.login(username, password);

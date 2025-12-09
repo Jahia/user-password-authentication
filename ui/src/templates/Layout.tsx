@@ -3,6 +3,7 @@ import {
   buildModuleFileUrl,
   useServerContext,
 } from "@jahia/javascript-modules-library";
+import "@fontsource-variable/nunito-sans";
 import type { ReactNode } from "react";
 
 import "modern-normalize/modern-normalize.css";

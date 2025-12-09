@@ -20,7 +20,6 @@ export const I18N = {
     },
     locales: {
         en: {
-            'header.title': 'Two Factor Authentication',
             'unexpected_error': 'An unexpected error occurred',
             'no_active_session': 'No active MFA session found',
             'authentication_failed': 'Invalid username or password',
@@ -33,7 +32,6 @@ export const I18N = {
             'prepare.rate_limit_exceeded': 'The factor {{factorType}} already generated for user {{user}}, wait {{nextRetryInSeconds}} seconds before generating a new one',
             'verify.factor_not_prepared': 'Factor {{factorType}} not prepared',
             'verify.loading': 'Loading...',
-            'verify.code_too_short': 'Please enter the {{codeLength}}-digit code.',
             'verify.verification_failed': 'Unable to verify the {{factorType}} factor',
             'factor.email_code.missing_prepared_code': 'No verification code found. Please request a new code.',
             'factor.email_code.preparation_failed': 'Failed to prepare email code factor for user: {{user}}',
