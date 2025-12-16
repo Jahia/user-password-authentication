@@ -148,7 +148,7 @@
                 <!-- Footer -->
                 <div class="footer">
                     <p style="margin-top: 10px;">
-                        <%-- This JSP is rendered on the node of a module (/modules/jahia-multi-factor-authentication-api/<version>/contents/mfaMailCode), and not on a specific site.
+                        <%-- This JSP is rendered on the node of a module (/modules/jahia-user-password-authentication-api/<version>/contents/mfaMailCode), and not on a specific site.
                          Because of that, there is no "context" of site during the rendering and the URLs must be absolute : --%>
                         <img src="https://cdfoqfniea.cloudimg.io/https://www.jahia.com/modules/jahiacom-templates/images/jahia-3x.png" alt="Powered by Jahia">
                         <%-- it is not possible to use the usual syntax, for instance:

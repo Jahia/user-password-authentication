@@ -28,9 +28,9 @@ export function createSiteWithLoginPage(siteKey: string, languages = [I18N.defau
         locale: siteLanguage,
         languages: languagesAsString,
         serverName: serverName,
-        templateSet: 'jahia-multi-factor-authentication-test-module'
+        templateSet: 'jahia-user-password-authentication-template-set-test-module'
     });
-    enableModule('jahia-multi-factor-authentication-ui', siteKey);
+    enableModule('jahia-user-password-authentication-mfa-ui', siteKey);
     const titleProps = languages.map(language => ({name: 'jcr:title', value: `Login page (${language})`, language: language}));
     const properties = [...titleProps, {name: 'j:templateName', value: 'mfa-authentication-page'}];
     addNode({

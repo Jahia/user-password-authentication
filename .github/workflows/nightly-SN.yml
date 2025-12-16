@@ -11,9 +11,9 @@ jobs:
     secrets: inherit
     with:
       jahia_image: ghcr.io/jahia/jahia-ee-dev:8-SNAPSHOT
-      module_id: jahia-multi-factor-authentication
-      testrail_project: Jahia Multi-Factor Authentication Module
-      pagerduty_incident_service: jahia-multi-factor-authentication-JahiaSN
+      module_id: jahia-user-password-authentication
+      testrail_project: Jahia User Password Authentication Module
+      pagerduty_incident_service: jahia-user-password-authentication-JahiaSN
       provisioning_manifest: provisioning-manifest-snapshot.yml
-      artifact_prefix: mfa-nightly-sn
+      artifact_prefix: upa-nightly-sn
       module_branch: ${{ github.ref }}

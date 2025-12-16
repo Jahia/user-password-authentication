@@ -1,7 +1,7 @@
 {
-  "name": "jahia-multi-factor-authentication-cypress",
+  "name": "jahia-user-password-authentication-cypress",
   "version": "1.0.0",
-  "description": "Cypress tests for the Jahia MFA (Multi-Factor Authentication) module",
+  "description": "Cypress tests for the Jahia UPA (User Password Authentication) module",
   "private": "true",
   "devDependencies": {
     "@apollo/client": "^3.14.0",
@@ -61,14 +61,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Jahia/jahia-multi-factor-authentication.git",
+    "url": "git+https://github.com/Jahia/jahia-user-password-authentication.git",
     "directory": "tests"
   },
   "author": "",
   "license": "SEE LICENSE IN LICENSE.txt",
   "bugs": {
-    "url": "https://github.com/Jahia/jahia-multi-factor-authentication/issues"
+    "url": "https://github.com/Jahia/jahia-user-password-authentication/issues"
   },
-  "homepage": "https://github.com/Jahia/jahia-multi-factor-authentication#readme",
+  "homepage": "https://github.com/Jahia/jahia-user-password-authentication#readme",
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

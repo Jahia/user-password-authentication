@@ -20,8 +20,8 @@ jobs:
     secrets: inherit
     with:
       jahia_image: ${{ github.event.inputs.jahia_image }}
-      module_id: jahia-multi-factor-authentication
-      testrail_project: Jahia Multi-Factor Authentication Module
+      module_id: jahia-user-password-authentication
+      testrail_project: Jahia User Password Authentication Module
       pagerduty_skip_notification: true
       provisioning_manifest: ${{ github.event.inputs.manifest }}
-      artifact_prefix: mfa
+      artifact_prefix: upa

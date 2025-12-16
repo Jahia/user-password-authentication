@@ -11,9 +11,9 @@ jobs:
     secrets: inherit
     with:
       jahia_image: jahia/jahia-ee:8
-      module_id: jahia-multi-factor-authentication
-      testrail_project: Jahia Multi-Factor Authentication Module
-      pagerduty_incident_service: jahia-multi-factor-authentication-JahiaRL
+      module_id: jahia-user-password-authentication
+      testrail_project: Jahia User Password Authentication Module
+      pagerduty_incident_service: jahia-user-password-authentication-JahiaRL
       provisioning_manifest: provisioning-manifest-snapshot.yml
-      artifact_prefix: mfa-nightly-rl
+      artifact_prefix: upa-nightly-rl
       module_branch: ${{ github.ref }}
