@@ -93,18 +93,13 @@ public class MfaServiceImpl implements MfaService {
 
     @Override
     public List<String> getAvailableFactors() {
-        String[] enabledFactorsConfig = mfaConfigurationService.getEnabledFactors();
-        if (enabledFactorsConfig == null || enabledFactorsConfig.length == 0) {
+        List<String> enabledFactorsConfig = mfaConfigurationService.getEnabledFactors();
+        if (enabledFactorsConfig == null || enabledFactorsConfig.isEmpty()) {
             return Collections.emptyList(); // Return an empty list if no factors configured
         }
 
-        List<String> configuredFactors = Arrays.stream(enabledFactorsConfig)
-                .filter(factor -> factor != null && !factor.trim().isEmpty())
-                .map(String::trim)
-                .collect(Collectors.toList());
-
         // Filter to only include factors that have registered providers
-        return configuredFactors.stream()
+        return enabledFactorsConfig.stream()
                 .filter(factorType -> factorRegistry.lookupProvider(factorType) != null)
                 .collect(Collectors.toList());
     }

@@ -23,6 +23,7 @@
  */
 package org.jahia.modules.mfa.impl;
 
+import com.google.common.base.Splitter;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
@@ -32,6 +33,8 @@ import org.osgi.service.metatype.annotations.Designate;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 /**
  * Internal configuration service for the MFA module.
@@ -52,7 +55,7 @@ public class MfaConfigurationService {
         boolean enabled();
 
         @AttributeDefinition(name = "%enabledFactors", description = "%enabledFactorsDesc")
-        String[] enabledFactors() default {"email_code"};
+        String enabledFactors() default "email_code, factor2";
 
         @AttributeDefinition(
                 name = "%maxAuthFailuresBeforeLock",
@@ -106,8 +109,8 @@ public class MfaConfigurationService {
         return config.enabled();
     }
 
-    public String[] getEnabledFactors() {
-        return config.enabledFactors();
+    public List<String> getEnabledFactors() {
+        return Splitter.on(",").trimResults().omitEmptyStrings().splitToList(config.enabledFactors());
     }
 
     public int getMaxAuthFailuresBeforeLock() {
