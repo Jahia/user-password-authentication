@@ -14,9 +14,9 @@ public class MutationExtension {
     }
 
     @GraphQLField
-    @GraphQLName("mfa")
-    @GraphQLDescription("Main access to MFA API")
-    public static Mutation mfa() {
+    @GraphQLName("upa")
+    @GraphQLDescription("Main access to User Password Authentication (UPA) API")
+    public static Mutation upa() {
         return new Mutation();
     }
 }

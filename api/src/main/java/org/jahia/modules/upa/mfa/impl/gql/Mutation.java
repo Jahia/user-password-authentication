@@ -14,8 +14,8 @@ import org.jahia.modules.upa.mfa.gql.Result;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 
-@GraphQLName("MfaMutation")
-@GraphQLDescription("MFA state-modifying operations")
+@GraphQLName("UpaMutation")
+@GraphQLDescription("User Password Authentication (UPA) state-modifying operations")
 public class Mutation {
 
     private MfaService mfaService;
@@ -27,7 +27,7 @@ public class Mutation {
     }
 
     @GraphQLField
-    @GraphQLName("initiate")
+    @GraphQLName("mfaInitiate")
     @GraphQLDescription("Initiate MFA authentication")
     public Result initiate(@GraphQLName("username") String username,
                            @GraphQLName("password") String password,
@@ -40,7 +40,7 @@ public class Mutation {
 
 
     @GraphQLField
-    @GraphQLName("clear")
+    @GraphQLName("mfaClear")
     @GraphQLDescription("Clear current MFA session")
     public Result clear(DataFetchingEnvironment environment) {
         HttpServletRequest httpServletRequest = ContextUtil.getHttpServletRequest(environment.getGraphQlContext());
@@ -49,7 +49,7 @@ public class Mutation {
     }
 
     @GraphQLField
-    @GraphQLName("factors")
+    @GraphQLName("mfaFactors")
     @GraphQLDescription("Access MFA factors specific mutations")
     public static FactorsMutation getMfaFactors() {
         return new FactorsMutation();

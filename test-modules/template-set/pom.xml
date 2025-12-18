@@ -27,7 +27,7 @@
     </parent>
     <groupId>org.jahia.test</groupId>
     <artifactId>user-password-authentication-template-set-test-module</artifactId>
-    <name>Jahia UPA - templateSet test module</name>
+    <name>UPA - templateSet test module</name>
     <packaging>bundle</packaging>
     <description>Test module of the User Password Authentication (UPA) module with a basic template set</description>
 

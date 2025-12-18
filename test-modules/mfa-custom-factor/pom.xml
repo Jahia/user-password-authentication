@@ -27,7 +27,7 @@
     </parent>
     <groupId>org.jahia.test</groupId>
     <artifactId>user-password-authentication-mfa-custom-factor-test-module</artifactId>
-    <name>Jahia UPA - custom factor test module</name>
+    <name>UPA - custom factor test module</name>
     <packaging>bundle</packaging>
     <description>Test module of the User Password Authentication (UPA) module with a custom factor for the Multi-Factor Authentication (MFA)</description>
 

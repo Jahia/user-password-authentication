@@ -892,7 +892,7 @@ type GenericJCRNode implements JCRNode {
         "When set to true, returns the node in the default language if there is no translation for the requested language. Returns null if the option \"Replace untranslated content with the default language content\" is not activated for the site of the requested node. Will also return null if there is no translation for the default language."
         useFallbackLanguage: Boolean = false
     ): JCRProperty
-    "Returns count of all references of the node across all sites"
+    "Returns count of all references of the node across all sites. If this property returns null, references are not supported for this node."
     referenceCount(
         "Filter out referencing types which should not be counted"
         typesFilter: InputNodeTypesInput
@@ -1404,7 +1404,15 @@ type GqlHealthCheck {
         health: GqlProbeHealth
     ): [GqlProbe]
     "Highest reported status across all probes"
-    status: GqlProbeStatus
+    status: GqlHealthCheckStatus
+}
+
+"HealthCheck Status"
+type GqlHealthCheckStatus {
+    "Health of the probe"
+    health: GqlProbeHealth
+    "Message explaining probe status"
+    message: String @deprecated(reason: "When multiple probe return the same error status (YELLOW or RED), the message does not guarantee which of the probe will get its message returned. We recommend using the \"health\" parameter and corresponding individual probe message instead.")
 }
 
 "jContent API"
@@ -1620,7 +1628,7 @@ type GqlProbeStatus {
     "Health of the probe"
     health: GqlProbeHealth
     "Message explaining probe status"
-    message: String @deprecated(reason: "When multiple probe return the same error status (YELLOW or RED), the message does not guarantee which of the probe will get its message returned. We recommend using the \"health\" parameter and corresponding individual probe message instead.")
+    message: String
 }
 
 "Publication background job"
@@ -2862,7 +2870,7 @@ type JCRSite implements JCRNode {
         "When set to true, returns the node in the default language if there is no translation for the requested language. Returns null if the option \"Replace untranslated content with the default language content\" is not activated for the site of the requested node. Will also return null if there is no translation for the default language."
         useFallbackLanguage: Boolean = false
     ): JCRProperty
-    "Returns count of all references of the node across all sites"
+    "Returns count of all references of the node across all sites. If this property returns null, references are not supported for this node."
     referenceCount(
         "Filter out referencing types which should not be counted"
         typesFilter: InputNodeTypesInput
@@ -3285,26 +3293,6 @@ type MfaFactorsMutation {
     verify(number: Int): MfaResult
 }
 
-"MFA state-modifying operations"
-type MfaMutation {
-    "Clear current MFA session"
-    clear: MfaResult
-    "Access MFA factors specific mutations"
-    factors: MfaFactorsMutation
-    "Initiate MFA authentication"
-    initiate(password: String, site: String, username: String): MfaResult
-}
-
-"Read-only MFA operations: availability, factors and current session state"
-type MfaQuery {
-    "List of factor types currently available and enabled"
-    availableFactors: [String]
-    "True if MFA feature is enabled by configuration"
-    enabled: Boolean
-    "Current MFA session (returns an error session if none exists)"
-    session: MfaSession
-}
-
 "Result wrapper exposing the current MFA session state"
 type MfaResult {
     "Current MFA session (may contain errors or suspension info)"
@@ -3321,8 +3309,6 @@ type MfaSession {
     initiated: Boolean
     "List of factor types required to complete the MFA flow"
     requiredFactors: [String]
-    "Suspension duration (in seconds) if the user is temporarily locked, null if not suspended"
-    suspensionDurationInSeconds: Long
     "List of factor types successfully verified so far"
     verifiedFactors: [String]
 }
@@ -3344,9 +3330,9 @@ type Mutation {
     ): JCRMutation
     "Generate a new JWT token"
     jwtToken(ips: [String], referer: [String], scopes: [String]!): JWTToken
-    "Main access to MFA API"
-    mfa: MfaMutation
     mutateWorkflows(definition: String): [WorkflowMutation]
+    "Main access to User Password Authentication (UPA) API"
+    upa: UpaMutation
 }
 
 "GraphQL representation of node type information"
@@ -3568,10 +3554,10 @@ type Query {
         "The name of the workspace to fetch the node from; either EDIT, LIVE, or null to use EDIT by default"
         workspace: Workspace = EDIT
     ): JCRQuery!
-    "Main access to MFA read-only API"
-    mfa: MfaQuery
     "Tag Queries"
     tag: JCRTags
+    "Main access to User Password Authentication (UPA) read-only API"
+    upa: UpaQuery
     "Retrieves the number of active workflow tasks for the current user"
     workflow: WorkflowService
 }
@@ -3692,6 +3678,26 @@ type TaskEdge {
     index: Int
     "The item at the end of the edge"
     node: Task
+}
+
+"User Password Authentication (UPA) state-modifying operations"
+type UpaMutation {
+    "Clear current MFA session"
+    mfaClear: MfaResult
+    "Access MFA factors specific mutations"
+    mfaFactors: MfaFactorsMutation
+    "Initiate MFA authentication"
+    mfaInitiate(password: String, site: String, username: String): MfaResult
+}
+
+"Read-only Password Authentication (UPA) operations: availability, factors and current session state"
+type UpaQuery {
+    "List of factor types currently available and enabled"
+    mfaAvailableFactors: [String]
+    "True if MFA feature is enabled by configuration"
+    mfaEnabled: Boolean
+    "Current MFA session (returns an error session if none exists)"
+    mfaSession: MfaSession
 }
 
 "GraphQL representation of a usage (node holding the reference + list of properties referencing the caller)"
@@ -4039,7 +4045,7 @@ type VanityUrl implements JCRNode {
         "When set to true, returns the node in the default language if there is no translation for the requested language. Returns null if the option \"Replace untranslated content with the default language content\" is not activated for the site of the requested node. Will also return null if there is no translation for the default language."
         useFallbackLanguage: Boolean = false
     ): JCRProperty
-    "Returns count of all references of the node across all sites"
+    "Returns count of all references of the node across all sites. If this property returns null, references are not supported for this node."
     referenceCount(
         "Filter out referencing types which should not be counted"
         typesFilter: InputNodeTypesInput

@@ -27,7 +27,7 @@
     </parent>
     <groupId>org.jahia.test</groupId>
     <artifactId>user-password-authentication-mfa-custom-mail-code-template-test-module</artifactId>
-    <name>Jahia UPA - custom mail code template test module</name>
+    <name>UPA - custom mail code template test module</name>
     <packaging>bundle</packaging>
     <description>Test module of the User Password Authentication (UPA) module with a custom mail code template for the Multi-Factor Authentication (MFA)</description>
 

@@ -1,6 +1,6 @@
 mutation prepareCustomFactor {
-    mfa {
-        factors {
+    upa {
+        mfaFactors {
             custom {
                 prepare {
                     otherInfo

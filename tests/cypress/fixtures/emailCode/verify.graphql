@@ -1,6 +1,6 @@
 mutation verifyEmailCodeFactor($code: String!) {
-    mfa {
-        factors {
+    upa {
+        mfaFactors {
             emailCode {
                 verify(code: $code) {
                     session {

@@ -1,6 +1,6 @@
 mutation verifyCustomFactor($number: Int!) {
-    mfa {
-        factors {
+    upa {
+        mfaFactors {
             custom {
                 verify(number: $number) {
                     session {

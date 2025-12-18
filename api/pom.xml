@@ -25,7 +25,7 @@
         <version>0.1.0-SNAPSHOT</version>
     </parent>
     <artifactId>user-password-authentication-api</artifactId>
-    <name>Jahia UPA - API</name>
+    <name>UPA - API</name>
     <packaging>bundle</packaging>
     <description>APIs of the User Password Authentication (UPA) module containing the MFA functionalities</description>
 
@@ -37,7 +37,7 @@
         -->
         <!--jahia-module-type>system</jahia-module-type-->
         <jahia-depends>graphql-dxm-provider</jahia-depends>
-        <jahia-module-signature>MCwCFA+3ben8vK0n8eL4kR+j91qD7Q+aAhR/FI4M9BXTqiaXVLBv21O8sZ295g==</jahia-module-signature>
+        <jahia-module-signature>MC0CFQCTdeu2OPe5Z7YgjSRUFi/DfE/qfwIUQ04NE5P3+Zy9rRS7F3+yUtIcaHs=</jahia-module-signature>
     </properties>
 
 

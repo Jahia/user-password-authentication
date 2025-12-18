@@ -1,11 +1,11 @@
 ---
-mfa:
+upa:
   grants:
-  - api: "graphql.Mutation.mfa"
-  - api: "graphql.Query.mfa"
-  - api: "graphql.MfaQuery"
+  - api: "graphql.Mutation.upa"
+  - api: "graphql.Query.upa"
+  - api: "graphql.UpaQuery"
+  - api: "graphql.UpaMutation"
   - api: "graphql.MfaFactorState"
-  - api: "graphql.MfaMutation"
   - api: "graphql.MfaEmailCodeFactorPreparation"
   - api: "graphql.MfaEmailCodeFactorVerificationResponse"
   - api: "graphql.MfaResult"

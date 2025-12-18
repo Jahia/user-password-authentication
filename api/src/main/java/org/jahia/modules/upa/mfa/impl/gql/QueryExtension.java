@@ -14,9 +14,9 @@ public class QueryExtension {
     }
 
     @GraphQLField
-    @GraphQLName("mfa")
-    @GraphQLDescription("Main access to MFA read-only API")
-    public static Query mfa() {
+    @GraphQLName("upa")
+    @GraphQLDescription("Main access to User Password Authentication (UPA) read-only API")
+    public static Query upa() {
         return new Query();
     }
 }

@@ -30,8 +30,8 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
-@GraphQLName("MfaQuery")
-@GraphQLDescription("Read-only MFA operations: availability, factors and current session state")
+@GraphQLName("UpaQuery")
+@GraphQLDescription("Read-only Password Authentication (UPA) operations: availability, factors and current session state")
 public class Query {
 
     private MfaService mfaService;
@@ -50,21 +50,21 @@ public class Query {
     }
 
     @GraphQLField
-    @GraphQLName("enabled")
+    @GraphQLName("mfaEnabled")
     @GraphQLDescription("True if MFA feature is enabled by configuration")
     public boolean enabled() {
         return mfaConfigurationService.isEnabled();
     }
 
     @GraphQLField
-    @GraphQLName("availableFactors")
+    @GraphQLName("mfaAvailableFactors")
     @GraphQLDescription("List of factor types currently available and enabled")
     public List<String> availableFactors() {
         return mfaService.getAvailableFactors();
     }
 
     @GraphQLField
-    @GraphQLName("session")
+    @GraphQLName("mfaSession")
     @GraphQLDescription("Current MFA session (returns an error session if none exists)")
     public Session session(DataFetchingEnvironment environment) {
         HttpServletRequest httpServletRequest = ContextUtil.getHttpServletRequest(environment.getGraphQlContext());
