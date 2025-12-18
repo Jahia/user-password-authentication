@@ -38,10 +38,10 @@
 
     <modules>
         <module>api</module>
-        <module>mfa-ui</module>
         <module>test-modules/mfa-custom-factor</module>
         <module>test-modules/mfa-custom-mail-code-template</module>
         <module>test-modules/template-set</module>
+        <module>ui</module>
     </modules>
 
     <properties>

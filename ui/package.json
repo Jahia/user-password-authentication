@@ -1,5 +1,5 @@
 {
-  "name": "jahia-user-password-authentication-mfa-ui",
+  "name": "jahia-user-password-authentication-ui",
   "description": "JavaScript module for MFA UI part of the User Password Authentication (UPA) module.",
   "version": "1.0.0-SNAPSHOT",
   "type": "module",

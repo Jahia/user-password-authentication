@@ -9,7 +9,7 @@
     - 'mvn:org.jahia.test/jahia-user-password-authentication-mfa-custom-factor-test-module'
     - 'mvn:org.jahia.test/jahia-user-password-authentication-mfa-custom-mail-code-template-test-module'
     # LATEST is a Maven special "metaversion" that will always point to the latest version of the module, including snapshots
-    - 'js:mvn:org.jahia.modules/jahia-user-password-authentication-mfa-ui/LATEST/tgz'
+    - 'js:mvn:org.jahia.modules/jahia-user-password-authentication-ui/LATEST/tgz'
   autoStart: true
   uninstallPreviousVersion: true
 - include: 'provisioning.yml'
