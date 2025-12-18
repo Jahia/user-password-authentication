@@ -112,7 +112,7 @@ public class MfaServiceImpl implements MfaService {
     @Reference(
             policy = ReferencePolicy.DYNAMIC,
             policyOption = ReferencePolicyOption.GREEDY,
-            updated = "setOrUpdateConfigurationService"
+            updated = "setOrUpdateMfaConfigurationService"
     )
     public void setOrUpdateMfaConfigurationService(MfaConfigurationService mfaConfigurationService) {
         this.mfaConfigurationService = mfaConfigurationService;
