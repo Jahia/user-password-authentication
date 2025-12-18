@@ -39,7 +39,7 @@ public class MfaServiceImpl implements MfaService {
     private static final String MFA_SUSPENDED_USER_MIXIN = "mfa:suspendedUser";
     private static final String MFA_SUSPENDED_SINCE_PROP = "mfa:suspendedSince";
     private static final AuthenticationOptions AUTH_OPTIONS = AuthenticationOptions.Builder.withDefaults()
-            // TODO disable it until https://github.com/Jahia/jahia-user-password-authentication/issues/68 is implemented
+            // TODO disable it until https://github.com/Jahia/user-password-authentication/issues/68 is implemented
             .shouldRememberMe(false)
             .build();
     private static final String ERROR_FACTOR_TYPE_NOT_SUPPORTED = "factor_type_not_supported";

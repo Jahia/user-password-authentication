@@ -2277,9 +2277,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jahia-user-password-authentication-ui@workspace:.":
+"user-password-authentication-ui@workspace:.":
   version: 0.0.0-use.local
-  resolution: "jahia-user-password-authentication-ui@workspace:."
+  resolution: "user-password-authentication-ui@workspace:."
   dependencies:
     "@eslint-react/eslint-plugin": "npm:^1.49.0"
     "@eslint/compat": "npm:^1.2.9"

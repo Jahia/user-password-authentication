@@ -65,7 +65,7 @@ jobs:
     secrets: inherit
     with:
       jahia_image: ghcr.io/jahia/jahia-ee-dev:8-SNAPSHOT
-      module_id: jahia-user-password-authentication
+      module_id: user-password-authentication
       should_skip_testrail: true
       pagerduty_skip_notification: true
       provisioning_manifest: provisioning-manifest-build.yml

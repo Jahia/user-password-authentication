@@ -56,11 +56,11 @@ jobs:
     secrets: inherit
     with:
       jahia_image: ghcr.io/jahia/jahia-ee-dev:8-SNAPSHOT
-      module_id: jahia-user-password-authentication
+      module_id: user-password-authentication
       testrail_project: Jahia User Password Authentication Module
       provisioning_manifest: provisioning-manifest-build.yml
       should_use_build_artifacts: true
-      pagerduty_incident_service: jahia-user-password-authentication-JahiaSN
+      pagerduty_incident_service: user-password-authentication-JahiaSN
       artifact_prefix: upa
       module_branch: ${{ github.head_ref }}
 

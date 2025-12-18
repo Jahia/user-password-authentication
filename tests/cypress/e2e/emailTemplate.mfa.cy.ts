@@ -55,7 +55,7 @@ describe('Tests for the email template', () => {
         const siteKey = faker.lorem.slug();
         const serverName = faker.internet.domainName();
         createSiteWithLoginPage(siteKey, [I18N.defaultLanguage], serverName);
-        enableModule('jahia-user-password-authentication-mfa-custom-mail-code-template-test-module', siteKey);
+        enableModule('user-password-authentication-mfa-custom-mail-code-template-test-module', siteKey);
 
         // WHEN: Initiating the MFA process
         initiate(username, password, siteKey);
@@ -65,7 +65,7 @@ describe('Tests for the email template', () => {
         getEmailBody(email).then(body => {
             expect(body).to.contain('<h2>This is a custom mail code template</h2>');
             expect(body).to.match(/<span class="code">(\d{6})<\/span>/, 'the placeholder should be replaced by a code');
-            expect(body).to.contain(`<img src="http://${serverName}:8080/modules/jahia-user-password-authentication-mfa-custom-mail-code-template-test-module/img/poweredByJahia.png" alt="Powered by Jahia">`);
+            expect(body).to.contain(`<img src="http://${serverName}:8080/modules/user-password-authentication-mfa-custom-mail-code-template-test-module/img/poweredByJahia.png" alt="Powered by Jahia">`);
         });
 
         // Cleanup

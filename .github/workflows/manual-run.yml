@@ -20,7 +20,7 @@ jobs:
     secrets: inherit
     with:
       jahia_image: ${{ github.event.inputs.jahia_image }}
-      module_id: jahia-user-password-authentication
+      module_id: user-password-authentication
       testrail_project: Jahia User Password Authentication Module
       pagerduty_skip_notification: true
       provisioning_manifest: ${{ github.event.inputs.manifest }}

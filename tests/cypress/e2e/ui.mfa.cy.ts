@@ -187,7 +187,7 @@ describe('Tests for the UI module', () => {
         deleteSite(siteKey);
     });
 
-    // BLOCKED BY: https://github.com/Jahia/jahia-user-password-authentication/issues/72
+    // BLOCKED BY: https://github.com/Jahia/user-password-authentication/issues/72
     it.skip('Should have the props (labels, HTMLs) matching the locale in the MFA URLs with multi-language site', () => {
         const siteKey = 'multi-language-site';
         const siteLanguage = 'es'; // Spanish
