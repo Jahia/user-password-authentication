@@ -10,8 +10,8 @@ import type { Props } from "./types";
 
 jahiaComponent(
   {
-    nodeType: "mfaui:authentication",
-    displayName: "MFA Authentication Component",
+    nodeType: "upaui:authentication",
+    displayName: "UPA Authentication Component",
     componentType: "view",
   },
   (props: Props, { renderContext }) => {

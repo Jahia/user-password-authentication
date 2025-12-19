@@ -1,6 +1,6 @@
 <jnt = 'http://www.jahia.org/jahia/nt/1.0'>
 <jmix = 'http://www.jahia.org/jahia/mix/1.0'>
-<mfaui = 'http://www.jahia.org/jahia/multi-factor-authentication-ui/nt/1.0'>
-<mfauimix = 'http://www.jahia.org/jahia/multi-factor-authentication-ui/mix/1.0'>
+<upaui = 'http://www.jahia.org/jahia/user-password-authentication-ui/nt/1.0'>
+<upauimix = 'http://www.jahia.org/jahia/user-password-authentication-ui/mix/1.0'>
 
-[mfauimix:component] > jmix:droppableContent, jmix:accessControllableContent mixin
+[upauimix:component] > jmix:droppableContent, jmix:accessControllableContent mixin

@@ -22,7 +22,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="x-apple-disable-message-reformatting" />
-    <title><fmt:message key="jahia-mfa.mail.title"/></title>
+    <title><fmt:message key="jahia-upa.mfa.mail.title"/></title>
     <style type="text/css">
         /* Reset styles */
         body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
@@ -131,13 +131,13 @@
             <div class="container">
                 <!-- Header -->
                 <div class="header">
-                    <h1 class="title"><fmt:message key="jahia-mfa.mail.title"/></h1>
+                    <h1 class="title"><fmt:message key="jahia-upa.mfa.mail.title"/></h1>
                 </div>
 
                 <!-- Main Content -->
                 <div class="content">
                     <p class="message">
-                        <fmt:message key="jahia-mfa.mail.message"/>:
+                        <fmt:message key="jahia-upa.mfa.mail.message"/>:
                     </p>
 
                     <div class="code-container">

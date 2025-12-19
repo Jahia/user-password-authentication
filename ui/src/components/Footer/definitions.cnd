@@ -1,2 +1,2 @@
-[mfaui:footer] > jnt:content, mfauimix:component orderable
+[upaui:footer] > jnt:content, upauimix:component orderable
  - copyright (string) = '' i18n autocreated

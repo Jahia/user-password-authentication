@@ -101,7 +101,7 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
         MfaSessionContext sessionContext = preparationContext.getSessionContext();
         String code = generateEmailCode();
         String mailContent = generateMailContent(sessionContext, preparationContext.getHttpServletRequest(), preparationContext.getHttpServletResponse(), code);
-        String mailSubject = Messages.get(resourceBundleName, "jahia-mfa.mail.title", sessionContext.getUserPreferredLanguage());
+        String mailSubject = Messages.get(resourceBundleName, "jahia-upa.mfa.mail.title", sessionContext.getUserPreferredLanguage());
 
         MailService mailService = ServicesRegistry.getInstance().getMailService();
         if (mailService.sendHtmlMessage(null, emailAddress, null, null, mailSubject, mailContent)) {

@@ -22,7 +22,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="x-apple-disable-message-reformatting"/>
-    <title><fmt:message key="jahia-mfa.mail.title"/></title>
+    <title><fmt:message key="jahia-upa.mfa.mail.title"/></title>
 </head>
 <body>
 <h2>This is a custom mail code template</h2>
