@@ -37,9 +37,9 @@ export function getVerificationCode(email: string, locale = 'en'): Cypress.Chain
         .mailpitGetMailHTMlBody()
         .then(htmlBody => {
         // Check that the HTML body contains the correct locale-specific title
-            const titleMatch = htmlBody.match(/<h1 class="title">([^<]+)<\/h1>/);
+            const titleMatch = RegExp(/<title>([^<]+)<\/title>/).exec(htmlBody);
             if (!titleMatch || titleMatch[1] !== subject) {
-                throw new Error(`HTML body title does not match expected locale subject. Expected: "${subject}", Found: "${titleMatch ? titleMatch[1] : 'No title found'}"`);
+                throw new Error(`HTML body title does not match expected locale subject. Expected: "${subject}", Found: "${titleMatch ? titleMatch[1] : `No matching title found in ${htmlBody}`}"`);
             }
 
             const match = htmlBody.match(/<p class="code">(\d{6})<\/p>/);
