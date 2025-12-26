@@ -46,6 +46,13 @@ public class Session {
     }
 
     @GraphQLField
+    @GraphQLName("remainingFactors")
+    @GraphQLDescription("List of factor types that are required and have not been verified yet")
+    public List<String> getRemainingFactors() {
+        return mfaSession.getRemainingFactors();
+    }
+
+    @GraphQLField
     @GraphQLName("error")
     @GraphQLDescription("Irrecoverable session-level error. If non-null the session must be discarded and re-initiated before any factor interaction.")
     public Error getError() {

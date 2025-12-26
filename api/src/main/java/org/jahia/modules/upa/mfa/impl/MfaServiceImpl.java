@@ -185,7 +185,15 @@ public class MfaServiceImpl implements MfaService {
         session.setInitiated(true);
         httpSession.setAttribute(MFA_SESSION_KEY, session);
 
-        logger.info("MFA session initiated for user: {}", username);
+        if (session.areAllRequiredFactorsCompleted()) {
+            // special case when there is no required factor configured (the 2nd factor is disabled)
+            logger.info("No required factors to verify for context: {}, proceed with authentication", session.getContext());
+            JCRUserNode jcrUserNode = resolveUserNode(session);
+            authenticateUser(request, jcrUserNode);
+            failuresCache.invalidate(jcrUserNode.getPath());
+        } else {
+            logger.info("MFA session initiated for user: {}", username);
+        }
         return session;
     }
 
@@ -265,7 +273,7 @@ public class MfaServiceImpl implements MfaService {
                 return session;
             }
 
-            if (areAllRequiredFactorsCompleted(session)) {
+            if (session.areAllRequiredFactorsCompleted()) {
                 logger.info("All MFA factors completed for context: {}, proceed with authentication", session.getContext());
                 authenticateUser(httpServletRequest, validation.userNode);
                 failuresCache.invalidate(userPath);
@@ -360,12 +368,6 @@ public class MfaServiceImpl implements MfaService {
             logger.warn("User not found: {}", session.getContext().getUserId());
         }
         return user;
-    }
-
-    private boolean areAllRequiredFactorsCompleted(MfaSession session) {
-        // For now, we require at least one factor to be completed
-        // This can be made configurable later
-        return !session.getVerifiedFactors().isEmpty();
     }
 
     private void authenticateUser(HttpServletRequest request, JCRUserNode jcrUserNode) {

@@ -35,6 +35,7 @@ export default async function clear(apiRoot: string): Promise<ClearResult> {
   if (success) {
     return {
       success: true,
+      remainingFactors: result?.data?.upa?.mfaClear?.session?.remainingFactors,
     };
   } else {
     return createError(result?.data?.upa?.mfaClear?.session?.error);

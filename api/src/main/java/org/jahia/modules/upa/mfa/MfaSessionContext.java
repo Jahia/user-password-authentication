@@ -24,6 +24,7 @@
 package org.jahia.modules.upa.mfa;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -49,7 +50,7 @@ public class MfaSessionContext implements Serializable {
         this.userId = userId;
         this.userPreferredLanguage = userPreferredLanguage;
         this.siteKey = siteKey;
-        this.requiredFactors = requiredFactors;
+        this.requiredFactors = requiredFactors != null ? requiredFactors : Collections.emptyList();
     }
 
     /**

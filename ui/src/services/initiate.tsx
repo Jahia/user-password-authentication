@@ -19,6 +19,7 @@ export default async function initiate(
             mfaInitiate(username: $username, password: $password) {
               session {
                 initiated
+                remainingFactors
                 error {
                   code
                   arguments {
@@ -35,12 +36,14 @@ export default async function initiate(
     }),
   });
   const result = await response.json();
-  const success = result?.data?.upa?.mfaInitiate?.session?.initiated;
+  const session = result?.data?.upa?.mfaInitiate?.session;
+  const success = session?.initiated;
   if (success) {
     return {
       success: true,
+      remainingFactors: session.remainingFactors,
     };
   } else {
-    return createError(result?.data?.upa?.mfaInitiate?.session?.error);
+    return createError(session?.error);
   }
 }

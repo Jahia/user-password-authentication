@@ -3,6 +3,7 @@
  */
 export interface BaseSuccess {
   success: true;
+  remainingFactors: Array<string>;
 }
 
 export interface MfaError {
@@ -16,6 +17,7 @@ export interface MfaError {
 
 export interface BaseError {
   success: false;
+  remainingFactors?: Array<string>; // TODO review
   error: MfaError;
   fatalError?: boolean;
 }
