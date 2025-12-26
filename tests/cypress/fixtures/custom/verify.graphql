@@ -11,8 +11,9 @@ mutation verifyCustomFactor($number: Int!) {
                                 value
                             }
                         }
-                        verifiedFactors
                         requiredFactors
+                        verifiedFactors
+                        remainingFactors
                         factorState(factorType: "custom") {
                             verified
                             error {

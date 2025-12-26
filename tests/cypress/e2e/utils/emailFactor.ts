@@ -1,3 +1,5 @@
+import {expectArrayToContainExactly} from './misc';
+
 const VERIFICATION_CODE_SUBJECT = {
     en: 'Authentication Code',
     fr: 'Code d\'authentification'
@@ -74,7 +76,7 @@ export function getEmailBody(email: string, subject?: string, locale = 'en'): Cy
 }
 
 /**
- * Prepares an MFA factor and asserts the response is successful.
+ * Prepares the email code factor and asserts the response is successful.
  *
  */
 export function prepareEmailCodeFactor() {
@@ -87,8 +89,9 @@ export function prepareEmailCodeFactor() {
     }).then(response => {
         cy.log('Response for prepareEmailCodeFactor():', JSON.stringify(response, null, 2));
         expect(response?.data?.upa?.mfaFactors?.emailCode?.prepare?.session?.factorState?.prepared).to.be.true;
-        expect(response?.data?.upa?.mfaFactors?.emailCode?.prepare?.session?.requiredFactors).to.be.a('array').and.have.length(1);
-        expect(response?.data?.upa?.mfaFactors?.emailCode?.prepare?.session?.requiredFactors[0]).to.eq('email_code');
+        expectArrayToContainExactly(response?.data?.upa?.mfaFactors?.emailCode?.prepare?.session?.requiredFactors, ['email_code']);
+        expectArrayToContainExactly(response?.data?.upa?.mfaFactors?.emailCode?.prepare?.session?.verifiedFactors, []);
+        expectArrayToContainExactly(response?.data?.upa?.mfaFactors?.emailCode?.prepare?.session?.remainingFactors, ['email_code']);
         expect(response?.data?.upa?.mfaFactors?.emailCode?.prepare?.session?.error).to.be.null;
     });
 }
@@ -109,6 +112,9 @@ export function prepareEmailCodeFactorAndExpectFactorError(
     }).then(response => {
         cy.log('Response for prepareEmailCodeFactorAndExpectError():', JSON.stringify(response, null, 2));
         expect(response?.data?.upa?.mfaFactors?.emailCode?.prepare?.session?.factorState?.error?.code).eq(errorCode);
+        expectArrayToContainExactly(response?.data?.upa?.mfaFactors?.emailCode?.prepare?.session?.requiredFactors, ['email_code']);
+        expectArrayToContainExactly(response?.data?.upa?.mfaFactors?.emailCode?.prepare?.session?.verifiedFactors, []);
+        expectArrayToContainExactly(response?.data?.upa?.mfaFactors?.emailCode?.prepare?.session?.remainingFactors, ['email_code']);
 
         // Assert on error arguments if provided
         if (argumentAssertions) {
@@ -136,6 +142,9 @@ export function prepareEmailCodeFactorAndExpectGlobalError(
     }).then(response => {
         cy.log('Response for prepareEmailCodeFactorAndExpectGlobalError():', JSON.stringify(response, null, 2));
         expect(response?.data?.upa?.mfaFactors?.emailCode?.prepare?.session?.error?.code).eq(errorCode);
+        expectArrayToContainExactly(response?.data?.upa?.mfaFactors?.emailCode?.prepare?.session?.requiredFactors, ['email_code']);
+        expectArrayToContainExactly(response?.data?.upa?.mfaFactors?.emailCode?.prepare?.session?.verifiedFactors, []);
+        expectArrayToContainExactly(response?.data?.upa?.mfaFactors?.emailCode?.prepare?.session?.remainingFactors, ['email_code']);
 
         // Assert on error arguments if provided
         if (argumentAssertions) {
@@ -175,10 +184,9 @@ export function verifyEmailCodeFactor(code: string) {
     }).then(response => {
         cy.log('Response for verifyEmailCodeFactor():', JSON.stringify(response, null, 2));
         expect(response?.data?.upa?.mfaFactors?.emailCode?.verify?.session?.factorState?.verified).to.be.true;
-        expect(response?.data?.upa?.mfaFactors?.emailCode?.verify?.session?.verifiedFactors).to.be.a('array').and.have.length(1);
-        expect(response?.data?.upa?.mfaFactors?.emailCode?.verify?.session?.verifiedFactors[0]).eq('email_code');
-        expect(response?.data?.upa?.mfaFactors?.emailCode?.verify?.session?.requiredFactors).a('array').and.have.length(1);
-        expect(response?.data?.upa?.mfaFactors?.emailCode?.verify?.session?.requiredFactors[0]).eq('email_code');
+        expectArrayToContainExactly(response?.data?.upa?.mfaFactors?.emailCode?.verify?.session?.requiredFactors, ['email_code']);
+        expectArrayToContainExactly(response?.data?.upa?.mfaFactors?.emailCode?.verify?.session?.verifiedFactors, ['email_code']);
+        expectArrayToContainExactly(response?.data?.upa?.mfaFactors?.emailCode?.verify?.session?.remainingFactors, []);
         expect(response?.data?.upa?.mfaFactors?.emailCode?.verify?.session?.error).to.be.null;
     });
 }
@@ -197,6 +205,9 @@ export function verifyEmailCodeFactorAndExpectFactorError(
     }).then(response => {
         cy.log('Response for verifyEmailCodeFactorAndExpectError():', JSON.stringify(response, null, 2));
         expect(response?.data?.upa?.mfaFactors?.emailCode?.verify?.session?.factorState?.error?.code).eq(errorCode);
+        expectArrayToContainExactly(response?.data?.upa?.mfaFactors?.emailCode?.verify?.session?.requiredFactors, ['email_code']);
+        expectArrayToContainExactly(response?.data?.upa?.mfaFactors?.emailCode?.verify?.session?.verifiedFactors, []);
+        expectArrayToContainExactly(response?.data?.upa?.mfaFactors?.emailCode?.verify?.session?.remainingFactors, ['email_code']);
 
         // Assert on error arguments if provided
         if (argumentAssertions) {
@@ -228,6 +239,9 @@ export function verifyEmailCodeFactorAndExpectSessionError(
     }).then(response => {
         cy.log('Response for verifyEmailCodeFactorAndExpectSessionError():', JSON.stringify(response, null, 2));
         expect(response?.data?.upa?.mfaFactors?.emailCode?.verify?.session?.error?.code).eq(errorCode);
+        expectArrayToContainExactly(response?.data?.upa?.mfaFactors?.emailCode?.verify?.session?.requiredFactors, ['email_code']);
+        expectArrayToContainExactly(response?.data?.upa?.mfaFactors?.emailCode?.verify?.session?.verifiedFactors, []);
+        expectArrayToContainExactly(response?.data?.upa?.mfaFactors?.emailCode?.verify?.session?.remainingFactors, ['email_code']);
 
         // Assert on error arguments if provided
         if (argumentAssertions) {

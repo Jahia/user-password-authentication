@@ -17,7 +17,6 @@ export interface MfaError {
 
 export interface BaseError {
   success: false;
-  remainingFactors?: Array<string>; // TODO review
   error: MfaError;
   fatalError?: boolean;
 }
