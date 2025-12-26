@@ -65,9 +65,9 @@ jobs:
     secrets: inherit
     with:
       jahia_image: ghcr.io/jahia/jahia-ee-dev:8-SNAPSHOT
-      module_id: jahia-multi-factor-authentication
+      module_id: user-password-authentication
       should_skip_testrail: true
       pagerduty_skip_notification: true
       provisioning_manifest: provisioning-manifest-build.yml
-      artifact_prefix: mfa
+      artifact_prefix: upa
       module_branch: ${{ github.ref }}

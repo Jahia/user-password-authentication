@@ -28,11 +28,11 @@ export function createSiteWithLoginPage(siteKey: string, languages = [I18N.defau
         locale: siteLanguage,
         languages: languagesAsString,
         serverName: serverName,
-        templateSet: 'jahia-multi-factor-authentication-test-module'
+        templateSet: 'user-password-authentication-template-set-test-module'
     });
-    enableModule('jahia-multi-factor-authentication-ui', siteKey);
+    enableModule('user-password-authentication-ui', siteKey);
     const titleProps = languages.map(language => ({name: 'jcr:title', value: `Login page (${language})`, language: language}));
-    const properties = [...titleProps, {name: 'j:templateName', value: 'mfa-authentication-page'}];
+    const properties = [...titleProps, {name: 'j:templateName', value: 'upa-authentication-page'}];
     addNode({
         parentPathOrId: `/sites/${siteKey}`,
         name: LoginStep.PAGE_NAME,
@@ -43,14 +43,14 @@ export function createSiteWithLoginPage(siteKey: string, languages = [I18N.defau
     // Workaround: open JContent edit iframe to trigger area creation
     cy.login();
     cy.visit(`/cms/editframe/default/${getLoginPageURL(siteKey, siteLanguage)}?redirect=false`);
-    cy.get('div[type="area"][areaType="mfaui:authentication"]').should('exist');
+    cy.get('div[type="area"][areaType="upaui:authentication"]').should('exist');
     publishAndWaitJobEnding(`/sites/${siteKey}`, [siteLanguage]);
 }
 
 /**
- * JCR properties of the MFA Authentication Component.
+ * JCR properties of the UPA Authentication Component.
  *
- * @see "mfaui:authentication" view (`ui/src/components/Authentication/default.server.tsx`)
+ * @see "upaui:authentication" view (`ui/src/components/Authentication/default.server.tsx`)
  */
 export interface AuthenticationProps {
     loginEmailFieldLabel?: string;

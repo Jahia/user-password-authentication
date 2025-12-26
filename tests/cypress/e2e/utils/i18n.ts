@@ -1,6 +1,6 @@
 /**
  * Translated i18n messages used in the UI tests (should match those defined in en.json for the MFA UI module)
- * @see https://github.com/Jahia/jahia-multi-factor-authentication/blob/main/ui/settings/locales/en.json
+ * @see https://github.com/Jahia/user-password-authentication/blob/main/ui/settings/locales/en.json
  */
 /* eslint-disable quote-props */
 export const I18N = {

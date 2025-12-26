@@ -11,8 +11,8 @@ export default async function clear(apiRoot: string): Promise<ClearResult> {
     body: JSON.stringify({
       query: /* GraphQL */ `
         mutation clear {
-          mfa {
-            clear {
+          upa {
+            mfaClear {
               session {
                 initiated
                 error {
@@ -31,12 +31,12 @@ export default async function clear(apiRoot: string): Promise<ClearResult> {
   });
   const result = await response.json();
   // once cleared, the session is expected to not be initiated anymore
-  const success = result?.data?.mfa?.clear?.session?.initiated === false;
+  const success = result?.data?.upa?.mfaClear?.session?.initiated === false;
   if (success) {
     return {
       success: true,
     };
   } else {
-    return createError(result?.data?.mfa?.clear?.session?.error);
+    return createError(result?.data?.upa?.mfaClear?.session?.error);
   }
 }

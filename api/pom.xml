@@ -20,14 +20,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>jahia-multi-factor-authentication</artifactId>
+        <artifactId>user-password-authentication</artifactId>
         <groupId>org.jahia.modules</groupId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>0.1.0-SNAPSHOT</version>
     </parent>
-    <artifactId>jahia-multi-factor-authentication-api</artifactId>
-    <name>Jahia MFA API</name>
+    <artifactId>user-password-authentication-api</artifactId>
+    <name>UPA - API</name>
     <packaging>bundle</packaging>
-    <description>APIs of the Jahia Multi-Factor Authentication (MFA) module</description>
+    <description>APIs of the User Password Authentication (UPA) module containing the MFA functionalities</description>
 
     <properties>
         <!--
@@ -37,7 +37,7 @@
         -->
         <!--jahia-module-type>system</jahia-module-type-->
         <jahia-depends>graphql-dxm-provider</jahia-depends>
-        <jahia-module-signature>MCwCFE/WOoU2YGWP/8Plc4NKZPvyhSErAhRmexg9lgtnHgDnIFJRFwOfnZx4JA==</jahia-module-signature>
+        <jahia-module-signature>MC0CFQCTdeu2OPe5Z7YgjSRUFi/DfE/qfwIUQ04NE5P3+Zy9rRS7F3+yUtIcaHs=</jahia-module-signature>
     </properties>
 
 
@@ -135,8 +135,8 @@
                             *
                         </Import-Package>
                         <Export-Package>
-                            org.jahia.modules.mfa,
-                            org.jahia.modules.mfa.gql
+                            org.jahia.modules.upa.mfa,
+                            org.jahia.modules.upa.mfa.gql
                         </Export-Package>
                     </instructions>
                 </configuration>

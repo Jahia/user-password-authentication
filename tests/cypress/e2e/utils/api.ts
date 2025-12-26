@@ -20,7 +20,7 @@ export function initiate(username: string, password: string, site: string = unde
         }
     }).then(response => {
         cy.log('Response for initiate():', JSON.stringify(response, null, 2));
-        expect(response?.data?.mfa?.initiate?.session?.initiated).be.true;
+        expect(response?.data?.upa?.mfaInitiate?.session?.initiated).be.true;
     });
 }
 
@@ -35,11 +35,11 @@ export function initiateAndExpectGlobalError(username: string, password: string,
         }
     }).then(response => {
         cy.log('Response for initiateAndExpectError():', JSON.stringify(response, null, 2));
-        expect(response?.data?.mfa?.initiate?.session?.error?.code).to.contain(errorCode);
+        expect(response?.data?.upa?.mfaInitiate?.session?.error?.code).to.contain(errorCode);
 
         // Assert on error arguments if provided
         if (argumentAssertions) {
-            const errorArguments = response?.data?.mfa?.initiate?.session?.error?.arguments;
+            const errorArguments = response?.data?.upa?.mfaInitiate?.session?.error?.arguments;
             expect(errorArguments).to.be.a('array');
 
             Object.entries(argumentAssertions).forEach(([argName, assertion]) => {
@@ -48,7 +48,7 @@ export function initiateAndExpectGlobalError(username: string, password: string,
                 assertion(argument.value);
             });
         } else {
-            expect(response?.data?.mfa?.initiate?.session?.error?.arguments).to.be.empty;
+            expect(response?.data?.upa?.mfaInitiate?.session?.error?.arguments).to.be.empty;
         }
     });
 }

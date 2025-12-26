@@ -17,7 +17,7 @@ jobs:
       matrix:
         git_branch: ["${{ github.event.repository.default_branch }}"]
     with:
-      module_id: jahia-multi-factor-authentication
+      module_id: user-password-authentication
       git_branch: ${{ matrix.git_branch }}
-      incident_service: jahia-multi-factor-authentication-sonar
-      github_slug: jahia/jahia-multi-factor-authentication
+      incident_service: user-password-authentication-sonar
+      github_slug: Jahia/user-password-authentication

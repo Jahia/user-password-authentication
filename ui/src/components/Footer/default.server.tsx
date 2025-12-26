@@ -8,7 +8,7 @@ interface Props {
 jahiaComponent(
   {
     componentType: "view",
-    nodeType: "mfaui:footer",
+    nodeType: "upaui:footer",
     displayName: "MFA Footer",
   },
   ({ copyright }: Props) => {

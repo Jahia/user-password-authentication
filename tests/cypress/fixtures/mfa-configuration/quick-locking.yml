@@ -1,5 +1,5 @@
 # Used to test the locking mechanism with low numbers
-- editConfiguration: "org.jahia.modules.mfa"
+- editConfiguration: "org.jahia.modules.upa.mfa"
   properties:
     enabled: "true"
     loginUrl: "/sites/fake/fakePage.html"

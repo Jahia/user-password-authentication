@@ -23,24 +23,24 @@
         <groupId>org.jahia.modules</groupId>
         <version>8.2.3.0-SNAPSHOT</version> <!-- should match ${jahia-bom.version} -->
     </parent>
-    <artifactId>jahia-multi-factor-authentication</artifactId>
-    <name>Jahia MFA</name>
-    <version>1.0.0-SNAPSHOT</version>
+    <artifactId>user-password-authentication</artifactId>
+    <name>UPA - root</name>
+    <version>0.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <description>Root of the multi-module project of the Jahia Multi-Factor Authentication (MFA) module</description>
+    <description>Root of the multi-module project of the Jahia User Password Authentication (UPA) module</description>
 
     <scm>
-        <connection>scm:git:git@github.com:Jahia/jahia-multi-factor-authentication.git</connection>
-        <developerConnection>scm:git:git@github.com:Jahia/jahia-multi-factor-authentication.git</developerConnection>
-        <url>https://github.com/Jahia/jahia-multi-factor-authentication</url>
+        <connection>scm:git:git@github.com:Jahia/user-password-authentication.git</connection>
+        <developerConnection>scm:git:git@github.com:Jahia/user-password-authentication.git</developerConnection>
+        <url>https://github.com/Jahia/user-password-authentication</url>
         <tag>HEAD</tag>
     </scm>
 
     <modules>
         <module>api</module>
-        <module>test-module</module>
-        <module>test-module-custom-factor</module>
-        <module>test-module-custom-mail-code-template</module>
+        <module>test-modules/mfa-custom-factor</module>
+        <module>test-modules/mfa-custom-mail-code-template</module>
+        <module>test-modules/template-set</module>
         <module>ui</module>
     </modules>
 
@@ -65,7 +65,7 @@
             <!-- other modules of this multi-module project: -->
             <dependency>
                 <groupId>org.jahia.modules</groupId>
-                <artifactId>jahia-multi-factor-authentication-api</artifactId>
+                <artifactId>user-password-authentication-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

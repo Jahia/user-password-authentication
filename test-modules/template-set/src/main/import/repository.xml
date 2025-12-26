@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<content xmlns:j="http://www.jahia.org/jahia/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0">
+   <modules jcr:primaryType="jnt:modules">
+      <user-password-authentication-template-set-test-module j:dependencies="default"
+                             j:installedModules="user-password-authentication-template-set-test-module"
+                             j:modulePriority="0"
+                             j:moduleType="templatesSet"
+                             j:title="Jahia User Password Authentication test module - templatesSet"
+                             jcr:primaryType="jnt:module">
+         <portlets jcr:primaryType="jnt:portletFolder"/>
+         <files jcr:primaryType="jnt:folder"/>
+         <contents jcr:primaryType="jnt:contentFolder"/>
+         <templates jcr:primaryType="jnt:templatesFolder">
+            <base j:theme="#/modules/user-password-authentication-template-set-test-module/templates/files/themes/default"
+                  j:view="user-password-authentication-template-set-test-module"
+                  jcr:mixinTypes="jmix:theme"
+                  jcr:primaryType="jnt:template">
+               <simple jcr:primaryType="jnt:pageTemplate"/>
+            </base>
+         </templates>
+      </user-password-authentication-template-set-test-module>
+   </modules>
+</content>

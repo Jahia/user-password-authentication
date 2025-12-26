@@ -15,8 +15,8 @@ export default async function initiate(
     body: JSON.stringify({
       query: /* GraphQL */ `
         mutation initiate($username: String!, $password: String!) {
-          mfa {
-            initiate(username: $username, password: $password) {
+          upa {
+            mfaInitiate(username: $username, password: $password) {
               session {
                 initiated
                 error {
@@ -35,12 +35,12 @@ export default async function initiate(
     }),
   });
   const result = await response.json();
-  const success = result?.data?.mfa?.initiate?.session?.initiated;
+  const success = result?.data?.upa?.mfaInitiate?.session?.initiated;
   if (success) {
     return {
       success: true,
     };
   } else {
-    return createError(result?.data?.mfa?.initiate?.session?.error);
+    return createError(result?.data?.upa?.mfaInitiate?.session?.error);
   }
 }

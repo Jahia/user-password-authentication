@@ -14,8 +14,8 @@ export default async function verifyEmailCodeFactor(
     body: JSON.stringify({
       query: /* GraphQL */ `
         mutation verifyEmailCodeFactor($code: String!, $factorType: String!) {
-          mfa {
-            factors {
+          upa {
+            mfaFactors {
               emailCode {
                 verify(code: $code) {
                   session {
@@ -47,7 +47,7 @@ export default async function verifyEmailCodeFactor(
     }),
   });
   const result = await response.json();
-  const verificationResult = result?.data?.mfa?.factors?.emailCode?.verify;
+  const verificationResult = result?.data?.upa?.mfaFactors?.emailCode?.verify;
   const success = verificationResult?.session?.factorState?.verified;
   if (success) {
     return { success: true };

@@ -1,0 +1,18 @@
+---
+upa:
+  grants:
+  - api: "graphql.Mutation.upa"
+  - api: "graphql.Query.upa"
+  - api: "graphql.UpaQuery"
+  - api: "graphql.UpaMutation"
+  - api: "graphql.MfaFactorState"
+  - api: "graphql.MfaEmailCodeFactorPreparation"
+  - api: "graphql.MfaEmailCodeFactorVerificationResponse"
+  - api: "graphql.MfaResult"
+  - api: "graphql.MfaEmailCodeFactorMutation"
+  - api: "graphql.MfaError"
+  - api: "graphql.MfaErrorArgument"
+  - api: "graphql.MfaFactorsMutation"
+  - api: "graphql.MfaSession"
+  auto_apply:
+  - always: "true"

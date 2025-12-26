@@ -16,8 +16,8 @@ export default async function prepareEmailFactor(
     body: JSON.stringify({
       query: /* GraphQL */ `
         mutation prepareEmailCodeFactor($factorType: String!) {
-          mfa {
-            factors {
+          upa {
+            mfaFactors {
               emailCode {
                 prepare {
                   session {
@@ -50,7 +50,7 @@ export default async function prepareEmailFactor(
     }),
   });
   const result = await response.json();
-  const preparationResult = result?.data?.mfa?.factors?.emailCode?.prepare;
+  const preparationResult = result?.data?.upa?.mfaFactors?.emailCode?.prepare;
   const success =
     preparationResult?.session?.factorState?.prepared &&
     !preparationResult?.session?.factorState?.error &&

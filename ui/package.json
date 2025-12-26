@@ -1,7 +1,7 @@
 {
-  "name": "jahia-multi-factor-authentication-ui",
-  "description": "JavaScript module for MFA UI",
-  "version": "1.0.0-SNAPSHOT",
+  "name": "user-password-authentication-ui",
+  "description": "JavaScript module for MFA UI part of the User Password Authentication (UPA) module.",
+  "version": "0.1.0-SNAPSHOT",
   "type": "module",
   "files": [
     "dist",
@@ -51,8 +51,8 @@
     "yarn": ">=4.0.0"
   },
   "jahia": {
-    "name": "Jahia MFA UI",
-    "module-dependencies": "default,jahia-multi-factor-authentication-api",
+    "name": "UPA - UI",
+    "module-dependencies": "default,user-password-authentication-api",
     "module-type": "module",
     "server": "dist/server/index.js",
     "static-resources": "/dist/client,/dist/assets,/locales,/images,/icons"
