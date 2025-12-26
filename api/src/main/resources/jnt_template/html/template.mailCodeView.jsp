@@ -153,30 +153,25 @@
                             <a href="https://jahia.cloud">
                                 <div class="logo-crop">
                                     <img src="https://jahia.cloud/modules/dx-jelastic-template/media/jahia-cloud-logo.svg" alt="Jahia" height="70">
+                                    <%-- it is not possible to use the usual syntax, for instance:
+                        <img src="<c:url value="${url.server}${url.context}${url.currentModule}/path/to/your/image.png"/>">
+                         --%>
                                 </div>
                             </a>
                         </div>
 
                         <!-- Main Content -->
-                        <div class="message">
-                            <fmt:message key="jahia-upa.mfa.mail.message"/>:
-                        </div>
+                        <div class="message"><fmt:message key="jahia-upa.mfa.mail.message"/></div>
 
                         <div class="code-container">
                             <p class="code">{{CODE}}</p>
                         </div>
 
-                        <div class="validity">
-                            <fmt:message key="jahia-upa.mfa.mail.validity"/>
-                        </div>
+                        <div class="validity"><fmt:message key="jahia-upa.mfa.mail.validity"/></div>
 
-                        <div class="footer-title">
-                            <fmt:message key="jahia-upa.mfa.mail.notRequested.title"/>
-                        </div>
+                        <div class="footer-title"><fmt:message key="jahia-upa.mfa.mail.notRequested.title"/></div>
 
-                        <div class="footer-text">
-                            <fmt:message key="jahia-upa.mfa.mail.notRequested.message"/>
-                        </div>
+                        <div class="footer-text"><fmt:message key="jahia-upa.mfa.mail.notRequested.message"/></div>
                     </td>
                 </tr>
             </table>

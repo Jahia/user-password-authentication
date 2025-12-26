@@ -42,8 +42,14 @@ describe('Tests for the email template', () => {
 
         // THEN: The email body should be as expected
         getEmailBody(email).then(body => {
+            // Make sure the i18n properties are replaced
+            expect(body).to.contain('<title>Authentication Code</title>');
+            expect(body).to.contain('<div class="message">Hello,<br/>Use the following code to complete your authentication:</div>');
+            expect(body).to.contain('<div class="validity">This code is valid for <strong>15 minutes</strong>.</div>');
+            expect(body).to.contain('<div class="footer-title">Didn\'t request this code?</div>');
+            expect(body).to.contain('<div class="footer-text">If you didn\'t request this code, secure your account immediately by <a href="https://support.jahia.com/">changing your password</a>.<br/>If you need assistance, <a href="https://support.jahia.com/">reach out to support</a><br/><br/>Regards,<br/>The Jahia Team</div>');
+            // Make sure the placeholder for the code is replaced
             expect(body).to.match(/<p class="code">(\d{6})<\/p>/, 'the placeholder should be replaced by a code');
-            expect(body).to.contain('<img src="https://cdfoqfniea.cloudimg.io/https://www.jahia.com/modules/jahiacom-templates/images/jahia-3x.png" alt="Powered by Jahia">');
         });
 
         // Cleanup
