@@ -36,8 +36,8 @@ import java.util.stream.Collectors;
 public class MfaServiceImpl implements MfaService {
     private static final Logger logger = LoggerFactory.getLogger(MfaServiceImpl.class);
     private static final String MFA_SESSION_KEY = "mfa_session";
-    private static final String MFA_SUSPENDED_USER_MIXIN = "mfa:suspendedUser";
-    private static final String MFA_SUSPENDED_SINCE_PROP = "mfa:suspendedSince";
+    private static final String MFA_SUSPENDED_USER_MIXIN = "upa:mfaSuspendedUser";
+    private static final String MFA_SUSPENDED_SINCE_PROP = "upa:mfaSuspendedSince";
     private static final AuthenticationOptions AUTH_OPTIONS = AuthenticationOptions.Builder.withDefaults()
             // TODO disable it until https://github.com/Jahia/user-password-authentication/issues/68 is implemented
             .shouldRememberMe(false)

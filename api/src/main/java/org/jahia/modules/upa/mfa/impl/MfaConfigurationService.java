@@ -43,7 +43,7 @@ public class MfaConfigurationService {
     private static final Logger logger = LoggerFactory.getLogger(MfaConfigurationService.class);
     private Config config;
 
-    @ObjectClassDefinition(name = "%configName", description = "%configDesc", localization = "OSGI-INF/l10n/config")
+    @ObjectClassDefinition(name = "%configName", description = "%configDesc", localization = "OSGI-INF/l10n/mfa/config")
     public @interface Config {
         @AttributeDefinition(name = "%loginUrl", description = "%loginUrlDesc")
         String loginUrl();

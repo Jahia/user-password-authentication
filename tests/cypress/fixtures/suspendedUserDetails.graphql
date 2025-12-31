@@ -4,12 +4,12 @@ query suspendedUserDetails($username: String!) {
             user(username: $username) {
                 node {
                     mixinTypes(
-                        fieldFilter: {filters: [{fieldName: "name", value: "mfa:suspendedUser"}]}
+                        fieldFilter: {filters: [{fieldName: "name", value: "upa:mfaSuspendedUser"}]}
                     ) {
                         name
                     }
                 }
-                property(name: "mfa:suspendedSince")
+                property(name: "upa:mfaSuspendedSince")
             }
         }
     }

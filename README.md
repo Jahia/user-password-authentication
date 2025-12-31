@@ -1,1 +1,1 @@
-# Jahia MFA (multi factor authentication) Module
+# Jahia UPA (User Password Authentication) Module

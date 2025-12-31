@@ -1,9 +1,9 @@
 <jnt = 'http://www.jahia.org/jahia/nt/1.0'>
 <jmix = 'http://www.jahia.org/jahia/mix/1.0'>
 
-<mfa = 'http://www.jahia.org/jahia/multi-factor-authentication/nt/1.0'>
-[mfa:suspendedUser] mixin
- - mfa:suspendedSince (date) mandatory
+<upa = 'http://www.jahia.org/jahia/user-password-authentication/nt/1.0'>
+[upa:mfaSuspendedUser] mixin
+ - upa:mfaSuspendedSince (date) mandatory
 
 // Node type intended for a single content node within the module; used to render the HTML for the email code.
-[mfa:mailCode] > jnt:content, jmix:droppableContent, jmix:studioOnly, jmix:mainResource
+[upa:mfaMailCode] > jnt:content, jmix:droppableContent, jmix:studioOnly, jmix:mainResource
