@@ -149,15 +149,45 @@ public class MfaSession implements Serializable {
     }
 
     /**
+     * Checks if a specific factor has been verified.
+     *
+     * @param factorType the factor type to check
+     * @return true if the factor is verified, false otherwise
+     */
+    public boolean isFactorVerified(String factorType) {
+        MfaFactorState state = factorStates.get(factorType);
+        return state != null && state.isVerified();
+    }
+
+    /**
      * Returns a list of factor types that have been successfully verified.
      *
      * @return a list of verified factor types
      */
     public List<String> getVerifiedFactors() {
-        return factorStates.entrySet().stream()
-                .filter(entry -> entry.getValue().isVerified())
-                .map(Map.Entry::getKey)
+        return factorStates.keySet().stream()
+                // the extra lookup (iterating over the keys then getting values) is negligible considering the small number of factors
+                .filter(this::isFactorVerified)
                 .collect(toList());
     }
 
+    /**
+     * Returns a list of factor types that are required but not yet verified.
+     *
+     * @return a list of remaining required factor types
+     */
+    public List<String> getRemainingFactors() {
+        return context.getRequiredFactors().stream()
+                .filter(factor -> !isFactorVerified(factor))
+                .collect(toList());
+    }
+
+    /**
+     * Checks if all required factors for this session have been successfully verified.
+     *
+     * @return true if all required factors are verified, false otherwise
+     */
+    public boolean areAllRequiredFactorsCompleted() {
+        return getRemainingFactors().isEmpty();
+    }
 }

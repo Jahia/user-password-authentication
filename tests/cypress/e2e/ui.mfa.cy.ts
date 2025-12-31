@@ -97,6 +97,20 @@ describe('Tests for the UI module', () => {
         deleteSite(SITE_KEY);
     });
 
+    it('Should skip the second factor (email) when no factor is configured', () => {
+        installMFAConfig('sample-ui-no-factors.yml');
+
+        LoginStep.triggerRedirect(SITE_KEY);
+
+        // Validate UI content on the login step
+        LoginStep.assertContentMatches();
+
+        // Directly logged in
+        LoginStep.login(username, password);
+
+        assertIsLoggedIn(username);
+    });
+
     it('Should be authenticated when following all the MFA steps and have the correct props (labels, HTMLs)', () => {
         LoginStep.triggerRedirect(SITE_KEY);
 

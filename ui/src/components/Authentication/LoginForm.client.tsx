@@ -1,6 +1,6 @@
 import { type FormEvent, useState } from "react";
 import { initiate } from "../../services";
-import classes from "./component.module.css"
+import classes from "./component.module.css";
 import { useApiRoot } from "../../hooks/ApiRootContext.jsx";
 import ErrorMessage from "./ErrorMessage.client";
 import type { Props } from "./types";
@@ -10,6 +10,7 @@ import type { MfaError } from "../../services/common";
 interface LoginFormProps {
   content: Props;
   onSuccess: (username: string) => void;
+  onAllFactorsCompleted: () => void;
   onFatalError: (error: MfaError) => void;
 }
 
@@ -27,7 +28,11 @@ export default function LoginForm(props: Readonly<LoginFormProps>) {
     initiate(apiRoot, username, password)
       .then((result) => {
         if (result.success) {
-          props.onSuccess(username);
+          // special case if there is no factor configured
+          if (result.remainingFactors.length === 0) props.onAllFactorsCompleted();
+          else {
+            props.onSuccess(username);
+          }
           setError("");
         } else if (result?.fatalError) {
           props.onFatalError(result.error);

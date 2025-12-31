@@ -29,6 +29,7 @@ export default async function verifyEmailCodeFactor(
                         }
                       }
                     }
+                    remainingFactors
                     error {
                       code
                       arguments {
@@ -50,7 +51,7 @@ export default async function verifyEmailCodeFactor(
   const verificationResult = result?.data?.upa?.mfaFactors?.emailCode?.verify;
   const success = verificationResult?.session?.factorState?.verified;
   if (success) {
-    return { success: true };
+    return { success: true, remainingFactors: verificationResult.session.remainingFactors };
   } else {
     return createError(
       verificationResult?.session?.error,

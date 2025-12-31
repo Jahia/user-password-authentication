@@ -3,6 +3,7 @@
  */
 export interface BaseSuccess {
   success: true;
+  remainingFactors: Array<string>;
 }
 
 export interface MfaError {

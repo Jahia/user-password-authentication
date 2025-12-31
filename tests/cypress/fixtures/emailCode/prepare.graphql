@@ -12,8 +12,9 @@ mutation prepareCustomFactor {
                                 value
                             }
                         }
-                        verifiedFactors
                         requiredFactors
+                        verifiedFactors
+                        remainingFactors
                         factorState(factorType: "email_code") {
                             prepared
                             error {

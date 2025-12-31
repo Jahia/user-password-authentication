@@ -40,6 +40,9 @@ export default function Authentication({
           onSuccess={() => {
             setStep(Step.VERIFY);
           }}
+          onAllFactorsCompleted={() => {
+            handleVerifySuccess();
+          }}
           onFatalError={(error) => {
             setFatalError(error);
             setStep(Step.FATAL_ERROR);

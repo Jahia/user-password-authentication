@@ -3307,6 +3307,8 @@ type MfaSession {
     factorState(factorType: String): MfaFactorState
     "Whether the MFA flow has been initiated (the username/password credentials have been validated)"
     initiated: Boolean
+    "List of factor types that are required and have not been verified yet"
+    remainingFactors: [String]
     "List of factor types required to complete the MFA flow"
     requiredFactors: [String]
     "List of factor types successfully verified so far"

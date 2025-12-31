@@ -38,6 +38,7 @@ export default async function prepareEmailFactor(
                         }
                       }
                     }
+                    remainingFactors
                   }
                   maskedEmail
                 }
@@ -58,6 +59,7 @@ export default async function prepareEmailFactor(
   if (success) {
     return {
       success: true,
+      remainingFactors: preparationResult.session.remainingFactors,
       maskedEmail: preparationResult.maskedEmail,
     };
   } else {

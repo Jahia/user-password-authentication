@@ -1,5 +1,8 @@
 import {deleteSite, deleteUser} from '@jahia/cypress';
-import {createSiteWithLoginPage, createUserForMFA, deleteAllEmails, initiate, installMFAConfig} from './utils';
+import {
+    createSiteWithLoginPage, createUserForMFA, deleteAllEmails,
+    expectArrayToContainExactly, initiate, installMFAConfig
+} from './utils';
 import {faker} from '@faker-js/faker';
 
 describe('Tests for the GraphQL APIs related to the CustomFactorProvider', () => {
@@ -52,8 +55,9 @@ function prepareCustomFactor(offset: number) {
     }).then(response => {
         cy.log('Response for prepareCustomFactor():', JSON.stringify(response, null, 2));
         expect(response?.data?.upa?.mfaFactors?.custom?.prepare?.session?.factorState?.prepared).to.be.true;
-        expect(response?.data?.upa?.mfaFactors?.custom?.prepare?.session?.requiredFactors).to.be.a('array').and.have.length(1);
-        expect(response?.data?.upa?.mfaFactors?.custom?.prepare?.session?.requiredFactors[0]).to.eq('custom');
+        expectArrayToContainExactly(response?.data?.upa?.mfaFactors?.custom?.prepare?.session?.requiredFactors, ['custom']);
+        expectArrayToContainExactly(response?.data?.upa?.mfaFactors?.custom?.prepare?.session?.verifiedFactors, []);
+        expectArrayToContainExactly(response?.data?.upa?.mfaFactors?.custom?.prepare?.session?.remainingFactors, ['custom']);
         expect(response?.data?.upa?.mfaFactors?.custom?.prepare?.session?.error).to.be.null;
     });
 }
@@ -68,8 +72,9 @@ function verifyCustomFactor(number: number) {
     }).then(response => {
         cy.log('Response for verifyCustomFactor():', JSON.stringify(response, null, 2));
         expect(response?.data?.upa?.mfaFactors?.custom?.verify?.session?.factorState?.verified).to.be.true;
-        expect(response?.data?.upa?.mfaFactors?.custom?.verify?.session?.requiredFactors).to.be.a('array').and.have.length(1);
-        expect(response?.data?.upa?.mfaFactors?.custom?.verify?.session?.requiredFactors[0]).to.eq('custom');
+        expectArrayToContainExactly(response?.data?.upa?.mfaFactors?.custom?.verify?.session?.requiredFactors, ['custom']);
+        expectArrayToContainExactly(response?.data?.upa?.mfaFactors?.custom?.verify?.session?.verifiedFactors, ['custom']);
+        expectArrayToContainExactly(response?.data?.upa?.mfaFactors?.custom?.verify?.session?.remainingFactors, []);
         expect(response?.data?.upa?.mfaFactors?.custom?.verify?.session?.error).to.be.null;
     });
 }
