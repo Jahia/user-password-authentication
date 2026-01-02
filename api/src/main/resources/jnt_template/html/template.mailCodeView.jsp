@@ -32,78 +32,98 @@
 
         /* Main styles */
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            font-family: 'Nunito Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
             line-height: 1.6;
-            color: #333333;
-            background-color: #f5f5f5;
+            color: #293136;
+            background-color: #F6FAFC;
         }
 
         .container {
-            max-width: 600px;
+            width: 100%;
+            max-width: 486px;
             margin: 0 auto;
             background-color: #ffffff;
-            border-radius: 8px;
+            border-radius: 4px;
+            box-shadow: 0px 4px 8px rgba(19, 28, 33, 0.08);
+        }
+
+        .content-padding {
+            padding: 32px;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo a {
+            text-decoration: none;
+        }
+
+        .logo img {
+            max-height: 70px;
+            width: auto;
+            display: block;
+        }
+
+        .logo-crop {
+            width: 130px;
+            height: 70px;
             overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: inline-block;
         }
 
-        .header {
-            background-color: #2c3e50;
-            padding: 30px;
-            text-align: center;
-            color: white;
-        }
-
-        .header img {
-            max-width: 180px;
-            height: auto;
-        }
-
-        .content {
-            padding: 40px 30px;
-            text-align: center;
-        }
-
-        .title {
-            font-size: 24px;
-            font-weight: 600;
-            margin: 0 0 20px 0;
+        .logo-crop img {
+            height: 70px;
+            margin-left: -123px;
+            display: block;
+            max-width: none;
         }
 
         .message {
-            font-size: 16px;
-            color: #666666;
-            margin: 0 0 30px 0;
+            font-size: 14px;
+            color: #293136;
+            margin: 0 0 24px 0;
         }
 
         .code-container {
-            background-color: #f8f9fa;
-            border: 2px solid #e9ecef;
-            border-radius: 6px;
-            padding: 20px;
-            margin: 0 0 30px 0;
+            background-color: #F6F6F6;
+            padding: 24px;
+            text-align: center;
+            margin-bottom: 24px;
         }
 
         .code {
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 32px;
-            font-weight: bold;
-            letter-spacing: 4px;
-            color: #2c3e50;
+            font-family: 'Roboto Mono', 'Courier New', Courier, monospace;
+            font-size: 28px;
+            font-weight: 700;
+            color: #293136;
             margin: 0;
+            line-height: 26px;
         }
 
-        .footer {
-            background-color: #2c3e50;
-            font-size: 12px;
-            color: white;
-            padding: 20px 30px;
+        .validity {
             text-align: center;
-            border-top: 1px solid #e9ecef;
+            font-size: 14px;
+            color: #293136;
+            margin-bottom: 40px;
         }
 
-        .footer p {
-            margin: 5px 0;
+        .footer-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #00A0E3;
+            margin-bottom: 8px;
+        }
+
+        .footer-text {
+            font-size: 14px;
+            color: #293136;
+        }
+
+        a {
+            color: #00A0E3;
+            text-decoration: underline;
         }
 
         /* Mobile responsive */
@@ -113,50 +133,48 @@
                 border-radius: 0;
             }
 
-            .content {
-                padding: 30px 20px;
-            }
-
-            .code {
-                font-size: 24px;
-                letter-spacing: 2px;
+            .content-padding {
+                padding: 20px;
             }
         }
     </style>
 </head>
 <body>
-<table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f5f5f5; padding: 40px 20px;">
+<table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color: #F6FAFC; padding: 24px;">
     <tr>
-        <td>
-            <div class="container">
-                <!-- Header -->
-                <div class="header">
-                    <h1 class="title"><fmt:message key="jahia-upa.mfa.mail.title"/></h1>
-                </div>
-
-                <!-- Main Content -->
-                <div class="content">
-                    <p class="message">
-                        <fmt:message key="jahia-upa.mfa.mail.message"/>:
-                    </p>
-
-                    <div class="code-container">
-                        <p class="code">{{CODE}}</p>
-                    </div>
-                </div>
-
-                <!-- Footer -->
-                <div class="footer">
-                    <p style="margin-top: 10px;">
-                        <%-- This JSP is rendered on the node of a module (/modules/user-password-authentication-api/<version>/contents/mfaMailCode), and not on a specific site.
-                         Because of that, there is no "context" of site during the rendering and the URLs must be absolute : --%>
-                        <img src="https://cdfoqfniea.cloudimg.io/https://www.jahia.com/modules/jahiacom-templates/images/jahia-3x.png" alt="Powered by Jahia">
-                        <%-- it is not possible to use the usual syntax, for instance:
+        <td align="center">
+            <table role="presentation" cellpadding="0" cellspacing="0" class="container">
+                <tr>
+                    <td class="content-padding">
+                        <!-- Logo -->
+                        <div class="logo">
+                            <%-- This JSP is rendered on the node of a module (/modules/user-password-authentication-api/<version>/contents/mfaMailCode), and not on a specific site.
+                             Because of that, there is no "context" of site during the rendering and the URLs must be absolute : --%>
+                            <a href="https://jahia.cloud">
+                                <div class="logo-crop">
+                                    <img src="https://jahia.cloud/modules/dx-jelastic-template/media/jahia-cloud-logo.svg" alt="Jahia" height="70">
+                                    <%-- it is not possible to use the usual syntax, for instance:
                         <img src="<c:url value="${url.server}${url.context}${url.currentModule}/path/to/your/image.png"/>">
                          --%>
-                    </p>
-                </div>
-            </div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- Main Content -->
+                        <div class="message"><fmt:message key="jahia-upa.mfa.mail.message"/></div>
+
+                        <div class="code-container">
+                            <p class="code">{{CODE}}</p>
+                        </div>
+
+                        <div class="validity"><fmt:message key="jahia-upa.mfa.mail.validity"/></div>
+
+                        <div class="footer-title"><fmt:message key="jahia-upa.mfa.mail.notRequested.title"/></div>
+
+                        <div class="footer-text"><fmt:message key="jahia-upa.mfa.mail.notRequested.message"/></div>
+                    </td>
+                </tr>
+            </table>
         </td>
     </tr>
 </table>
