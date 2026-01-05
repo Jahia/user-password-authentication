@@ -131,7 +131,7 @@ describe('Tests for the UI module', () => {
         });
     });
 
-    it.only('Should be authenticated when EMAIL_FACTOR becomes disabled in the middle of the flow', () => {
+    it('Should be authenticated when EMAIL_FACTOR becomes disabled in the middle of the flow', () => {
         LoginStep.triggerRedirect(SITE_KEY);
 
         // Validate UI content on the login step
