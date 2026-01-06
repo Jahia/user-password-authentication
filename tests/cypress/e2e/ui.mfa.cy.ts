@@ -131,6 +131,30 @@ describe('Tests for the UI module', () => {
         });
     });
 
+    it('Should be authenticated when EMAIL_FACTOR becomes disabled in the middle of the flow', () => {
+        LoginStep.triggerRedirect(SITE_KEY);
+
+        // Validate UI content on the login step
+        LoginStep.assertContentMatches();
+
+        LoginStep.login(username, password);
+        LoginStep.selectEmailCodeFactor();
+
+        // Disable EMAIL_FACTOR in the middle of the flow
+        installMFAConfig('sample-ui-no-factors.yml');
+
+        getVerificationCode(email).then(code => {
+            // Validate UI content on the email factor step
+            EmailFactorStep.assertHeaderTitleMatches();
+            EmailFactorStep.assertContentMatches();
+
+            // Proceed with verification
+            EmailFactorStep.submitVerificationCode(code);
+            EmailFactorStep.assertSuccessfullyRedirected(SITE_KEY);
+            assertIsLoggedIn(username);
+        });
+    });
+
     it('Should have the correct props (labels, HTMLs) after a full update in English', () => {
         const siteKey = 'full-update-site';
         createSiteWithLoginPage(siteKey);
