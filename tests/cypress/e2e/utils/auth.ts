@@ -62,7 +62,7 @@ export const assertIsLoggedIn = (username: string) => {
 };
 
 /**
- * Asserts the given user is suspended by ensuring the JCR 'mfa:suspendedSince' property is set in their JCR user node
+ * Asserts the given user is suspended by ensuring the JCR 'upa:mfaSuspendedSince' property is set in their JCR user node
  * @param username the username to check
  */
 export const assertIsSuspended = (username: string) => {
@@ -78,12 +78,12 @@ export const assertIsSuspended = (username: string) => {
         expect(response?.data?.admin?.userAdmin?.user?.property).to.not.be.undefined;
         // And check the mixin is present
         expect(response?.data?.admin?.userAdmin?.user?.node?.mixinTypes).to.be.a('array').and.have.length(1);
-        expect(response?.data?.admin?.userAdmin?.user?.node?.mixinTypes[0]?.name).to.eq('mfa:suspendedUser');
+        expect(response?.data?.admin?.userAdmin?.user?.node?.mixinTypes[0]?.name).to.eq('upa:mfaSuspendedUser');
     });
 };
 
 /**
- * Asserts the given user is not suspended by ensuring the JCR 'mfa:suspendedSince' property is not set in their JCR user node
+ * Asserts the given user is not suspended by ensuring the JCR 'upa:mfaSuspendedSince' property is not set in their JCR user node
  * @param username the username to check
  */
 const assertIsNotSuspended = (username: string) => {
@@ -93,7 +93,7 @@ const assertIsNotSuspended = (username: string) => {
             username: username
         }
     }).then(response => {
-        expect(response?.data?.admin?.userAdmin?.user?.property, 'the mfa:suspendedUser property should not be set').to.be.null;
-        expect(response?.data?.admin?.userAdmin?.user?.node?.mixinTypes, 'the mfa:suspendedUser mixin should not exist on the user node').to.be.empty;
+        expect(response?.data?.admin?.userAdmin?.user?.property, 'the upa:mfaSuspendedUser property should not be set').to.be.null;
+        expect(response?.data?.admin?.userAdmin?.user?.node?.mixinTypes, 'the upa:mfaSuspendedUser mixin should not exist on the user node').to.be.empty;
     });
 };

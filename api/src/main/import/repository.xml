@@ -4,14 +4,14 @@
         <user-password-authentication-api j:dependencies="" jcr:primaryType="jnt:module">
             <files jcr:primaryType="jnt:folder"/>
             <contents jcr:primaryType="jnt:contentFolder">
-                <mfaMailCode jcr:primaryType="mfa:mailCode"/>
+                <mfaMailCode jcr:primaryType="upa:mfaMailCode"/>
             </contents>
             <templates jcr:primaryType="jnt:templatesFolder">
                 <files jcr:primaryType="jnt:folder"/>
                 <contents jcr:primaryType="jnt:contentFolder"/>
                 <base jcr:primaryType="jnt:template">
                     <mailCodeTemplate jcr:primaryType="jnt:contentTemplate"
-                                         j:applyOn="mfa:mailCode"
+                                         j:applyOn="upa:mfaMailCode"
                                          j:view="mailCodeView"
                                          j:hiddenTemplate="true"
                                          j:priority="1"/>
