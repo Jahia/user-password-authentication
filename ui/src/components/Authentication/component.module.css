@@ -1,7 +1,17 @@
 
 /* Login components */
 
-.loginInput {
+.formField {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    margin-top: 1rem;
+    width: 100%;
+}
+
+.formField input[type="text"],
+.formField input[type="password"] {
     width: 100%;
     padding: 0.5rem;
     border-radius: 4px;
@@ -9,8 +19,23 @@
     box-sizing: border-box;
 }
 
-/* email factor components */
-.forgotPassword {
+.formField input[type="checkbox"] {
+    cursor: pointer;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.formField:has(input[type="checkbox"]) {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.formField:has(input[type="checkbox"]) label {
+    cursor: pointer;
+    user-select: none;
+    margin: 0;
+    line-height: 1;
 }
 
 .errorMessage {

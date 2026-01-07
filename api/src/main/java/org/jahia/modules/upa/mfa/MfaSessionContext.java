@@ -36,6 +36,7 @@ public class MfaSessionContext implements Serializable {
     private final String userId;
     private final Locale userPreferredLanguage;
     private final String siteKey;
+    private final boolean rememberMe;
     private final List<String> requiredFactors;
 
     /**
@@ -44,12 +45,14 @@ public class MfaSessionContext implements Serializable {
      * @param userId                the unique identifier for the user
      * @param userPreferredLanguage the user's preferred language for localized messages
      * @param siteKey               the site context for this MFA session (may be null)
+     * @param rememberMe            whether the user enables the "remember me" feature
      * @param requiredFactors       the list of factor types required to complete authentication
      */
-    public MfaSessionContext(String userId, Locale userPreferredLanguage, String siteKey, List<String> requiredFactors) { // constructor renamed
+    public MfaSessionContext(String userId, Locale userPreferredLanguage, String siteKey, boolean rememberMe, List<String> requiredFactors) {
         this.userId = userId;
         this.userPreferredLanguage = userPreferredLanguage;
         this.siteKey = siteKey;
+        this.rememberMe = rememberMe;
         this.requiredFactors = requiredFactors != null ? requiredFactors : Collections.emptyList();
     }
 
@@ -78,6 +81,15 @@ public class MfaSessionContext implements Serializable {
      */
     public String getSiteKey() {
         return siteKey;
+    }
+
+    /**
+     * Indicates whether the "remember me" option is enabled for this session context.
+     *
+     * @return true if the "remember me" option is enabled, false otherwise
+     */
+    public boolean shouldRememberMe() {
+        return rememberMe;
     }
 
     /**

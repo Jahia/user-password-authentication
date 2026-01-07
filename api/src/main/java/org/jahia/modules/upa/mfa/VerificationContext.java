@@ -31,7 +31,7 @@ public class VerificationContext {
      * @param httpServletRequest  the HTTP request associated with the verification
      * @param httpServletResponse the HTTP response associated with the verification
      */
-    public VerificationContext(MfaSessionContext sessionContext, Serializable preparationResult, Serializable verificationData, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) { // param type updated
+    public VerificationContext(MfaSessionContext sessionContext, Serializable preparationResult, Serializable verificationData, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
         this.sessionContext = sessionContext;
         this.preparationResult = preparationResult;
         this.verificationData = verificationData;
@@ -44,7 +44,7 @@ public class VerificationContext {
      *
      * @return the session context
      */
-    public MfaSessionContext getSessionContext() { // return type updated
+    public MfaSessionContext getSessionContext() {
         return sessionContext;
     }
 

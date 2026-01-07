@@ -59,7 +59,7 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
         createUserForMFA(TEST_USER.username(), TEST_USER.password, TEST_USER.email); // Create for each test as the user might have been updated by a previous test (with mfa:suspendedUser mixin)
         deleteAllEmails(); // Sanity cleanup
         cy.logout(); // Ensure to start with an unauthenticated session
-        assertIsNotLoggedIn(); // Sanity check
+        assertIsNotLoggedIn('/sites/fake/fakePage.html'); // Sanity check
     });
 
     afterEach(() => {
