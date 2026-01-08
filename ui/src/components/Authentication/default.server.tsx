@@ -1,10 +1,12 @@
 import {
+  AddResources,
   buildEndpointUrl,
   buildModuleFileUrl,
   buildNodeUrl,
   Island,
   jahiaComponent,
 } from "@jahia/javascript-modules-library";
+import "@fontsource-variable/nunito-sans";
 import Authentication from "./Authentication.client.jsx";
 import type { Props } from "./types";
 
@@ -33,6 +35,7 @@ jahiaComponent(
     };
     return (
       <>
+        <AddResources type="css" resources={buildModuleFileUrl("dist/assets/style.css")} />
         <header>
           <img
             src={

@@ -5,14 +5,16 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="jcr" uri="http://www.jahia.org/tags/jcr" %>
+<%--@elvariable id="renderContext" type="org.jahia.services.render.RenderContext"--%>
 
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
         <title>${fn:escapeXml(renderContext.mainResource.node.displayableName)}</title>
+        <template:addResources type="css" resources="global.css"/>
     </head>
     <body>
-        <div class="bodywrapper">
+        <div class="card">
             <template:area path="pagecontent"/>
         </div>
         <c:if test="${renderContext.editMode}">

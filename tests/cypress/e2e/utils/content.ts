@@ -32,18 +32,29 @@ export function createSiteWithLoginPage(siteKey: string, languages = [I18N.defau
     });
     enableModule('user-password-authentication-ui', siteKey);
     const titleProps = languages.map(language => ({name: 'jcr:title', value: `Login page (${language})`, language: language}));
-    const properties = [...titleProps, {name: 'j:templateName', value: 'upa-authentication-page'}];
+    const properties = [...titleProps, {name: 'j:templateName', value: 'simple'}];
     addNode({
         parentPathOrId: `/sites/${siteKey}`,
         name: LoginStep.PAGE_NAME,
         primaryNodeType: 'jnt:page',
         properties: properties
     });
+    // Add login component to the page
+    // Area
+    addNode({
+        parentPathOrId: `/sites/${siteKey}/${LoginStep.PAGE_NAME}`,
+        name: 'pagecontent',
+        primaryNodeType: 'jnt:contentList',
+        properties: []
+    });
+    // Login component
+    addNode({
+        parentPathOrId: `/sites/${siteKey}/${LoginStep.PAGE_NAME}/pagecontent`,
+        name: 'authentication',
+        primaryNodeType: 'upaui:authentication',
+        properties: []
+    });
 
-    // Workaround: open JContent edit iframe to trigger area creation
-    cy.login();
-    cy.visit(`/cms/editframe/default/${getLoginPageURL(siteKey, siteLanguage)}?redirect=false`);
-    cy.get('div[type="area"][areaType="upaui:authentication"]').should('exist');
     publishAndWaitJobEnding(`/sites/${siteKey}`, [siteLanguage]);
 }
 
@@ -85,7 +96,7 @@ export function updateSiteLoginPageProps(siteKey: string, props: AuthenticationP
     const query = gql`
         mutation {
             jcr {
-                mutateNode(pathOrId: "/sites/${siteKey}/${LoginStep.PAGE_NAME}/authentication") {
+                mutateNode(pathOrId: "/sites/${siteKey}/${LoginStep.PAGE_NAME}/pagecontent/authentication") {
                     ${propertyMutations}
                 }
             }
