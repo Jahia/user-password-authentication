@@ -26,169 +26,17 @@
     </parent>
     <artifactId>user-password-authentication-ui</artifactId>
     <name>UPA - UI</name>
-    <packaging>pom</packaging> <!-- the JavaScript .tgz module is generated, but for Maven it is just a pom -->
+    <packaging>jahia-javascript</packaging>
     <description>UI of the User Password Authentication (UPA) module</description>
 
 
     <build>
         <plugins>
             <plugin>
-                <groupId>com.github.eirslett</groupId>
-                <artifactId>frontend-maven-plugin</artifactId>
-                <!-- Map Yarn commands to corresponding Maven phases -->
-                <executions>
-                    <execution>
-                        <id>install node and yarn (clean)</id>
-                        <phase>pre-clean</phase>
-                        <goals>
-                            <goal>install-node-and-yarn</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>yarn install (clean)</id>
-                        <phase>pre-clean</phase>
-                        <goals>
-                            <goal>yarn</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>yarn clean</id>
-                        <phase>clean</phase>
-                        <goals>
-                            <goal>yarn</goal>
-                        </goals>
-                        <configuration>
-                            <arguments>clean</arguments>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>install node and yarn</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>install-node-and-yarn</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>yarn install</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>yarn</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>yarn lint</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>yarn</goal>
-                        </goals>
-                        <configuration>
-                            <arguments>lint</arguments>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>yarn pack</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>yarn</goal>
-                        </goals>
-                        <configuration>
-                            <arguments>build</arguments>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <!-- attach the dist/package.tgz artifact to the Maven build so it will be installed/deployed as part of the Maven build -->
-                        <!-- bound to the "package" phase -->
-                        <id>attach-tgz-artifact</id>
-                        <goals>
-                            <goal>attach-artifact</goal>
-                        </goals>
-                        <configuration>
-                            <artifacts>
-                                <artifact>
-                                    <file>dist/package.tgz</file>
-                                    <type>tgz</type>
-                                </artifact>
-                            </artifacts>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <!-- copy the dist/package.tgz to the target directory with the finalName of the Maven build in the target/ folder so it is found by the CI when looking for jars to install before running integration tests -->
-                        <id>copy-dist-package</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <copy file="dist/package.tgz" tofile="${project.build.directory}/${project.build.finalName}.tgz" />
-                            </target>
-                        </configuration>
-                    </execution>
-                </executions>
+                <groupId>org.jahia.maven</groupId>
+                <artifactId>jahia-javascript-maven-plugin</artifactId>
+                <extensions>true</extensions>
             </plugin>
         </plugins>
     </build>
-    <profiles>
-        <profile>
-            <!-- Keep package.json version in sync -->
-            <id>release-prepare</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>com.github.eirslett</groupId>
-                        <artifactId>frontend-maven-plugin</artifactId>
-                        <executions>
-                            <!-- Keep the package.json in sync with the maven version -->
-                            <execution>
-                                <id>sync-version</id>
-                                <phase>process-resources</phase>
-                                <goals>
-                                    <goal>yarn</goal>
-                                </goals>
-                                <configuration>
-                                    <arguments>node ../.m2/sync-version.js ${project.version}</arguments>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>release-perform</id>
-            <!-- publish the tgz during the release:perform task (i.e. when the profile "release-perform" is enabled) -->
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>com.github.eirslett</groupId>
-                        <artifactId>frontend-maven-plugin</artifactId>
-                        <executions>
-                            <!-- Execution bound on the "deploy" phase: -->
-                            <execution>
-                                <id>publish-package</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>yarn</goal>
-                                </goals>
-                                <configuration>
-                                    <arguments>npm publish --access public</arguments>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>
