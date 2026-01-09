@@ -1,6 +1,5 @@
 - editConfiguration: "org.jahia.modules.upa.mfa"
   properties:
-    enabled: "true"
     loginUrl: "/sites/sample-ui/myLoginPage.html"
     enabledFactors: "email_code"
     factorStartRateLimitSeconds: "3"

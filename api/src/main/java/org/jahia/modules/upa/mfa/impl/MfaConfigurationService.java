@@ -48,9 +48,6 @@ public class MfaConfigurationService {
         @AttributeDefinition(name = "%loginUrl", description = "%loginUrlDesc")
         String loginUrl();
 
-        @AttributeDefinition(name = "%enabled", description = "%enabledDesc", defaultValue = "false")
-        boolean enabled();
-
         @AttributeDefinition(name = "%enabledFactors", description = "%enabledFactorsDesc")
         String[] enabledFactors() default {"email_code"};
 
@@ -86,24 +83,17 @@ public class MfaConfigurationService {
     @Activate
     public void activate(Config config) {
         this.config = config;
-        logger.info("MFA Service activated with enabled={}", config.enabled());
+        logger.info("MFA Service activated");
     }
 
     @Modified
     public void modified(Config config) {
         this.config = config;
-        logger.info("MFA Service configuration modified with enabled={}", config.enabled());
+        logger.info("MFA Service configuration modified");
     }
 
     public String getLoginUrl() {
-        return config.enabled() ? config.loginUrl() : null;
-    }
-
-    /**
-     * Checks if MFA is enabled in the system configuration.
-     */
-    public boolean isEnabled() {
-        return config.enabled();
+        return config.loginUrl();
     }
 
     public String[] getEnabledFactors() {

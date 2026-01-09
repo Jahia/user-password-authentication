@@ -69,7 +69,6 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
 
     after(() => {
         [TEST_USER_NO_EMAIL, ...SPECIAL_USERS].forEach(user => deleteUser(user.username()));
-        installMFAConfig('disabled.yml');
     });
 
     /**
