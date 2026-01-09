@@ -21,7 +21,7 @@ export const I18N = {
     locales: {
         en: {
             'unexpected_error': 'An unexpected error occurred',
-            'no_active_session': 'No active MFA session found',
+            'no_active_session': 'No active session found',
             'authentication_failed': 'Invalid username or password',
             'verification_failed': 'Verification failed',
             'suspended_user': 'Your account is temporarily locked for {{suspensionDurationInHours}} hour(s).',

@@ -21,7 +21,7 @@
  *
  * ==========================================================================================
  */
-package org.jahia.modules.upa.mfa.impl;
+package org.jahia.modules.upa.impl;
 
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
  * Internal configuration service for the MFA module.
  * This is an implementation detail and is not meant to be used outside of this module (hence, not exported).
  */
-@Component(configurationPid = "org.jahia.modules.upa.mfa", service = MfaConfigurationService.class, immediate = true, configurationPolicy = ConfigurationPolicy.REQUIRE)
+@Component(configurationPid = "org.jahia.modules.upa", service = MfaConfigurationService.class, immediate = true, configurationPolicy = ConfigurationPolicy.REQUIRE)
 @Designate(ocd = MfaConfigurationService.Config.class)
 public class MfaConfigurationService {
     private static final Logger logger = LoggerFactory.getLogger(MfaConfigurationService.class);
@@ -48,36 +48,36 @@ public class MfaConfigurationService {
         @AttributeDefinition(name = "%loginUrl", description = "%loginUrlDesc")
         String loginUrl();
 
-        @AttributeDefinition(name = "%enabledFactors", description = "%enabledFactorsDesc")
-        String[] enabledFactors() default {"email_code"};
+        @AttributeDefinition(name = "%mfaEnabledFactors", description = "%mfaEnabledFactorsDesc")
+        String[] mfaEnabledFactors() default {"email_code"};
 
         @AttributeDefinition(
-                name = "%maxAuthFailuresBeforeLock",
-                description = "%maxAuthFailuresBeforeLockDesc",
+                name = "%mfaMaxAuthFailuresBeforeLock",
+                description = "%mfaMaxAuthFailuresBeforeLockDesc",
                 defaultValue = "5"
         )
-        int maxAuthFailuresBeforeLock();
+        int mfaMaxAuthFailuresBeforeLock();
 
         @AttributeDefinition(
-                name = "%authFailuresWindowSeconds",
-                description = "%authFailuresWindowSecondsDesc",
+                name = "%mfaAuthFailuresWindowSeconds",
+                description = "%mfaAuthFailuresWindowSecondsDesc",
                 defaultValue = "120"
         )
-        int authFailuresWindowSeconds();
+        int mfaAuthFailuresWindowSeconds();
 
         @AttributeDefinition(
-                name = "%userTemporarySuspensionSeconds",
-                description = "%userTemporarySuspensionSecondsDesc",
+                name = "%mfaUserTemporarySuspensionSeconds",
+                description = "%mfaUserTemporarySuspensionSecondsDesc",
                 defaultValue = "600"
         )
-        int userTemporarySuspensionSeconds();
+        int mfaUserTemporarySuspensionSeconds();
 
         @AttributeDefinition(
-                name = "%factorStartRateLimitSeconds",
-                description = "%factorStartRateLimitSecondsDesc",
+                name = "%mfaFactorStartRateLimitSeconds",
+                description = "%mfaFactorStartRateLimitSecondsDesc",
                 defaultValue = "30"
         )
-        int factorStartRateLimitSeconds();
+        int mfaFactorStartRateLimitSeconds();
     }
 
     @Activate
@@ -96,24 +96,24 @@ public class MfaConfigurationService {
         return config.loginUrl();
     }
 
-    public String[] getEnabledFactors() {
-        return config.enabledFactors();
+    public String[] getMfaEnabledFactors() {
+        return config.mfaEnabledFactors();
     }
 
-    public int getMaxAuthFailuresBeforeLock() {
-        return config.maxAuthFailuresBeforeLock();
+    public int getMfaMaxAuthFailuresBeforeLock() {
+        return config.mfaMaxAuthFailuresBeforeLock();
     }
 
-    public int getAuthFailuresWindowSeconds() {
-        return config.authFailuresWindowSeconds();
+    public int getMfaAuthFailuresWindowSeconds() {
+        return config.mfaAuthFailuresWindowSeconds();
     }
 
-    public int getUserTemporarySuspensionSeconds() {
-        return config.userTemporarySuspensionSeconds();
+    public int getMfaUserTemporarySuspensionSeconds() {
+        return config.mfaUserTemporarySuspensionSeconds();
     }
 
-    public int getFactorStartRateLimitSeconds() {
-        return config.factorStartRateLimitSeconds();
+    public int getMfaFactorStartRateLimitSeconds() {
+        return config.mfaFactorStartRateLimitSeconds();
     }
 
 }

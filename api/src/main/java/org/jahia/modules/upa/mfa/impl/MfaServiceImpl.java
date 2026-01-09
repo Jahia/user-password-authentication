@@ -2,6 +2,7 @@ package org.jahia.modules.upa.mfa.impl;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import org.jahia.modules.upa.impl.MfaConfigurationService;
 import org.jahia.modules.upa.mfa.*;
 import org.jahia.services.content.JCRPropertyWrapper;
 import org.jahia.services.content.JCRTemplate;
@@ -77,7 +78,7 @@ public class MfaServiceImpl implements MfaService {
      * users from generating new verification codes too frequently. The cache key combines
      * the user path, factor type, and provider hash code.
      * <p>
-     * Entries automatically expire after {@link MfaConfigurationService#getFactorStartRateLimitSeconds()}
+     * Entries automatically expire after {@link MfaConfigurationService#getMfaFactorStartRateLimitSeconds()}
      * seconds, allowing new preparation requests once the rate limit window has passed.
      */
     private volatile Cache<String, Long> factorPreparationTimestampsCache;
@@ -134,7 +135,7 @@ public class MfaServiceImpl implements MfaService {
 
     @Override
     public List<String> getAvailableFactors() {
-        String[] enabledFactorsConfig = mfaConfigurationService.getEnabledFactors();
+        String[] enabledFactorsConfig = mfaConfigurationService.getMfaEnabledFactors();
         if (enabledFactorsConfig == null || enabledFactorsConfig.length == 0) {
             return Collections.emptyList(); // Return an empty list if no factors configured
         }
@@ -215,7 +216,7 @@ public class MfaServiceImpl implements MfaService {
             long now = System.currentTimeMillis();
 
             if (startedPrepareTime != null) {
-                long nextRetryInSeconds = mfaConfigurationService.getFactorStartRateLimitSeconds() - (now - startedPrepareTime) / 1000;
+                long nextRetryInSeconds = mfaConfigurationService.getMfaFactorStartRateLimitSeconds() - (now - startedPrepareTime) / 1000;
                 Map<String, String> arguments = Map.of(
                         "nextRetryInSeconds", String.valueOf(nextRetryInSeconds),
                         ARG_FACTOR_TYPE, factorType,
@@ -316,10 +317,10 @@ public class MfaServiceImpl implements MfaService {
 
     private void createCaffeineCache() {
         failuresCache = Caffeine.newBuilder()
-                .expireAfterWrite(mfaConfigurationService.getAuthFailuresWindowSeconds(), TimeUnit.SECONDS)
+                .expireAfterWrite(mfaConfigurationService.getMfaAuthFailuresWindowSeconds(), TimeUnit.SECONDS)
                 .build();
         factorPreparationTimestampsCache = Caffeine.newBuilder()
-                .expireAfterWrite(mfaConfigurationService.getFactorStartRateLimitSeconds(), TimeUnit.SECONDS).build();
+                .expireAfterWrite(mfaConfigurationService.getMfaFactorStartRateLimitSeconds(), TimeUnit.SECONDS).build();
     }
 
     private MfaSession getSessionOrCreateError(HttpServletRequest request) {
@@ -404,7 +405,7 @@ public class MfaServiceImpl implements MfaService {
 
     private Integer getSuspensionDuration() {
         // Return suspension duration in seconds
-        return mfaConfigurationService.getUserTemporarySuspensionSeconds();
+        return mfaConfigurationService.getMfaUserTemporarySuspensionSeconds();
     }
 
     private boolean isUserSuspended(String userPath) {
@@ -417,7 +418,7 @@ public class MfaServiceImpl implements MfaService {
                 }
                 JCRPropertyWrapper suspendedSinceProperty = userNode.getProperty(MFA_SUSPENDED_SINCE_PROP);
                 Calendar suspendedUntil = suspendedSinceProperty.getDate();
-                suspendedUntil.add(Calendar.SECOND, mfaConfigurationService.getUserTemporarySuspensionSeconds());
+                suspendedUntil.add(Calendar.SECOND, mfaConfigurationService.getMfaUserTemporarySuspensionSeconds());
                 // check if the suspension has expired
                 if (suspendedUntil.compareTo(Calendar.getInstance()) > 0) {
                     logger.debug("User {} is suspended until {}", userNode, suspendedUntil);
@@ -471,7 +472,7 @@ public class MfaServiceImpl implements MfaService {
         }
         String factorType = provider.getFactorType();
         tracker.addFailureAttempt(factorType);
-        if (tracker.getFailureAttemptsCount(factorType) > mfaConfigurationService.getMaxAuthFailuresBeforeLock()) {
+        if (tracker.getFailureAttemptsCount(factorType) > mfaConfigurationService.getMfaMaxAuthFailuresBeforeLock()) {
             logger.warn("User {} has failed to authenticate {} times in a row", userNodePath, tracker.getFailureAttemptsCount(factorType));
         } else {
             logger.debug("User {} has failed to authenticate {} times in a row", userNodePath, tracker.getFailureAttemptsCount(factorType));
@@ -486,12 +487,12 @@ public class MfaServiceImpl implements MfaService {
             return false;
         }
         String factorType = provider.getFactorType();
-        if (tracker.removeAttemptsOutsideWindow(factorType, mfaConfigurationService.getAuthFailuresWindowSeconds() * 1000L)) {
+        if (tracker.removeAttemptsOutsideWindow(factorType, mfaConfigurationService.getMfaAuthFailuresWindowSeconds() * 1000L)) {
             logger.debug("Expired timestamps removed for user {}", userNodePath);
             failuresCache.put(userNodePath, tracker);
         }
 
-        return tracker.getFailureAttemptsCount(factorType) >= mfaConfigurationService.getMaxAuthFailuresBeforeLock();
+        return tracker.getFailureAttemptsCount(factorType) >= mfaConfigurationService.getMfaMaxAuthFailuresBeforeLock();
     }
 
     private static String getCacheKey(String userPath, MfaFactorProvider provider) {

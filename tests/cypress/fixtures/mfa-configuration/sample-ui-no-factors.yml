@@ -1,7 +1,7 @@
-- editConfiguration: "org.jahia.modules.upa.mfa"
+- editConfiguration: "org.jahia.modules.upa"
   properties:
     loginUrl: "/sites/sample-ui/myLoginPage.html"
-    enabledFactors: ""
-    factorStartRateLimitSeconds: "0"
-    maxAuthFailuresBeforeLock: "0"
-    userTemporarySuspensionSeconds: "0"
+    mfaEnabledFactors: ""
+    mfaFactorStartRateLimitSeconds: "0"
+    mfaMaxAuthFailuresBeforeLock: "0"
+    mfaUserTemporarySuspensionSeconds: "0"
