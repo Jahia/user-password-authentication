@@ -1,5 +1,4 @@
 - editConfiguration: "org.jahia.modules.upa.mfa"
   properties:
-    enabled: "true"
     loginUrl: "/cs/sites/multi-language-site/myLoginPage.html"
     enabledFactors: "email_code"
