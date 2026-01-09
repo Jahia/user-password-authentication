@@ -44,7 +44,7 @@ export function getVerificationCode(email: string, locale = 'en'): Cypress.Chain
                 throw new Error(`HTML body title does not match expected locale subject. Expected: "${subject}", Found: "${titleMatch ? titleMatch[1] : `No matching title found in ${htmlBody}`}"`);
             }
 
-            const match = htmlBody.match(/<p class="code">(\d{6})<\/p>/);
+            const match = htmlBody.match(/<span data-testid="code">(\d{6})<\/span>/);
             if (!match || match.length <= 1) {
                 throw new Error('No 6-digit verification code found in email HTML body');
             }

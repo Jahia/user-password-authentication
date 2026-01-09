@@ -72,7 +72,7 @@
                             <!-- Message -->
                             <tr>
                                 <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 14px; color: #293136; line-height: 1.6; padding-bottom: 24px;">
-                                    <fmt:message key="jahia-upa.mfa.mail.message"/>
+                                    <p data-testid="email-message"><fmt:message key="jahia-upa.mfa.mail.message"/></p>
                                 </td>
                             </tr>
 
@@ -82,7 +82,7 @@
                                     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                                         <tr>
                                             <td align="center" style="background-color: #F6F6F6; padding: 24px;">
-                                                <p style="margin: 0; font-family: 'Courier New', Courier, monospace; font-size: 28px; font-weight: 700; color: #293136; line-height: 26px;">{{CODE}}</p>
+                                                <p style="margin: 0; font-family: 'Courier New', Courier, monospace; font-size: 28px; font-weight: 700; color: #293136; line-height: 26px;"><span data-testid="code">{{CODE}}</span></p>
                                             </td>
                                         </tr>
                                     </table>
@@ -92,21 +92,21 @@
                             <!-- Validity -->
                             <tr>
                                 <td align="center" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 14px; color: #293136; padding-bottom: 40px;">
-                                    <fmt:message key="jahia-upa.mfa.mail.validity"/>
+                                    <p data-testid="validity"><fmt:message key="jahia-upa.mfa.mail.validity"/></p>
                                 </td>
                             </tr>
 
                             <!-- Footer Title -->
                             <tr>
                                 <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 16px; font-weight: 700; color: #00A0E3; padding-bottom: 8px;">
-                                    <fmt:message key="jahia-upa.mfa.mail.notRequested.title"/>
+                                    <p data-testid="footer-title"><fmt:message key="jahia-upa.mfa.mail.notRequested.title"/></p>
                                 </td>
                             </tr>
 
                             <!-- Footer Text -->
                             <tr>
                                 <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 14px; color: #293136; line-height: 1.6;">
-                                    <fmt:message key="jahia-upa.mfa.mail.notRequested.message"/>
+                                    <p data-testid="footer-text"><fmt:message key="jahia-upa.mfa.mail.notRequested.message"/></p>
                                 </td>
                             </tr>
 
