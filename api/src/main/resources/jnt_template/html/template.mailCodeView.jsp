@@ -57,9 +57,9 @@
                                         <%-- it is not possible to use the usual syntax, for instance:
                                         <img src="<c:url value="${url.server}${url.context}${url.currentModule}/path/to/your/image.png"/>">
                                          --%>
-                                        <img src="https://jahia.cloud/modules/dx-jelastic-template/media/jahia-cloud-logo.svg"
+                                        <img src="https://jahia.cloud/modules/dx-jelastic-template/media/jahia-cloud-logo-small.png"
                                              alt="Jahia"
-                                             width="130"
+                                             width="155"
                                              height="70"
                                              style="display: block; border: 0; outline: none; text-decoration: none;" />
                                     </a>
