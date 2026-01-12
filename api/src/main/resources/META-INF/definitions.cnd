@@ -6,4 +6,4 @@
  - upa:mfaSuspendedSince (date) mandatory
 
 // Node type intended for a single content node within the module; used to render the HTML for the email code.
-[upa:mfaMailCode] > jnt:content, jmix:droppableContent, jmix:studioOnly, jmix:mainResource
+[upa:mfaEmailCode] > jnt:content, jmix:droppableContent, jmix:studioOnly, jmix:mainResource

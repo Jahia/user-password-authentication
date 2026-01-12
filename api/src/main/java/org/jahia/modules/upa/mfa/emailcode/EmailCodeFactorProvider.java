@@ -44,7 +44,7 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
     private static final Logger logger = LoggerFactory.getLogger(EmailCodeFactorProvider.class);
     private static final int EMAIL_CODE_LENGTH = 6;
     public static final String FACTOR_TYPE = "email_code";
-    private static final String MAIL_CODE_TEMPLATE_NAME = "mailCodeTemplate";
+    private static final String EMAIL_CODE_TEMPLATE_NAME = "emailCodeTemplate";
     private static final SecureRandom random = new SecureRandom();
     private static final String ERROR_SENDING_VALIDATION_FAILED = "factor.email_code.sending_validation_code_failed";
     private static final String ERROR_VERIFICATION_CODE_REQUIRED = "factor.email_code.verification_code_required";
@@ -56,15 +56,15 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
     private JahiaUserManagerService userManagerService;
     private RenderService renderService;
     private JahiaSitesService sitesService;
-    private String mailCodeContentPath;
+    private String emailCodeContentPath;
     private String resourceBundleName;
 
     @Activate
     protected void activate(BundleContext bundleContext) {
-        logger.info("Initializing MFA mail code factor provider...");
+        logger.info("Initializing MFA email code factor provider...");
         Bundle currentBundle = bundleContext.getBundle();
         String moduleId = BundleUtils.getModuleId(currentBundle);
-        this.mailCodeContentPath = String.format("/modules/%s/%s/contents/mfaMailCode", moduleId, BundleUtils.getModuleVersion(currentBundle));
+        this.emailCodeContentPath = String.format("/modules/%s/%s/contents/mfaEmailCode", moduleId, BundleUtils.getModuleVersion(currentBundle));
         this.resourceBundleName = "resources." + moduleId;
     }
 
@@ -190,7 +190,7 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
     }
 
     private String generateMailContent(MfaSessionContext sessionContext, HttpServletRequest currentRequest, HttpServletResponse currentResponse, String code) throws MfaException {
-        // will be "guest" at this stage, and it's sounds logical to render the mail code as guest user, for caching purpose.
+        // will be "guest" at this stage, and it's sounds logical to render the email code as guest user, for caching purpose.
         JahiaUser user = JCRSessionFactory.getInstance().getCurrentUser();
         try {
             return JCRTemplate.getInstance().doExecuteWithSystemSessionAsUser(user, Constants.LIVE_WORKSPACE, sessionContext.getUserPreferredLanguage(), session -> {
@@ -201,9 +201,9 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
                 localRenderContext.setWorkspace(Constants.LIVE_WORKSPACE);
                 localRenderContext.setServletPath(Render.getRenderServletPath());
 
-                // Build a resource from the mail code content node
-                JCRNodeWrapper mailCodeContentNode = session.getNode(mailCodeContentPath);
-                Resource resource = new Resource(mailCodeContentNode, "html", MAIL_CODE_TEMPLATE_NAME, Resource.CONFIGURATION_PAGE);
+                // Build a resource from the email code content node
+                JCRNodeWrapper emailCodeContentNode = session.getNode(emailCodeContentPath);
+                Resource resource = new Resource(emailCodeContentNode, "html", EMAIL_CODE_TEMPLATE_NAME, Resource.CONFIGURATION_PAGE);
                 localRenderContext.setMainResource(resource);
 
                 // Resolve site, use the one from the session if specified, otherwise use the module as site, this allows site template resolution.
@@ -212,20 +212,21 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
                     resolvedSite = sitesService.getSiteByKey(sessionContext.getSiteKey(), session);
                     localRenderContext.setSite(resolvedSite);
                 } else {
-                    localRenderContext.setSite(mailCodeContentNode.getResolveSite());
+                    localRenderContext.setSite(emailCodeContentNode.getResolveSite());
                 }
 
                 if (logger.isDebugEnabled()) {
-                    logger.debug("In order to debug the HTML output of the mfa mail code verification template, " +
-                            "you can directly visit: {}", String.format("/cms/render/live/%s%s.%s.html%s", sessionContext.getUserPreferredLanguage(), mailCodeContentPath,
-                            MAIL_CODE_TEMPLATE_NAME, resolvedSite != null ? "?jsite=" + resolvedSite.getIdentifier() : ""));
+                    logger.debug("In order to debug the HTML output of the mfa email code verification template, " +
+                            "you can directly visit: {}", String.format("/cms/render/live/%s%s.%s.html%s", sessionContext.getUserPreferredLanguage(),
+                            emailCodeContentPath,
+                            EMAIL_CODE_TEMPLATE_NAME, resolvedSite != null ? "?jsite=" + resolvedSite.getIdentifier() : ""));
                 }
 
                 try {
                     String out = renderService.render(resource, localRenderContext);
                     if (StringUtils.isEmpty(out) || !out.contains("{{CODE}}")) {
                         // No output, no code placeholder, something went wrong with the rendering
-                        throw new RenderException("Failed to render mail content for MFA mail code, please check your template");
+                        throw new RenderException("Failed to render mail content for MFA email code, please check your template");
                     }
 
                     // Replace the {{CODE}} placeholder with the actual code, we do that after rendering to allow caching of the rendered content.
@@ -235,7 +236,7 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
                 }
             });
         } catch (RepositoryException e) {
-            logger.error("An error occurred while generating mail content for MFA mail code, enable debug log level to get help");
+            logger.error("An error occurred while generating mail content for MFA email code, enable debug log level to get help");
             throw new MfaException(ERROR_EMAIL_CONTENT_GENERATION);
         }
     }
