@@ -19,8 +19,14 @@ export function getLoginPageURL(siteKey: string, language: string = undefined) {
  * @param siteKey the site key to create
  * @param languages the languages to create for the site, the first one is the default one
  * @param serverName the server name to use for the site
+ * @param modules the modules to enable for the site, defaults to `user-password-authentication-ui`
  */
-export function createSiteWithLoginPage(siteKey: string, languages = [I18N.defaultLanguage], serverName = 'localhost') {
+export function createSiteWithLoginPage(
+    siteKey: string,
+    languages = [I18N.defaultLanguage],
+    serverName = 'localhost',
+    modules = ['user-password-authentication-ui']
+) {
     deleteSite(siteKey);
     const siteLanguage = languages[0];
     const languagesAsString = languages.join(',');
@@ -30,7 +36,8 @@ export function createSiteWithLoginPage(siteKey: string, languages = [I18N.defau
         serverName: serverName,
         templateSet: 'user-password-authentication-template-set-test-module'
     });
-    enableModule('user-password-authentication-ui', siteKey);
+    // Enable all modules
+    modules.forEach(module => enableModule(module, siteKey));
     const titleProps = languages.map(language => ({name: 'jcr:title', value: `Login page (${language})`, language: language}));
     const properties = [...titleProps, {name: 'j:templateName', value: 'simple'}];
     addNode({
