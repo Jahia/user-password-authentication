@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useApiRoot } from "../../hooks/ApiRootContext";
+import classes from "./component.module.css";
 import ErrorMessage from "./ErrorMessage.client";
 import { tError } from "../../services/i18n";
 import { Trans } from "react-i18next";
@@ -62,7 +63,7 @@ export default function FatalErrorScreen(props: Readonly<FatalErrorScreenProps>)
       {message && <ErrorMessage message={message} />}
       <hr />
       {!inProgress && (
-        <div className={"additionalAction"}>
+        <div className={classes.additionalAction}>
           <a data-testid="restart-login" href="#" onClick={restartLogin}>
             <Trans i18nKey="suspended.restart_login" />
           </a>

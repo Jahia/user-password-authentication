@@ -6,6 +6,7 @@ import {
   Island,
   jahiaComponent,
 } from "@jahia/javascript-modules-library";
+import classes from "./component.module.css";
 import "@fontsource-variable/nunito-sans";
 import Authentication from "./Authentication.client.jsx";
 import type { Props } from "./types";
@@ -36,7 +37,7 @@ jahiaComponent(
     return (
       <>
         <AddResources type="css" resources={buildModuleFileUrl("dist/assets/style.css")} />
-        <header>
+        <header className={classes.header}>
           <img
             src={
               props.logo ? buildNodeUrl(props.logo) : buildModuleFileUrl("static/default-logo.svg")
@@ -44,7 +45,7 @@ jahiaComponent(
             alt="Logo"
           />
         </header>
-        <main>
+        <main className={classes.main}>
           <Island
             component={Authentication}
             props={{
