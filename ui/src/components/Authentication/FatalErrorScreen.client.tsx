@@ -63,7 +63,7 @@ export default function FatalErrorScreen(props: Readonly<FatalErrorScreenProps>)
       {message && <ErrorMessage message={message} />}
       <hr />
       {!inProgress && (
-        <div className={classes.additionalAction}>
+        <div data-testid="additional-action" className={classes.additionalAction}>
           <a data-testid="restart-login" href="#" onClick={restartLogin}>
             <Trans i18nKey="suspended.restart_login" />
           </a>

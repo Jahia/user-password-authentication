@@ -157,7 +157,7 @@ export default function EmailCodeVerificationForm(props: Readonly<EmailCodeVerif
           {props.content.emailCodeVerificationSubmitButtonLabel}
         </button>
         <hr />
-        <div className={classes.additionalAction}>
+        <div data-testid="additional-action" className={classes.additionalAction}>
           {props.content.emailCodeVerificationAdditionalActionHtml && (
             <div
               dangerouslySetInnerHTML={{

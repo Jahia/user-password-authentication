@@ -19,11 +19,11 @@ export class LoginStep extends BasePage {
         labelPassword: 'form label[for="password"]',
         inputPassword: '[data-testid="login-password"]',
         // Additional text/action below the password field (e.g., "Forgot password?")
-        belowPasswordField: '.belowPasswordField',
+        belowPasswordField: '[data-testid="below-password-field"]',
         // Submit button on Login page
         buttonSubmit: '[data-testid="login-submit"]',
         // Additional action on Login page (e.g., "Don't have a Jahia Cloud account? Create an account")
-        additionalAction: '.additionalAction'
+        additionalAction: '[data-testid="additional-action"]'
     };
 
     /**
