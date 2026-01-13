@@ -1,5 +1,6 @@
 package org.jahia.modules.upa.mfa.impl;
 
+import org.jahia.modules.upa.impl.MfaConfigurationService;
 import org.jahia.params.valves.LoginUrlProvider;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;

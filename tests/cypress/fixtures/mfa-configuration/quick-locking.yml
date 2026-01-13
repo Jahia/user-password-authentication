@@ -1,8 +1,8 @@
 # Used to test the locking mechanism with low numbers
-- editConfiguration: "org.jahia.modules.upa.mfa"
+- editConfiguration: "org.jahia.modules.upa"
   properties:
     loginUrl: "/sites/fake/fakePage.html"
-    enabledFactors: "email_code"
-    maxAuthFailuresBeforeLock: "3"
-    authFailuresWindowSeconds: "5"
-    userTemporarySuspensionSeconds: "6"
+    mfaEnabledFactors: "email_code"
+    mfaMaxAuthFailuresBeforeLock: "3"
+    mfaAuthFailuresWindowSeconds: "5"
+    mfaUserTemporarySuspensionSeconds: "6"

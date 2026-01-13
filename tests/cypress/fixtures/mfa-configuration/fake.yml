@@ -1,9 +1,9 @@
 # Fake configuration where the login URL does not point at a valid page
 # but it's only used for testing GraphQL endpoints where no UI is tested
-- editConfiguration: "org.jahia.modules.upa.mfa"
+- editConfiguration: "org.jahia.modules.upa"
   properties:
     loginUrl: "/sites/fake/fakePage.html"
-    enabledFactors: "email_code"
-    factorStartRateLimitSeconds: "3"
-    maxAuthFailuresBeforeLock: "3"
-    userTemporarySuspensionSeconds: "5"
+    mfaEnabledFactors: "email_code"
+    mfaFactorStartRateLimitSeconds: "3"
+    mfaMaxAuthFailuresBeforeLock: "3"
+    mfaUserTemporarySuspensionSeconds: "5"

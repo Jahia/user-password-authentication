@@ -1,7 +1,7 @@
-- editConfiguration: "org.jahia.modules.upa.mfa"
+- editConfiguration: "org.jahia.modules.upa"
   properties:
     loginUrl: "/sites/sample-ui/myLoginPage.html"
-    enabledFactors: "email_code"
-    factorStartRateLimitSeconds: "3"
-    maxAuthFailuresBeforeLock: "3"
-    userTemporarySuspensionSeconds: "97200" # 27 hours = 60 * 60 * 27
+    mfaEnabledFactors: "email_code"
+    mfaFactorStartRateLimitSeconds: "3"
+    mfaMaxAuthFailuresBeforeLock: "3"
+    mfaUserTemporarySuspensionSeconds: "97200" # 27 hours = 60 * 60 * 27
