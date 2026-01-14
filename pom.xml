@@ -45,7 +45,6 @@
     </modules>
 
     <properties>
-        <jahia.plugin.version>6.9</jahia.plugin.version>
         <jahia-bom.version>8.2.3.0-SNAPSHOT</jahia-bom.version> <!-- should match ${project.parent.version} -->
         <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
         <maven-clean-plugin.version>3.5.0</maven-clean-plugin.version>

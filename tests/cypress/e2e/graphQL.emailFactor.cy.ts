@@ -165,7 +165,6 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
 
     it('Should throw an error when preparing without initiating the factor', () => {
         cy.log('2- prepare');
-        // Prepare('email_code', 'email_code', 'Failed to prepare factor: No active MFA session found');
         prepareEmailCodeFactorAndExpectGlobalError('no_active_session');
     });
 
@@ -179,9 +178,9 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
     it('Should be suspended when multiple wrong verification codes are entered in a row', () => {
         cy.log('0- installing the MFA configuration');
         // Config is:
-        // maxAuthFailuresBeforeLock: 3
-        // authFailuresWindowSeconds: 5
-        // userTemporarySuspensionSeconds: 6
+        // mfaMaxAuthFailuresBeforeLock: 3
+        // mfaAuthFailuresWindowSeconds: 5
+        // mfaUserTemporarySuspensionSeconds: 6
         installMFAConfig('quick-locking.yml');
 
         cy.log('1- initiate');
@@ -223,12 +222,12 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
         });
     });
 
-    it('Should be allowed to enter new code when an attempt is out of the authFailuresWindowSeconds', () => {
+    it('Should be allowed to enter new code when an attempt is out of the mfaAuthFailuresWindowSeconds', () => {
         cy.log('0- installing the MFA configuration');
         // Config is:
-        // maxAuthFailuresBeforeLock: 3
-        // authFailuresWindowSeconds: 5
-        // userTemporarySuspensionSeconds: 6
+        // mfaMaxAuthFailuresBeforeLock: 3
+        // mfaAuthFailuresWindowSeconds: 5
+        // mfaUserTemporarySuspensionSeconds: 6
         installMFAConfig('quick-locking.yml');
 
         cy.log('1- initiate');
@@ -258,7 +257,7 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
             verifyEmailCodeFactorAndExpectFactorError(wrongCode, 'verify.verification_failed', {
                 factorType: value => expect(value).to.eq('email_code')
             });
-            cy.log('wait until the first attempt is out of the authFailuresWindowSeconds');
+            cy.log('wait until the first attempt is out of the mfaAuthFailuresWindowSeconds');
             // eslint-disable-next-line cypress/no-unnecessary-waiting
             cy.wait(3000);
             wrongCode = generateWrongCode(wrongCode);
