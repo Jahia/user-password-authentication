@@ -39,10 +39,6 @@ public class MfaServiceImpl implements MfaService {
     private static final String MFA_SESSION_KEY = "mfa_session";
     private static final String MFA_SUSPENDED_USER_MIXIN = "upa:mfaSuspendedUser";
     private static final String MFA_SUSPENDED_SINCE_PROP = "upa:mfaSuspendedSince";
-    private static final AuthenticationOptions AUTH_OPTIONS = AuthenticationOptions.Builder.withDefaults()
-            // TODO disable it until https://github.com/Jahia/user-password-authentication/issues/68 is implemented
-            .shouldRememberMe(false)
-            .build();
     private static final String ERROR_FACTOR_TYPE_NOT_SUPPORTED = "factor_type_not_supported";
     private static final String ERROR_RATE_LIMIT_EXCEEDED = "prepare.rate_limit_exceeded";
     private static final String ERROR_FACTOR_NOT_PREPARED = "verify.factor_not_prepared";
@@ -152,7 +148,14 @@ public class MfaServiceImpl implements MfaService {
     }
 
     @Override
-    public MfaSession initiate(String username, String password, String siteKey, HttpServletRequest request) {
+    public MfaSession initiate(InitiationContext initiationContext) {
+        String username = initiationContext.getUsername();
+        String password = initiationContext.getPassword();
+        String siteKey = initiationContext.getSiteKey();
+        boolean rememberMe = initiationContext.isRememberMe();
+        HttpServletRequest request = initiationContext.getHttpServletRequest();
+        HttpServletResponse response = initiationContext.getHttpServletResponse();
+
         logger.info("Initiating MFA for user: {}", username);
 
         AuthenticationRequest authenticationRequest = new AuthenticationRequest(username, password, siteKey, true);
@@ -172,7 +175,7 @@ public class MfaServiceImpl implements MfaService {
         String preferredLanguage = user.getProperty("preferredLanguage");
         userLocale = preferredLanguage != null ? new Locale(preferredLanguage) : Locale.ENGLISH;
         List<String> requiredFactors = getAvailableFactors(); // for now just use all available factors
-        MfaSessionContext sessionContext = new MfaSessionContext(username, userLocale, siteKey, requiredFactors);
+        MfaSessionContext sessionContext = new MfaSessionContext(username, userLocale, siteKey, rememberMe, requiredFactors);
         MfaSession session = new MfaSession(sessionContext);
 
         // Validate user not suspended
@@ -190,7 +193,7 @@ public class MfaServiceImpl implements MfaService {
             // special case when there is no required factor configured (the 2nd factor is disabled)
             logger.info("No required factors to verify for context: {}, proceed with authentication", session.getContext());
             JCRUserNode jcrUserNode = resolveUserNode(session);
-            authenticateUser(request, jcrUserNode);
+            authenticateUser(session, jcrUserNode, request, response);
             failuresCache.invalidate(jcrUserNode.getPath());
         } else {
             logger.info("MFA session initiated for user: {}", username);
@@ -276,7 +279,7 @@ public class MfaServiceImpl implements MfaService {
 
             if (session.areAllRequiredFactorsCompleted()) {
                 logger.info("All MFA factors completed for context: {}, proceed with authentication", session.getContext());
-                authenticateUser(httpServletRequest, validation.userNode);
+                authenticateUser(session, validation.userNode, httpServletRequest, httpServletResponse);
                 failuresCache.invalidate(userPath);
             }
         } catch (MfaException e) {
@@ -307,7 +310,7 @@ public class MfaServiceImpl implements MfaService {
 
     @Override
     public MfaSession createNoSessionError() {
-        MfaSessionContext sessionContext = new MfaSessionContext("unknown", Locale.getDefault(), null, getAvailableFactors());
+        MfaSessionContext sessionContext = new MfaSessionContext("unknown", Locale.getDefault(), null, true, getAvailableFactors());
         MfaSession session = new MfaSession(sessionContext);
         session.setError(new MfaError(ERROR_NO_SESSION));
         return session;
@@ -371,9 +374,12 @@ public class MfaServiceImpl implements MfaService {
         return user;
     }
 
-    private void authenticateUser(HttpServletRequest request, JCRUserNode jcrUserNode) {
+    private void authenticateUser(MfaSession session, JCRUserNode jcrUserNode, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
+        AuthenticationOptions authOptions = AuthenticationOptions.Builder.withDefaults()
+                .shouldRememberMe(session.getContext().shouldRememberMe())
+                .build();
         try {
-            authenticationService.authenticate(jcrUserNode.getPath(), AUTH_OPTIONS, request, null);
+            authenticationService.authenticate(jcrUserNode.getPath(), authOptions, httpServletRequest, httpServletResponse);
         } catch (InvalidSessionLoginException e) {
             throw new IllegalStateException("Invalid session login", e);
         } catch (AccountNotFoundException e) {

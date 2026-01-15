@@ -17,6 +17,7 @@ interface LoginFormProps {
 export default function LoginForm(props: Readonly<LoginFormProps>) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(true); // by default, enable the "remember me" feature
   const [error, setError] = useState("");
   const [inProgress, setInProgress] = useState(false);
   const apiRoot = useApiRoot();
@@ -25,7 +26,7 @@ export default function LoginForm(props: Readonly<LoginFormProps>) {
     e.preventDefault();
     setInProgress(true);
 
-    initiate(apiRoot, username, password)
+    initiate(apiRoot, username, password, rememberMe)
       .then((result) => {
         if (result.success) {
           // special case if there is no factor configured
@@ -46,28 +47,30 @@ export default function LoginForm(props: Readonly<LoginFormProps>) {
   return (
     <>
       <form onSubmit={handleSubmit}>
-        <label htmlFor={"username"}>{props.content.loginEmailFieldLabel}</label>
-        <input
-          id={"username"}
-          name={"username"}
-          className={classes.loginInput}
-          type="text"
-          autoComplete={"username"}
-          placeholder="Email"
-          data-testid="login-username"
-          onChange={(e) => setUsername(e.target.value)}
-        />
-        <label htmlFor={"password"}>{props.content.loginPasswordFieldLabel}</label>
-        <input
-          id={"password"}
-          name={"password"}
-          className={classes.loginInput}
-          type="password"
-          autoComplete={"current-password"}
-          placeholder="Password"
-          data-testid="login-password"
-          onChange={(e) => setPassword(e.target.value)}
-        />
+        <div className={classes.formField}>
+          <label htmlFor={"username"}>{props.content.loginEmailFieldLabel}</label>
+          <input
+            id={"username"}
+            name={"username"}
+            type="text"
+            autoComplete={"username"}
+            placeholder="Email"
+            data-testid="login-username"
+            onChange={(e) => setUsername(e.target.value)}
+          />
+        </div>
+        <div className={classes.formField}>
+          <label htmlFor={"password"}>{props.content.loginPasswordFieldLabel}</label>
+          <input
+            id={"password"}
+            name={"password"}
+            type="password"
+            autoComplete={"current-password"}
+            placeholder="Password"
+            data-testid="login-password"
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </div>
         {props.content.loginBelowPasswordFieldHtml && (
           <div
             data-testid="below-password-field"
@@ -75,6 +78,17 @@ export default function LoginForm(props: Readonly<LoginFormProps>) {
             dangerouslySetInnerHTML={{ __html: props.content.loginBelowPasswordFieldHtml }}
           />
         )}
+        <div className={classes.formField}>
+          <input
+            id={"rememberMe"}
+            name={"rememberMe"}
+            type="checkbox"
+            checked={rememberMe}
+            data-testid="login-remember-me"
+            onChange={(e) => setRememberMe(e.target.checked)}
+          />
+          <label htmlFor={"rememberMe"}>Remember me</label>
+        </div>
         <ErrorMessage message={error} />
         <button type="submit" disabled={inProgress} data-testid="login-submit">
           {props.content.loginSubmitButtonLabel}

@@ -31,13 +31,13 @@ export const createUserForMFA = (username: string, password: string, email:strin
 
 /**
  * Asserts the current user is not logged in by checking if the currentUser GraphQL query fails
+ * @param redirectedUrl the expected redirect URL
  */
-export const assertIsNotLoggedIn = () => {
+export const assertIsNotLoggedIn = (redirectedUrl: string) => {
     // TODO find a more efficient way
     cy.visit('/jahia/dashboard', {failOnStatusCode: false, timeout: 30000});
-    // Should match the configuration in fake.yml
     // Ensure the user gets redirected when visiting a page that requires authentication
-    cy.url().should('contain', '/sites/fake/fakePage.html');
+    cy.url().should('contain', redirectedUrl);
 };
 
 /**
@@ -59,6 +59,19 @@ export const assertIsLoggedIn = (username: string) => {
     });
     // Also ensure the user is not suspended
     assertIsNotSuspended(username);
+};
+
+/**
+ * Asserts that the current cookies match the expected cookie names.
+ * First verifies that all expected cookies are present, then checks that the total count matches exactly.
+ * @param cookiesNames the array of expected cookie names
+ */
+export const assertCookiesMatch = (cookiesNames:string[]) => {
+    cy.getCookies().should(cookies => {
+        const cookieNames = cookies.map(cookie => cookie.name);
+        expect(cookieNames).to.include.members(cookiesNames);
+        expect(cookies).to.have.length(cookiesNames.length);
+    });
 };
 
 /**

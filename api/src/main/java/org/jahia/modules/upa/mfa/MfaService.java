@@ -31,20 +31,18 @@ public interface MfaService {
     /**
      * Initiates an MFA authentication session for a user.
      * <p>
-     * This method validates the provided username and password credentials, and if successful,
-     * creates a new MFA session. The session will require verification of one or more factors
-     * before authentication is complete.
+     * It validates the provided username and password credentials, and if successful, creates a new MFA session.
+     * All the required factors will then have to be verified before authentication is complete.
+     * <i>NB: if there are no required factors when initiating, the user gets authenticated</i>
+     *
      * <p>
      * If authentication fails or an error occurs, the returned session will contain an error.
-     * Always check {@link MfaSession#getError()} to determine if initiation succeeded.
+     * Check {@link MfaSession#getError()} for session-level errors to determine if initiation succeeded.
      *
-     * @param username the username for authentication
-     * @param password the password for authentication
-     * @param siteKey  the site context for this session (may be null)
-     * @param request  the HTTP request
+     * @param initiationContext the context containing username, password, site key, remember me flag, and HTTP request/response
      * @return an MFA session, potentially containing an error if initiation failed
      */
-    MfaSession initiate(String username, String password, String siteKey, HttpServletRequest request);
+    MfaSession initiate(InitiationContext initiationContext);
 
     /**
      * Prepares a specific MFA factor for verification.

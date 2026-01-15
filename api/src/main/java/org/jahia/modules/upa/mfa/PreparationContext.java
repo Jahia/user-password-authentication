@@ -25,7 +25,7 @@ public class PreparationContext {
      * @param httpServletResponse the HTTP response for setting headers or cookies if needed
      */
     public PreparationContext(MfaSessionContext sessionContext,
-                              HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) { // constructor param type
+                              HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
         this.sessionContext = sessionContext;
         this.httpServletRequest = httpServletRequest;
         this.httpServletResponse = httpServletResponse;
@@ -38,7 +38,7 @@ public class PreparationContext {
      */
     public MfaSessionContext getSessionContext() {
         return sessionContext;
-    } // return type updated
+    }
 
     /**
      * Returns the HTTP request that triggered the preparation.

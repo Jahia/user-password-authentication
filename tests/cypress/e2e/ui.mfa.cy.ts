@@ -2,7 +2,8 @@ import {deleteSite, deleteUser} from '@jahia/cypress';
 import {faker} from '@faker-js/faker';
 import {EmailFactorStep, LoginStep} from './pages';
 import {
-    assertIsLoggedIn,
+    assertCookiesMatch,
+    assertIsLoggedIn, assertIsNotLoggedIn,
     AuthenticationProps,
     createSiteWithLoginPage,
     createUserForMFA,
@@ -108,6 +109,7 @@ describe('Tests for the UI module', () => {
         // Directly logged in
         LoginStep.login(username, password);
 
+        EmailFactorStep.assertSuccessfullyRedirected(SITE_KEY);
         assertIsLoggedIn(username);
     });
 
@@ -556,10 +558,57 @@ describe('Tests for the UI module', () => {
         });
     });
 
+    it('Should have the "remember me" checked by default', () => {
+        LoginStep.triggerRedirect(SITE_KEY, undefined, true);
+    });
+
+    it('Should remain authenticated after expiration of the session when "remember me" is checked', () => {
+        LoginStep.triggerRedirect(SITE_KEY);
+
+        LoginStep.login(username, password, true);
+        LoginStep.selectEmailCodeFactor();
+        getVerificationCode(email).then(code => {
+            // Proceed with verification
+            EmailFactorStep.submitVerificationCode(code);
+            EmailFactorStep.assertSuccessfullyRedirected(SITE_KEY);
+            assertIsLoggedIn(username);
+            assertCookiesMatch(['JSESSIONID', 'jid']);
+
+            // Simulate closing the browser session (by deleting the JSESSIONID cookie)
+            cy.clearCookie('JSESSIONID');
+            assertCookiesMatch(['jid']);
+            // The user should be logged in automatically
+            cy.reload();
+            assertIsLoggedIn(username);
+            assertCookiesMatch(['JSESSIONID', 'jid']);
+        });
+    });
+
+    it('Should not remember me when "remember me" is unchecked', () => {
+        LoginStep.triggerRedirect(SITE_KEY);
+
+        LoginStep.login(username, password, false);
+        LoginStep.selectEmailCodeFactor();
+        getVerificationCode(email).then(code => {
+            // Proceed with verification
+            EmailFactorStep.submitVerificationCode(code);
+            EmailFactorStep.assertSuccessfullyRedirected(SITE_KEY);
+            assertIsLoggedIn(username);
+            assertCookiesMatch(['JSESSIONID']);
+
+            // Simulate closing the browser session (by deleting the JSESSIONID cookie)
+            cy.clearCookie('JSESSIONID');
+            assertCookiesMatch([]);
+            // The user should remain logged out
+            assertIsNotLoggedIn('/sites/sample-ui/myLoginPage.html');
+            assertCookiesMatch(['JSESSIONID']); // A new (unauthenticated) session is created, hence the JSESSIONID cookie is set
+        });
+    });
+
     // Dummy test to fail if any errors or warnings appear in the browser console,
     // providing clearer insight into execution and failure reasons.
     // Analysis itself will happen inside jsErrorsLogger module (if one is enabled).
-    it('Should ensure errors and warnings absense in browser console', () => {
+    it('Should ensure errors and warnings absence in browser console', () => {
         cy.log('Analyze console messages');
     });
 });

@@ -18,6 +18,9 @@ export class LoginStep extends BasePage {
         // Password label and input field
         labelPassword: 'form label[for="password"]',
         inputPassword: '[data-testid="login-password"]',
+        // Password label and input field
+        labelRememberMe: 'form label[for="rememberMe"]',
+        inputRememberMe: '[data-testid="login-remember-me"]',
         // Additional text/action below the password field (e.g., "Forgot password?")
         belowPasswordField: '[data-testid="below-password-field"]',
         // Submit button on Login page
@@ -30,23 +33,31 @@ export class LoginStep extends BasePage {
      * Triggers redirect to the login page of the specified site
      * @param {string} siteKey Site key where the login page is located
      * @param language Language code to use for the login page URL (optional)
+     * @param rememberMeChecked whether the "remember me" is expected to be checked or not. `undefined` means no check is perform
      */
-    static triggerRedirect(siteKey: string, language: string = undefined): void {
+    static triggerRedirect(siteKey: string, language: string = undefined, rememberMeChecked: boolean = undefined): void {
         cy.logout(); // Ensure to start with an unauthenticated session
         cy.visit(this.REDIRECT_TRIGGER, {failOnStatusCode: false});
-        cy.url().should('contain', getLoginPageURL(siteKey, language));
+        LoginStep.assertOnLoginPage(siteKey, language, rememberMeChecked);
     }
 
     /**
      * Login with username and password
      * @param username - The username to login with
      * @param password - The password to login with
+     * @param rememberMe - Whether to remember the user being logged in (optional, default: true)
      */
-    static login(username: string, password: string): void {
+    static login(username: string, password: string, rememberMe: boolean = undefined): void {
         cy.log(String('Authenticating with credentials: ' + username + ' / ' + password));
         cy.get(this.selectors.inputUsername).should('be.visible');
         cy.get(this.selectors.inputUsername).type(username);
         cy.get(this.selectors.inputPassword).type(password);
+        if (rememberMe === true) {
+            cy.get(this.selectors.inputRememberMe).check();
+        } else if (rememberMe === false) {
+            cy.get(this.selectors.inputRememberMe).uncheck();
+        }
+
         cy.get(this.selectors.buttonSubmit).click();
     }
 
@@ -77,11 +88,11 @@ export class LoginStep extends BasePage {
         submitButtonLabel,
         additionalActionHtml
     }: {
-            emailLabel?: string;
-            passwordLabel?: string;
-            belowPasswordFieldHtml?: string;
-            submitButtonLabel?: string;
-            additionalActionHtml?: string;
+        emailLabel?: string;
+        passwordLabel?: string;
+        belowPasswordFieldHtml?: string;
+        submitButtonLabel?: string;
+        additionalActionHtml?: string;
     } = {}) {
         // Use default i18n values if specific values are not provided
         const content = {
@@ -97,5 +108,16 @@ export class LoginStep extends BasePage {
         cy.get(this.selectors.belowPasswordField).should('have.html', content.belowPasswordFieldHtml);
         cy.get(this.selectors.buttonSubmit).should('have.text', content.submitButtonLabel);
         cy.get(this.selectors.additionalAction).should('have.html', content.additionalActionHtml);
+    }
+
+    static assertOnLoginPage(siteKey: string, language: string = undefined, rememberMeChecked: boolean = undefined): void {
+        cy.url().should('contain', getLoginPageURL(siteKey, language));
+        cy.get(this.selectors.inputUsername).should('exist');
+        cy.get(this.selectors.inputPassword).should('exist');
+        if (rememberMeChecked === true) {
+            cy.get(this.selectors.inputRememberMe).should('be.checked');
+        } else if (rememberMeChecked === false) {
+            cy.get(this.selectors.inputRememberMe).should('not.be.checked');
+        }
     }
 }
