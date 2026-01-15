@@ -16,11 +16,11 @@ export class EmailFactorStep extends BasePage {
         // Submit button
         buttonSubmit: '[data-testid="verification-submit"]',
         // Additional action
-        additionalAction: 'div.additionalAction>div',
+        additionalAction: '[data-testid="additional-action"]>div',
         // Resend code link
-        linkResendCode: 'div.additionalAction>a',
+        linkResendCode: '[data-testid="additional-action"]>a',
         // Restart login link
-        linkRestartLogin: 'div.additionalAction>a[data-testid="restart-login"]',
+        linkRestartLogin: '[data-testid="additional-action"]>a[data-testid="restart-login"]',
 
         // Messages and notifications
         verificationSentMessage: 'main>jsm-island>div>div',

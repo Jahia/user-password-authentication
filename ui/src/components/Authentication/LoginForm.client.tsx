@@ -70,7 +70,8 @@ export default function LoginForm(props: Readonly<LoginFormProps>) {
         />
         {props.content.loginBelowPasswordFieldHtml && (
           <div
-            className={"belowPasswordField"}
+            data-testid="below-password-field"
+            className={classes.belowPasswordField}
             dangerouslySetInnerHTML={{ __html: props.content.loginBelowPasswordFieldHtml }}
           />
         )}
@@ -82,7 +83,8 @@ export default function LoginForm(props: Readonly<LoginFormProps>) {
       <hr />
       {props.content.loginAdditionalActionHtml && (
         <div
-          className={"additionalAction"}
+          data-testid="additional-action"
+          className={classes.additionalAction}
           dangerouslySetInnerHTML={{ __html: props.content.loginAdditionalActionHtml }}
         />
       )}

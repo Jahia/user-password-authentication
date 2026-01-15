@@ -74,7 +74,7 @@ export default function EmailCodeVerificationForm(props: Readonly<EmailCodeVerif
       updateMask();
       // Check both form validity AND that the code has correct length
       // Note: HTML5 minLength validation doesn't work properly when values are typed (or set) programmatically
-      //       Also, reading the actual input value from the DOM, to avoid stale state, 
+      //       Also, reading the actual input value from the DOM, to avoid stale state,
       //       since the latter might not be updated yet
       const currentValue = inputRef.current?.value || '';
       const isValidLength = currentValue.length === codeLength;
@@ -157,7 +157,7 @@ export default function EmailCodeVerificationForm(props: Readonly<EmailCodeVerif
           {props.content.emailCodeVerificationSubmitButtonLabel}
         </button>
         <hr />
-        <div className={"additionalAction"}>
+        <div data-testid="additional-action" className={classes.additionalAction}>
           {props.content.emailCodeVerificationAdditionalActionHtml && (
             <div
               dangerouslySetInnerHTML={{
