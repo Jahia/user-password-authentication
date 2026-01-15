@@ -26,7 +26,7 @@
 </head>
 <body>
 <h2>This is a custom mail code template</h2>
-<p>Your code is: <span class="code">{{CODE}}</span></p>
+<p>Your code is: <span data-testid="code">{{CODE}}</span></p>
 <img src="<c:url value="${url.server}${url.context}${url.currentModule}/img/poweredByJahia.png"/>" alt="Powered by Jahia">
 </body>
 </html>

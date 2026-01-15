@@ -23,160 +23,108 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="x-apple-disable-message-reformatting" />
     <title><fmt:message key="jahia-upa.mfa.mail.title"/></title>
+    <!--[if mso]>
     <style type="text/css">
-        /* Reset styles */
-        body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
-        table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
-        img { -ms-interpolation-mode: bicubic; border: 0; outline: none; text-decoration: none; }
-        body { margin: 0; padding: 0; width: 100% !important; height: 100% !important; }
-
-        /* Main styles */
-        body {
-            font-family: 'Nunito Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-            line-height: 1.6;
-            color: #293136;
-            background-color: #F6FAFC;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 486px;
-            margin: 0 auto;
-            background-color: #ffffff;
-            border-radius: 4px;
-            box-shadow: 0px 4px 8px rgba(19, 28, 33, 0.08);
-        }
-
-        .content-padding {
-            padding: 32px;
-        }
-
-        .logo {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .logo a {
-            text-decoration: none;
-        }
-
-        .logo img {
-            max-height: 70px;
-            width: auto;
-            display: block;
-        }
-
-        .logo-crop {
-            width: 130px;
-            height: 70px;
-            overflow: hidden;
-            display: inline-block;
-        }
-
-        .logo-crop img {
-            height: 70px;
-            margin-left: -123px;
-            display: block;
-            max-width: none;
-        }
-
-        .message {
-            font-size: 14px;
-            color: #293136;
-            margin: 0 0 24px 0;
-        }
-
-        .code-container {
-            background-color: #F6F6F6;
-            padding: 24px;
-            text-align: center;
-            margin-bottom: 24px;
-        }
-
-        .code {
-            font-family: 'Roboto Mono', 'Courier New', Courier, monospace;
-            font-size: 28px;
-            font-weight: 700;
-            color: #293136;
-            margin: 0;
-            line-height: 26px;
-        }
-
-        .validity {
-            text-align: center;
-            font-size: 14px;
-            color: #293136;
-            margin-bottom: 40px;
-        }
-
-        .footer-title {
-            font-size: 16px;
-            font-weight: 700;
-            color: #00A0E3;
-            margin-bottom: 8px;
-        }
-
-        .footer-text {
-            font-size: 14px;
-            color: #293136;
-        }
-
-        a {
-            color: #00A0E3;
-            text-decoration: underline;
-        }
-
-        /* Mobile responsive */
-        @media only screen and (max-width: 600px) {
-            .container {
-                width: 100% !important;
-                border-radius: 0;
-            }
-
-            .content-padding {
-                padding: 20px;
-            }
-        }
+        body, table, td {font-family: Arial, Helvetica, sans-serif !important;}
     </style>
+    <![endif]-->
 </head>
-<body>
-<table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color: #F6FAFC; padding: 24px;">
+<body style="margin: 0; padding: 0; width: 100%; height: 100%; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; line-height: 1.6; color: #293136; background-color: #F6FAFC;">
+
+<!-- Wrapper Table -->
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #F6FAFC;">
     <tr>
-        <td align="center">
-            <table role="presentation" cellpadding="0" cellspacing="0" class="container">
+        <td align="center" style="padding: 24px;">
+
+            <!--[if mso]>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="486" align="center">
+            <tr>
+            <td>
+            <![endif]-->
+
+            <!-- Container Table -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width: 486px; background-color: #ffffff; border: 1px solid #e0e0e0; box-shadow: 0px 4px 8px rgba(19, 28, 33, 0.08);">
                 <tr>
-                    <td class="content-padding">
+                    <td style="padding: 32px;">
+
                         <!-- Logo -->
-                        <div class="logo">
-                            <%-- This JSP is rendered on the node of a module (/modules/user-password-authentication-api/<version>/contents/mfaMailCode), and not on a specific site.
-                             Because of that, there is no "context" of site during the rendering and the URLs must be absolute : --%>
-                            <a href="https://jahia.cloud">
-                                <div class="logo-crop">
-                                    <img src="https://jahia.cloud/modules/dx-jelastic-template/media/jahia-cloud-logo.svg" alt="Jahia" height="70">
-                                    <%-- it is not possible to use the usual syntax, for instance:
-                        <img src="<c:url value="${url.server}${url.context}${url.currentModule}/path/to/your/image.png"/>">
-                         --%>
-                                </div>
-                            </a>
-                        </div>
+                        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                            <tr>
+                                <td align="center" style="padding-bottom: 40px;">
+                                    <%-- This JSP is rendered on the node of a module (/modules/user-password-authentication-api/<version>/contents/mfaMailCode), and not on a specific site.
+                                     Because of that, there is no "context" of site during the rendering and the URLs must be absolute : --%>
+                                    <a href="https://jahia.cloud" style="text-decoration: none;">
+                                        <%-- it is not possible to use the usual syntax, for instance:
+                                        <img src="<c:url value="${url.server}${url.context}${url.currentModule}/path/to/your/image.png"/>">
+                                         --%>
+                                        <img src="https://academy.jahia.com/jahia-cloud-logo-small.png"
+                                             alt="Jahia"
+                                             width="155"
+                                             height="70"
+                                             style="display: block; border: 0; outline: none; text-decoration: none;" />
+                                    </a>
+                                </td>
+                            </tr>
+                        </table>
 
                         <!-- Main Content -->
-                        <div class="message"><fmt:message key="jahia-upa.mfa.mail.message"/></div>
+                        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                            <!-- Message -->
+                            <tr>
+                                <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 14px; color: #293136; line-height: 1.6; padding-bottom: 24px;">
+                                    <p data-testid="email-message"><fmt:message key="jahia-upa.mfa.mail.message"/></p>
+                                </td>
+                            </tr>
 
-                        <div class="code-container">
-                            <p class="code">{{CODE}}</p>
-                        </div>
+                            <!-- Code Container -->
+                            <tr>
+                                <td style="padding-bottom: 24px;">
+                                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                                        <tr>
+                                            <td align="center" style="background-color: #F6F6F6; padding: 24px;">
+                                                <p style="margin: 0; font-family: 'Courier New', Courier, monospace; font-size: 28px; font-weight: 700; color: #293136; line-height: 26px;"><span data-testid="code">{{CODE}}</span></p>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
 
-                        <div class="validity"><fmt:message key="jahia-upa.mfa.mail.validity"/></div>
+                            <!-- Validity -->
+                            <tr>
+                                <td align="center" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 14px; color: #293136; padding-bottom: 40px;">
+                                    <p data-testid="validity"><fmt:message key="jahia-upa.mfa.mail.validity"/></p>
+                                </td>
+                            </tr>
 
-                        <div class="footer-title"><fmt:message key="jahia-upa.mfa.mail.notRequested.title"/></div>
+                            <!-- Footer Title -->
+                            <tr>
+                                <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 16px; font-weight: 700; color: #00A0E3; padding-bottom: 8px;">
+                                    <p data-testid="footer-title"><fmt:message key="jahia-upa.mfa.mail.notRequested.title"/></p>
+                                </td>
+                            </tr>
 
-                        <div class="footer-text"><fmt:message key="jahia-upa.mfa.mail.notRequested.message"/></div>
+                            <!-- Footer Text -->
+                            <tr>
+                                <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 14px; color: #293136; line-height: 1.6;">
+                                    <p data-testid="footer-text"><fmt:message key="jahia-upa.mfa.mail.notRequested.message"/></p>
+                                </td>
+                            </tr>
+
+                        </table>
+
                     </td>
                 </tr>
             </table>
+
+            <!--[if mso]>
+            </td>
+            </tr>
+            </table>
+            <![endif]-->
+
         </td>
     </tr>
 </table>
+
 </body>
 </html>
