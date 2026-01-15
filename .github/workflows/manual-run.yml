@@ -25,3 +25,4 @@ jobs:
       pagerduty_skip_notification: true
       provisioning_manifest: ${{ github.event.inputs.manifest }}
       artifact_prefix: upa
+      module_branch: ${{ github.ref }}
