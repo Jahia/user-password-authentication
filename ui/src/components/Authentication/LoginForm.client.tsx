@@ -17,7 +17,9 @@ function extractSiteKeyFromUrl(): string | undefined {
   const url = globalThis.location.pathname;
   const match = new RegExp(/^\/sites\/([^/]+)/).exec(url);
   if (!match) {
-    console.warn(`Unable to extract site key from URL: ${url} (expected format: /sites/{siteKey}/...)`);
+    console.warn(
+      `Unable to extract site key from URL: ${url} (expected format: /sites/{siteKey}/...)`,
+    );
     return undefined;
   }
   return match[1];
@@ -42,7 +44,7 @@ export default function LoginForm(props: Readonly<LoginFormProps>) {
     e.preventDefault();
     setInProgress(true);
 
-      const site = extractSiteKeyFromUrl();
+    const site = extractSiteKeyFromUrl();
 
     initiate(apiRoot, username, password, rememberMe, site)
       .then((result) => {

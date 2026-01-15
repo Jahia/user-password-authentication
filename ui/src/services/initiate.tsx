@@ -9,16 +9,26 @@ export default async function initiate(
   username: string,
   password: string,
   rememberMe = false,
-  site?: string
+  site?: string,
 ): Promise<InitiateResult> {
   const response = await fetch(apiRoot, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       query: /* GraphQL */ `
-        mutation initiate($username: String!, $password: String!, $rememberMe: Boolean!, $site: String) {
+        mutation initiate(
+          $username: String!
+          $password: String!
+          $rememberMe: Boolean!
+          $site: String
+        ) {
           upa {
-            mfaInitiate(username: $username, password: $password, rememberMe: $rememberMe, site: $site) {
+            mfaInitiate(
+              username: $username
+              password: $password
+              rememberMe: $rememberMe
+              site: $site
+            ) {
               session {
                 initiated
                 remainingFactors
