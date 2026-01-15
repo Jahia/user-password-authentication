@@ -109,6 +109,7 @@ describe('Tests for the UI module', () => {
         // Directly logged in
         LoginStep.login(username, password);
 
+        EmailFactorStep.assertSuccessfullyRedirected(SITE_KEY);
         assertIsLoggedIn(username);
     });
 
