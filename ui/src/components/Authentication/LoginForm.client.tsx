@@ -7,6 +7,24 @@ import type { Props } from "./types";
 import { tError } from "../../services/i18n";
 import type { MfaError } from "../../services/common";
 
+/**
+ * Extracts the site key from the current URL path.
+ * Expected format: /sites/{siteKey}/...
+ *
+ * @returns the extracted site key, or undefined if the URL doesn't match the expected format
+ */
+function extractSiteKeyFromUrl(): string | undefined {
+  const url = globalThis.location.pathname;
+  const match = new RegExp(/^\/sites\/([^/]+)/).exec(url);
+  if (!match) {
+    console.warn(
+      `Unable to extract site key from URL: ${url} (expected format: /sites/{siteKey}/...)`,
+    );
+    return undefined;
+  }
+  return match[1];
+}
+
 interface LoginFormProps {
   content: Props;
   onSuccess: (username: string) => void;
@@ -26,7 +44,9 @@ export default function LoginForm(props: Readonly<LoginFormProps>) {
     e.preventDefault();
     setInProgress(true);
 
-    initiate(apiRoot, username, password, rememberMe)
+    const site = extractSiteKeyFromUrl();
+
+    initiate(apiRoot, username, password, rememberMe, site)
       .then((result) => {
         if (result.success) {
           // special case if there is no factor configured

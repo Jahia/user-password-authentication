@@ -1,188 +1,187 @@
-
 /* Login components */
 
 .formField {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.25rem;
-    margin-top: 1rem;
-    width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  margin-top: 1rem;
+  width: 100%;
 }
 
 .formField input[type="text"],
 .formField input[type="password"] {
-    width: 100%;
-    padding: 0.5rem;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-    box-sizing: border-box;
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
 }
 
 .formField input[type="checkbox"] {
-    cursor: pointer;
-    margin: 0;
-    flex-shrink: 0;
+  cursor: pointer;
+  margin: 0;
+  flex-shrink: 0;
 }
 
 .formField:has(input[type="checkbox"]) {
-    flex-direction: row;
-    align-items: center;
-    gap: 0.5rem;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .formField:has(input[type="checkbox"]) label {
-    cursor: pointer;
-    user-select: none;
-    margin: 0;
-    line-height: 1;
+  cursor: pointer;
+  user-select: none;
+  margin: 0;
+  line-height: 1;
 }
 
 .errorMessage {
-    min-height: 1.2rem;
-    height: 1.2rem;
-    padding: 4px 0;
-    color: red;
-    > p {
-        margin: 0;
-    }
+  min-height: 1.2rem;
+  height: 1.2rem;
+  padding: 4px 0;
+  color: red;
+  > p {
+    margin: 0;
+  }
 }
 
 .otpFormWrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
 }
 
 .otp {
-    display: grid;
-    --length: 6;
+  display: grid;
+  --length: 6;
 
-    > * {
-        --spacing: 0.25em;
-        appearance: none;
-        background: transparent;
-        border-radius: 4px;
-        border: 1px solid #ccc;
-        box-sizing: content-box;
-        color: white;
-        font: inherit;
-        font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
-        font-size: clamp(1em, calc(14em / var(--length)), 3em);
-        grid-column: 1;
-        grid-row: 1;
-        inline-size: calc((1ch + var(--spacing)) * var(--length) + var(--spacing));
-        letter-spacing: var(--spacing);
-        padding: var(--spacing) calc(0.5lh - 0.5em + var(--spacing));
-        padding-inline-end: 0;
-        text-align: left;
-    }
+  > * {
+    --spacing: 0.25em;
+    appearance: none;
+    background: transparent;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    box-sizing: content-box;
+    color: white;
+    font: inherit;
+    font-family:
+      ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, "DejaVu Sans Mono",
+      monospace;
+    font-size: clamp(1em, calc(14em / var(--length)), 3em);
+    grid-column: 1;
+    grid-row: 1;
+    inline-size: calc((1ch + var(--spacing)) * var(--length) + var(--spacing));
+    letter-spacing: var(--spacing);
+    padding: var(--spacing) calc(0.5lh - 0.5em + var(--spacing));
+    padding-inline-end: 0;
+    text-align: left;
+  }
 
-    > input {
-        &:focus {
-            background-color: hsl(0 0% 0% / 0.2);
-            outline: 1px solid;
-        }
+  > input {
+    &:focus {
+      background-color: hsl(0 0% 0% / 0.2);
+      outline: 1px solid;
     }
+  }
 
-    > div {
-        border-color: transparent;
-        opacity: 0.5;
-        pointer-events: none;
-        translate: 0 calc(0.25lh - 0.25em);
-        white-space: pre;
-    }
+  > div {
+    border-color: transparent;
+    opacity: 0.5;
+    pointer-events: none;
+    translate: 0 calc(0.25lh - 0.25em);
+    white-space: pre;
+  }
 }
 
-
 .submitButton {
-    cursor: pointer;
-    opacity: 1;
-    transition: opacity 0.2s ease-in-out;
+  cursor: pointer;
+  opacity: 1;
+  transition: opacity 0.2s ease-in-out;
 }
 
 .submitButton:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-    pointer-events: none;
+  cursor: not-allowed;
+  opacity: 0.5;
+  pointer-events: none;
 }
 
-
 .header {
-    padding: 40px 0;
+  padding: 40px 0;
 }
 
 .main {
-    width: 80%;
-    height: 252px;
-    margin: 0 auto;
+  width: 80%;
+  height: 252px;
+  margin: 0 auto;
 
-    form {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 0 10%;
+  form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 10%;
 
-        label {
-            align-self: flex-start;
-            margin-top: 1rem;
-        }
+    label {
+      align-self: flex-start;
+      margin-top: 1rem;
+    }
+  }
+
+  hr {
+    border: none;
+    border-top: 1px solid #333333;
+    width: 60%;
+    margin: 40px auto;
+  }
+
+  .additionalAction {
+    color: white;
+    font-size: 14px;
+    justify-content: center;
+
+    > p {
+      color: rgba(253, 253, 253, 0.6);
+      margin-bottom: 8px;
     }
 
-    hr {
-        border: none;
-        border-top: 1px solid #333333;
-        width: 60%;
-        margin: 40px auto;
+    > a {
+      color: white;
     }
+  }
 
-    .additionalAction {
-        color: white;
-        font-size: 14px;
-        justify-content: center;
-
-        > p {
-            color: rgba(253, 253, 253, 0.6);
-            margin-bottom: 8px;
-        }
-
-        > a {
-            color: white;
-        }
-    }
-
-    .belowPasswordField {
-        align-self: flex-end;
-        margin-right: 10%;
-        margin-top: 4px;
-
-        a {
-            color: white;
-            font-size: 12px;
-        }
-    }
+  .belowPasswordField {
+    align-self: flex-end;
+    margin-right: 10%;
+    margin-top: 4px;
 
     a {
-        color: #06a;
+      color: white;
+      font-size: 12px;
     }
+  }
 
-    h2 {
-        font-size: 20px;
-        font-weight: 700;
-        line-height: 24px;
-        word-wrap: break-word;
-    }
+  a {
+    color: #06a;
+  }
 
-    button[type="submit"] {
-        border-radius: 4px;
-        background: #00a0e3;
-        color: #fff;
-        border: none;
-        font-weight: 700;
-        cursor: pointer;
-        margin-top: 3rem;
-        padding: 8px 16px;
-        text-transform: uppercase;
-    }
+  h2 {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 24px;
+    word-wrap: break-word;
+  }
+
+  button[type="submit"] {
+    border-radius: 4px;
+    background: #00a0e3;
+    color: #fff;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 3rem;
+    padding: 8px 16px;
+    text-transform: uppercase;
+  }
 }

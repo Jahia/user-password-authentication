@@ -44,9 +44,10 @@ export default function EmailCodeVerificationForm(props: Readonly<EmailCodeVerif
   };
 
   const updateMask = () => {
-    if (inputRef.current && maskElementRef.current &&   /^\d*$/.test(inputRef.current.value)) {
+    if (inputRef.current && maskElementRef.current && /^\d*$/.test(inputRef.current.value)) {
       const filledLength = inputRef.current.value.length;
-      maskElementRef.current.textContent = ' '.repeat(filledLength) + '_'.repeat(codeLength - filledLength);
+      maskElementRef.current.textContent =
+        " ".repeat(filledLength) + "_".repeat(codeLength - filledLength);
     }
   };
 
@@ -76,7 +77,7 @@ export default function EmailCodeVerificationForm(props: Readonly<EmailCodeVerif
       // Note: HTML5 minLength validation doesn't work properly when values are typed (or set) programmatically
       //       Also, reading the actual input value from the DOM, to avoid stale state,
       //       since the latter might not be updated yet
-      const currentValue = inputRef.current?.value || '';
+      const currentValue = inputRef.current?.value || "";
       const isValidLength = currentValue.length === codeLength;
       setIsFormValid(formRef.current.checkValidity() && isValidLength);
     }
@@ -90,17 +91,16 @@ export default function EmailCodeVerificationForm(props: Readonly<EmailCodeVerif
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    verifyEmailCodeFactor(apiRoot, code)
-      .then((result) => {
-        if (result.success) {
-          setError("");
-          props.onSuccess();
-        } else if (result?.fatalError) {
-          props.onFatalError(result.error);
-        } else {
-          setError(tError(result.error));
-        }
-      })
+    verifyEmailCodeFactor(apiRoot, code).then((result) => {
+      if (result.success) {
+        setError("");
+        props.onSuccess();
+      } else if (result?.fatalError) {
+        props.onFatalError(result.error);
+      } else {
+        setError(tError(result.error));
+      }
+    });
   };
 
   const handleResendCode = (): void => {
@@ -128,7 +128,10 @@ export default function EmailCodeVerificationForm(props: Readonly<EmailCodeVerif
       )}
 
       <form ref={setFormRef} onSubmit={handleSubmit} onInput={handleFormInput}>
-        <div style={{  position: 'relative', '--length': codeLength } as React.CSSProperties} className={classes.otp}>
+        <div
+          style={{ "position": "relative", "--length": codeLength } as React.CSSProperties}
+          className={classes.otp}
+        >
           <div ref={maskElementRef} aria-hidden="true" />
           <input
             ref={inputRef}
