@@ -493,8 +493,6 @@ describe('Tests for the UI module', () => {
         LoginStep.selectEmailCodeFactor();
 
         getVerificationCode(email).then(firstCode => {
-            // eslint-disable-next-line cypress/no-unnecessary-waiting
-            cy.wait(1000);
             deleteAllEmails();
 
             // Re-start the flow from the beginning
@@ -504,8 +502,7 @@ describe('Tests for the UI module', () => {
 
             // User is still rate-limited even when re-starting the flow
             // Note: time left can vary depending on execution speed, so we check only the pattern here
-            //       deducting 1 second used for the wait above
-            const timeLeft = '[' + Array.from({length: (TIME_BEFORE_NEXT_CODE_MS / 1000) - 1}, (_, i) => i + 1).join(',') + ']';
+            const timeLeft = '[1-' + (TIME_BEFORE_NEXT_CODE_MS / 1000) + ']';
             EmailFactorStep.assertErrorMessage(new RegExp(
                 I18N_LOCALES['prepare.rate_limit_exceeded']
                     .replace('{{factorType}}', FACTOR_TYPE)
@@ -513,9 +510,8 @@ describe('Tests for the UI module', () => {
                     .replace('{{nextRetryInSeconds}}', timeLeft)
             ));
 
-            // Wait for the rate-limit to expire
             // eslint-disable-next-line cypress/no-unnecessary-waiting
-            cy.wait(2000);
+            cy.wait(TIME_BEFORE_NEXT_CODE_MS); // Wait for the rate-limit to expire
 
             // Re-start the flow from the beginning
             LoginStep.triggerRedirect(SITE_KEY);
