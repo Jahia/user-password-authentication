@@ -1,6 +1,19 @@
 # User Password Authentication (UPA)
 
-This repository contains all the pieces of a multifactor-enabled User Password Authentication system, packaged as several Jahia Modules.
+A multifactor-enabled User Password Authentication system for Jahia, providing secure login forms, GraphQL API, and customizable MFA flows.
+
+## Features
+
+- **Customizable login forms** with MFA support
+- **GraphQL API** for authentication and user management
+- **Email-based MFA** with customizable templates
+- **Extensible architecture** for custom MFA factors
+
+## Requirements
+
+- Java 11+
+- Maven 3+
+- Jahia 8.2.3+
 
 ## Structure
 
@@ -10,24 +23,24 @@ This is a [Maven-managed monorepo](pom.xml) containing the following modules:
 
     - A login form:
 
-      (screenshot)
+      ![login form screen](docs/login-form-screen.png)
 
-      This login form is the rendition of a `upaui:authentication` node, to brand the form to your colors, you can create your own views of this node type. This repo is under a [permissive license](LICENSE) and can be used a base for your custom code.
+      This login form is the rendition of a `upaui:authentication` node, to brand the form to your colors, you can create your own views of this node type. This repo is under a [permissive license](LICENSE) and can be used as a base for your custom code.
 
     - A MFA (multifactor authentication) code email:
 
-      (screenshot)
+      ![MFA code email screen](docs/mfa-code-email-screen.png)
 
       This email is the rendition of a `upa:mfaMailCode` node, which can also be customized to your brand colors.
 
-- [api](api): this module a Java GraphQL API extension. It adds a `upa` namespace at the root of the `Query` and `Mutation` objects, and all the necessary implementation details to log users in. The simplest ways to create valid GraphQL queries in this namespace are:
+- [api](api): this module is a Java GraphQL API extension. It adds a `upa` namespace at the root of the `Query` and `Mutation` objects, and all the necessary implementation details to log users in. The simplest ways to create valid GraphQL queries in this namespace are:
 
     - Using the [GraphQL Playground](http://localhost:8080/modules/graphql-dxm-provider/tools/graphql-workspace.jsp)
     - Taking inspiration from the [GraphQL queries used by the login form](ui/src/services)
 
   The API is fully configurable under the `org.jahia.modules.upa.mfa.cfg` configuration key. [A safe default configuration is provided.](api/src/main/resources/META-INF/configurations/org.jahia.modules.upa.mfa.cfg)
 
-  It supports custom MFA (multifactor authentication) factors, see below.
+  It supports custom MFA (multifactor authentication) factors, with examples available in [test-modules/mfa-custom-factor](test-modules/mfa-custom-factor).
 
 - [test-modules](test-modules): sample code used by automated tests.
 
@@ -37,16 +50,17 @@ This is a [Maven-managed monorepo](pom.xml) containing the following modules:
 
 ## Development
 
-You'll need a working Java+Maven environment.
-
 To build this monorepo locally, run the following commands:
 
 ```bash
-# Create a local copy
 git clone https://github.com/Jahia/user-password-authentication.git
-
 cd user-password-authentication
-
-# Build all modules
 mvn package
 ```
+
+To deploy the module on your running Jahia instance, refer to [this Jahia Academy page](https://academy.jahia.com/documentation/jahia-cms/jahia-8.2/developer/java-module-development/deploying-a-module-using-maven).
+
+## License
+
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+
