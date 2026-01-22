@@ -18,21 +18,7 @@ A multifactor-enabled User Password Authentication system for Jahia, providing s
 ## Structure
 
 This is a [Maven-managed monorepo](pom.xml) containing the following modules:
-
-- [ui](ui): this module is a [JavaScript Module](https://academy.jahia.com/tutorials-get-started/front-end-developer/introduction) that contains all UI elements of the module:
-
-    - A login form:
-
-      ![login form screen](docs/login-form-screen.png)
-
-      This login form is the rendition of a `upaui:authentication` node, to brand the form to your colors, you can create your own views of this node type. This repo is under a [permissive license](LICENSE) and can be used as a base for your custom code.
-
-    - A MFA (multifactor authentication) code email:
-
-      ![MFA code email screen](docs/mfa-code-email-screen.png)
-
-      This email is the rendition of a `upa:mfaMailCode` node, which can also be customized to your brand colors.
-
+- [ui](ui): this module is a [JavaScript Module](https://academy.jahia.com/tutorials-get-started/front-end-developer/introduction) that contains all UI elements of the module
 - [api](api): this module is a Java GraphQL API extension. It adds a `upa` namespace at the root of the `Query` and `Mutation` objects, and all the necessary implementation details to log users in. The simplest ways to create valid GraphQL queries in this namespace are:
 
     - Using the [GraphQL Playground](http://localhost:8080/modules/graphql-dxm-provider/tools/graphql-workspace.jsp)
