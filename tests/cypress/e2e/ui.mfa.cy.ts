@@ -304,7 +304,7 @@ describe('Tests for the UI module', () => {
         getVerificationCode(email).then(code => {
             const wrongCode = generateWrongCode(code);
             EmailFactorStep.submitVerificationCode(wrongCode);
-            EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.verification_failed'].replace('{{factorType}}', FACTOR_TYPE));
+            EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.verification_failed']);
 
             // Now enter the correct code
             EmailFactorStep.submitVerificationCode(code);
@@ -324,7 +324,7 @@ describe('Tests for the UI module', () => {
             // Make MAX_INVALID_ATTEMPTS failed verification attempts to trigger suspension
             for (let i = 0; i < MAX_INVALID_ATTEMPTS; i++) {
                 EmailFactorStep.submitVerificationCode(wrongCode);
-                EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.verification_failed'].replace('{{factorType}}', FACTOR_TYPE));
+                EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.verification_failed']);
             }
 
             // Confirm the user is suspended
@@ -350,7 +350,7 @@ describe('Tests for the UI module', () => {
             // Make MAX_INVALID_ATTEMPTS failed verification attempts to trigger suspension
             for (let i = 0; i < MAX_INVALID_ATTEMPTS; i++) {
                 EmailFactorStep.submitVerificationCode(wrongCode);
-                EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.verification_failed'].replace('{{factorType}}', FACTOR_TYPE));
+                EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.verification_failed']);
             }
 
             // One more attempt to confirm the user is suspended
@@ -379,7 +379,7 @@ describe('Tests for the UI module', () => {
 
                 // First enter the old code to check it fails
                 EmailFactorStep.submitVerificationCode(code);
-                EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.verification_failed'].replace('{{factorType}}', FACTOR_TYPE));
+                EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.verification_failed']);
 
                 // Now enter the correct code and authenticate
                 EmailFactorStep.submitVerificationCode(newCode);
@@ -400,7 +400,7 @@ describe('Tests for the UI module', () => {
             // Make MAX_INVALID_ATTEMPTS failed verification attempts to trigger suspension
             for (let i = 0; i < MAX_INVALID_ATTEMPTS; i++) {
                 EmailFactorStep.submitVerificationCode(wrongCode);
-                EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.verification_failed'].replace('{{factorType}}', FACTOR_TYPE));
+                EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.verification_failed']);
             }
 
             EmailFactorStep.submitVerificationCode(wrongCode);
@@ -477,7 +477,7 @@ describe('Tests for the UI module', () => {
 
                 // First enter the old code to check it fails
                 EmailFactorStep.submitVerificationCode(firstCode);
-                EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.verification_failed'].replace('{{factorType}}', FACTOR_TYPE));
+                EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.verification_failed']);
 
                 // Now enter the correct code
                 EmailFactorStep.submitVerificationCode(secondCode);
@@ -526,7 +526,7 @@ describe('Tests for the UI module', () => {
 
                 // First enter the old code to check it fails
                 EmailFactorStep.submitVerificationCode(firstCode);
-                EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.verification_failed'].replace('{{factorType}}', FACTOR_TYPE));
+                EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.verification_failed']);
 
                 // Now enter the correct code
                 EmailFactorStep.submitVerificationCode(secondCode);
