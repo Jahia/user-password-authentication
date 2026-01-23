@@ -30,12 +30,8 @@
     <description>APIs of the User Password Authentication (UPA) module containing the MFA functionalities</description>
 
     <properties>
-        <!--
-            TODO: move components to a separate module to keep mfa core system and standalone: backend + GraphQL API
-            Should probably be a system a module, but current POC contains
-            components with views and need to be enabled per site for usages.
-        -->
-        <!--jahia-module-type>system</jahia-module-type-->
+        <jahia-module-type>system</jahia-module-type>
+        <jahia-deploy-on-site>all</jahia-deploy-on-site>
         <jahia-depends>graphql-dxm-provider</jahia-depends>
         <jahia-module-signature>MC0CFQCTdeu2OPe5Z7YgjSRUFi/DfE/qfwIUQ04NE5P3+Zy9rRS7F3+yUtIcaHs=</jahia-module-signature>
     </properties>
