@@ -23,5 +23,5 @@
   "email.message": "Hello,<br/>Use the following code to complete your authentication:",
   "email.validity": "This code is valid for <strong>15 minutes</strong>.",
   "email.notRequested.title": "Didn't request this code?",
-  "email.notRequested.message": "If you didn't request this code, secure your account immediately by <a href=\"https://support.jahia.com/\">changing your password</a>.<br/>If you need assistance, <a href=\"https://support.jahia.com/\">reach out to support</a><br/><br/>Regards,<br/>The Jahia Team"
+  "email.notRequested.message": "If you didn't request this code, secure your account immediately by <a style=\"color: #00A0E3; text-decoration: underline; display: inline-block;\" href=\"https://support.jahia.com/\">changing your password</a>.<br/>If you need assistance, <a style=\"color: #00A0E3; text-decoration: underline; display: inline-block;\" href=\"https://support.jahia.com/\">reach out to support</a><br/><br/>Regards,<br/>The Jahia Team"
 }
