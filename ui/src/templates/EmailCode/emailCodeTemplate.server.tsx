@@ -20,7 +20,6 @@ jahiaComponent(
     // Trigger a cache flush when a site installed module is start/stop
     renderContext.getMainResource().getDependencies().add(renderContext.getSite().getPath());
 
-    // Use variables injected with dangerouslySetInnerHTML to maintain the HTML comments needed for Internet Explorer
     const headHtml = `
       <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -117,6 +116,7 @@ jahiaComponent(
       </table>
     `;
 
+    // Use dangerouslySetInnerHTML to maintain the HTML comments needed for Internet Explorer
     return (
       <html lang="en">
         <head dangerouslySetInnerHTML={{ __html: headHtml }} />
