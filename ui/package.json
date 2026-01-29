@@ -1,7 +1,12 @@
 {
-  "name": "user-password-authentication-ui",
+  "name": "@jahia/user-password-authentication-ui",
   "description": "JavaScript module providing the user interface for the User Password Authentication (UPA) module.",
   "version": "0.1.0-SNAPSHOT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jahia/user-password-authentication.git",
+    "directory": "ui"
+  },
   "type": "module",
   "files": [
     "dist",
