@@ -6,6 +6,12 @@ on:
   release:
     types: [prereleased]
 
+permissions:
+  actions: read
+  checks: write
+  contents: read
+  id-token: write
+
 jobs:
   release-module:
     uses: Jahia/jahia-modules-action/.github/workflows/reusable-release-module.yml@v2
