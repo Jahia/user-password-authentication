@@ -32,7 +32,7 @@
         <jahia-module-type>system</jahia-module-type>
         <jahia-deploy-on-site>all</jahia-deploy-on-site>
         <jahia-depends>graphql-dxm-provider</jahia-depends>
-        <jahia-module-signature>MCwCFCqMT90nRx+cx6+ZizW7qKOLgXwAAhRQTwNgTdPcwx2brVoH2lSU9ZSryg==</jahia-module-signature>
+        <jahia-module-signature>MC0CFCQBbebOFTSoxSFYqUXyfYkIjRMVAhUAhPi7lwhTGjk3QWgH/OPhRqQl4mo=</jahia-module-signature>
     </properties>
 
 
