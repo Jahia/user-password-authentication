@@ -25,7 +25,7 @@
     </parent>
     <artifactId>user-password-authentication</artifactId>
     <name>UPA - root</name>
-    <version>0.1.3-SNAPSHOT</version>
+    <version>0.1.3</version>
     <packaging>pom</packaging>
     <description>Root of the multi-module project of the Jahia User Password Authentication (UPA) module</description>
 
@@ -33,7 +33,7 @@
         <connection>scm:git:git@github.com:Jahia/user-password-authentication.git</connection>
         <developerConnection>scm:git:git@github.com:Jahia/user-password-authentication.git</developerConnection>
         <url>https://github.com/Jahia/user-password-authentication</url>
-        <tag>HEAD</tag>
+        <tag>0_1_3</tag>
     </scm>
 
     <modules>
