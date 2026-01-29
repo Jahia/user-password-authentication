@@ -21,7 +21,7 @@
     <parent>
         <artifactId>jahia-modules</artifactId>
         <groupId>org.jahia.modules</groupId>
-        <version>8.2.3.0-SNAPSHOT</version> <!-- should match ${jahia-bom.version} -->
+        <version>8.2.3.0</version> <!-- should match ${jahia-bom.version} -->
     </parent>
     <artifactId>user-password-authentication</artifactId>
     <name>UPA - root</name>
@@ -45,7 +45,7 @@
     </modules>
 
     <properties>
-        <jahia-bom.version>8.2.3.0-SNAPSHOT</jahia-bom.version> <!-- should match ${project.parent.version} -->
+        <jahia-bom.version>8.2.3.0</jahia-bom.version> <!-- should match ${project.parent.version} -->
         <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
         <maven-clean-plugin.version>3.5.0</maven-clean-plugin.version>
         <maven-dependency-plugin.version>3.8.1</maven-dependency-plugin.version>
