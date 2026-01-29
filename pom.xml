@@ -198,12 +198,31 @@
                 <artifactId>maven-release-plugin</artifactId>
                 <configuration>
                     <!-- use profiles to trigger additional yarn commands during the release process -->
-                    <preparationGoals>-P release-prepare clean verify</preparationGoals> <!-- after transformation but before committing -->
-                    <completionGoals>-P release-prepare process-resources</completionGoals> <!-- after transformation back to the next development version but before committing -->
+                    <!-- scm:checkin allows to commit the changes in the */yarn.lock files -->
+                    <preparationGoals>-P release-prepare clean verify scm:checkin</preparationGoals> <!-- after transformation but before committing -->
+                    <completionGoals>-P release-prepare process-resources scm:checkin</completionGoals> <!-- after transformation back to the next development version but before committing -->
                     <releaseProfiles>release-perform</releaseProfiles>
                     <useReleaseProfile>true</useReleaseProfile>
                 </configuration>
             </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>release-prepare</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-scm-plugin</artifactId>
+                        <configuration>
+                            <includes>
+                               ui/yarn.lock,ui/package.json
+                            </includes>
+                            <message>chore(release): Prepare release ${project.version}</message>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
