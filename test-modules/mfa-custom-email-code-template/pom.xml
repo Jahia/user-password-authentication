@@ -21,7 +21,7 @@
     <parent>
         <artifactId>user-password-authentication</artifactId>
         <groupId>org.jahia.modules</groupId>
-        <version>0.1.2-SNAPSHOT</version>
+        <version>0.1.2</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <groupId>org.jahia.test</groupId>
