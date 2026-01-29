@@ -21,7 +21,7 @@
     <parent>
         <artifactId>user-password-authentication</artifactId>
         <groupId>org.jahia.modules</groupId>
-        <version>0.2.0-SNAPSHOT</version>
+        <version>0.1.7-SNAPSHOT</version>
     </parent>
     <artifactId>user-password-authentication-api</artifactId>
     <name>UPA - API</name>
@@ -32,7 +32,7 @@
         <jahia-module-type>system</jahia-module-type>
         <jahia-deploy-on-site>all</jahia-deploy-on-site>
         <jahia-depends>graphql-dxm-provider</jahia-depends>
-        <jahia-module-signature>MC0CFCQBbebOFTSoxSFYqUXyfYkIjRMVAhUAhPi7lwhTGjk3QWgH/OPhRqQl4mo=</jahia-module-signature>
+        <jahia-module-signature>MCwCFGSIzoQf9v/pNjVc1vvHa8yaN6VyAhRBVt3RHAlO/kBdGpAfhUGTp3VBHw==</jahia-module-signature>
     </properties>
 
 
