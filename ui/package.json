@@ -57,6 +57,19 @@
   },
   "jahia": {
     "name": "UPA - UI",
+    "maven": {
+      "groupId": "org.jahia.modules.javascript",
+      "distributionManagement": {
+        "repository": {
+          "id": "jahia-releases",
+          "url": "https://devtools.jahia.com/nexus/content/repositories/jahia-releases"
+        },
+        "snapshotRepository": {
+          "id": "jahia-snapshots",
+          "url": "https://devtools.jahia.com/nexus/content/repositories/jahia-snapshots"
+        }
+      }
+    },
     "module-dependencies": "default,user-password-authentication-api",
     "module-type": "module",
     "server": "dist/server/index.js",
