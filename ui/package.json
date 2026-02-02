@@ -57,6 +57,9 @@
   },
   "jahia": {
     "name": "UPA - UI",
+    "maven": {
+      "groupId": "org.jahia.modules.javascript"
+    },
     "module-dependencies": "default,user-password-authentication-api",
     "module-type": "module",
     "server": "dist/server/index.js",
