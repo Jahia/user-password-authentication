@@ -21,7 +21,7 @@
     <parent>
         <artifactId>user-password-authentication</artifactId>
         <groupId>org.jahia.modules</groupId>
-        <version>0.1.8-SNAPSHOT</version>
+        <version>0.1.8</version>
     </parent>
     <groupId>org.jahia.modules.javascript</groupId>
     <artifactId>user-password-authentication-ui</artifactId>
