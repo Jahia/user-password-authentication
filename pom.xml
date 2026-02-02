@@ -25,7 +25,7 @@
     </parent>
     <artifactId>user-password-authentication</artifactId>
     <name>UPA - root</name>
-    <version>0.2.0-SNAPSHOT</version>
+    <version>0.1.8-SNAPSHOT</version>
     <packaging>pom</packaging>
     <description>Root of the multi-module project of the Jahia User Password Authentication (UPA) module</description>
 
