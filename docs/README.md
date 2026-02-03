@@ -15,7 +15,9 @@
 
 This module provides a basic user authentication flow for Jahia sites using a username/password combination followed by factor(s) verification.
 
-⚠️ **Important**: It is not meant to be a replacement for a full-fledged Identity Provider (IdP) solution: OpenId, SAML, etc. that you should preferably use instead.
+:::warning
+It is not meant to be a replacement for a full-fledged Identity Provider (IdP) solution: OpenId, SAML, etc. that you should preferably use instead.
+:::
 
 ## Prerequisites
 
@@ -51,6 +53,7 @@ Navigate to **Tools → OSGi Console → OSGi → Configuration** and configure 
 **Mandatory configuration:**
 - **`loginUrl`**: The URL of the page containing your UPA login form (e.g., `/sites/mySite/login.html`)
   - This page must be accessible without authentication
+  - The URL **must** include the site key for proper email template resolution (required when using the UI module's default template or custom templates)
 
 For all configuration options and default values, see the [default configuration file](../api/src/main/resources/META-INF/configurations/org.jahia.modules.upa.mfa.cfg).
 
@@ -159,6 +162,10 @@ The maximum number of failed authentication attempts is : `((T - 1) x N) + 1` wi
 - `N`: number of jahia nodes
 
 For example, with 3 nodes and 5 tries configured, a user could, theoretically, get locked on their 13th attempt.
+
+### Global login URL
+The login URL is global and shared across all sites.
+If you set the `loginUrl` in the configuration, visitors of all sites will be redirected to this URL when getting a 401 page. The Login URL Provider embedded in this module applies to the whole platform.
 
 ### Multiple Login URL Providers
 
