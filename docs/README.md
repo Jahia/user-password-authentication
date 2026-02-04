@@ -46,20 +46,33 @@ Get the modules from the [Jahia Store](https://store.jahia.com/module/user-passw
    - Install the module
    - Enable it on your site(s)
 
-### 2. Configure the Module
+### 2. Setup
 
-Navigate to **Tools → OSGi Console → OSGi → Configuration** and configure `org.jahia.modules.upa`:
+To ensure that users are properly redirected to your login page when accessing protected resources, you need to configure a login URL provider. You have three options:
 
-**Mandatory configuration:**
-- **`loginUrl`**: The URL of the page containing your UPA login form (e.g., `/sites/mySite/login.html`)
+#### Option A: Use the Embedded Login URL Provider (Recommended)
+
+Navigate to **Tools → OSGi Console → OSGi → Configuration** and set the `loginUrl` parameter of the `org.jahia.modules.upa` configuration to the URL of the page containing your UPA login form (e.g., `/sites/mySite/login.html`).
+Notes:
   - This page must be accessible without authentication
   - The URL **must** include the site key for proper email template resolution (required when using the UI module's default template or custom templates)
+  - If the value is empty or blank, the login URL provider will be disabled
 
 For all configuration options and default values, see the [default configuration file](../api/src/main/resources/META-INF/configurations/org.jahia.modules.upa.mfa.cfg).
 
-### 3. Create the Login Page
+#### Option B: Use the community _Site Settings - Customize Error Pages_ module
 
-1. In **Page Builder**, create a new page at the URL you configured in `loginUrl` (e.g., `/sites/mySite/login.html`). Optionally, you can configure a vanity URL for that login page matching the configured URL.
+Install and configure the [Site Settings - Customize Error Pages](https://store.jahia.com/contents/modules-repository/org/jahia/community/site-settings-error-pages.html) module to define custom error pages per site, including the login page.
+
+#### Option C: Build Your Custom Login URL Provider
+
+For advanced use cases, you can implement your own custom `LoginUrlProvider` to have complete control over the login URL resolution logic.
+
+#### Create the Login Page
+
+Once you've configured your login URL provider, create the login page:
+
+1. In **Page Builder**, create a new page at the URL you configured (e.g., `/sites/mySite/login.html`). Optionally, you can configure a vanity URL for that login page matching the configured URL.
 2. Add the **UPA Authentication** component (`upaui:authentication`) to the page
 3. If needed, edit the component where you can update:
    - the logo image
@@ -68,7 +81,7 @@ For all configuration options and default values, see the [default configuration
 4. **Publish** the page
 5. Ensure the page is accessible without authentication (verify in incognito/private browsing)
 
-### 4. Secure Your Platform
+### 3. Secure Your Platform
 
 ⚠️ **Security Note**: The standard `/cms/login` endpoint remains accessible by default and **bypasses** the UPA authentication flow. For production environments, block access to this endpoint at your reverse proxy level (HAProxy, Apache, nginx, etc.).
 
