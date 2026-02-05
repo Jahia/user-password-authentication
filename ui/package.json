@@ -62,6 +62,7 @@
     },
     "module-dependencies": "default,user-password-authentication-api",
     "module-type": "module",
+    "required-version": "8.2.3.0",
     "server": "dist/server/index.js",
     "static-resources": "/dist/client,/dist/assets,/locales,/images,/icons"
   }
