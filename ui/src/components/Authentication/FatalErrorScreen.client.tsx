@@ -3,8 +3,7 @@ import { useApiRoot } from "../../hooks/ApiRootContext";
 import classes from "./component.module.css";
 import ErrorMessage from "./ErrorMessage.client";
 import { tError } from "../../services/i18n";
-import { Trans } from "react-i18next";
-import { t } from "i18next";
+import { Trans, useTranslation } from "react-i18next";
 import clear from "../../services/clear";
 import type { MfaError } from "../../services/common";
 
@@ -14,6 +13,7 @@ interface FatalErrorScreenProps {
 
 const suspendedUserErrorCode = "suspended_user";
 export default function FatalErrorScreen(props: Readonly<FatalErrorScreenProps>) {
+  const { t } = useTranslation();
   const [inProgress, setInProgress] = useState(false);
   const apiRoot = useApiRoot();
 
