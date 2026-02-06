@@ -1,5 +1,5 @@
 import { jahiaComponent } from "@jahia/javascript-modules-library";
-import { t } from "i18next";
+import { useTranslation } from "react-i18next";
 
 // i18n message keys
 const I18N_TITLE = "email.title";
@@ -17,6 +17,7 @@ jahiaComponent(
     priority: 2,
   },
   (_, { renderContext }) => {
+    const { t } = useTranslation();
     // Trigger a cache flush when a site installed module is start/stop
     renderContext.getMainResource().getDependencies().add(renderContext.getSite().getPath());
 

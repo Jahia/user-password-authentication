@@ -4,8 +4,8 @@ import { prepareEmailFactor, verifyEmailCodeFactor } from "../../services";
 import classes from "./component.module.css";
 import ErrorMessage from "./ErrorMessage.client";
 import type { Props } from "./types";
-import { tError } from "../../services/i18n";
-import { Trans } from "react-i18next";
+import { convertErrorArgsToInterpolation } from "../../services/i18n";
+import { Trans, useTranslation } from "react-i18next";
 import type { MfaError } from "../../services/common";
 
 interface EmailCodeVerificationFormProps {
@@ -14,6 +14,7 @@ interface EmailCodeVerificationFormProps {
   onFatalError: (error: MfaError) => void;
 }
 export default function EmailCodeVerificationForm(props: Readonly<EmailCodeVerificationFormProps>) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [code, setCode] = useState("");
   const [maskedEmail, setMaskedEmail] = useState("");
@@ -35,7 +36,8 @@ export default function EmailCodeVerificationForm(props: Readonly<EmailCodeVerif
         } else if (result?.fatalError) {
           props.onFatalError(result.error);
         } else {
-          setError(tError(result.error));
+          const { key, interpolation } = convertErrorArgsToInterpolation(result.error);
+          setError(t(key, interpolation));
         }
       })
       .finally(() => {
@@ -98,7 +100,8 @@ export default function EmailCodeVerificationForm(props: Readonly<EmailCodeVerif
       } else if (result?.fatalError) {
         props.onFatalError(result.error);
       } else {
-        setError(tError(result.error));
+        const { key, interpolation } = convertErrorArgsToInterpolation(result.error);
+        setError(t(key, interpolation));
       }
     });
   };

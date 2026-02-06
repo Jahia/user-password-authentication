@@ -4,8 +4,9 @@ import classes from "./component.module.css";
 import { useApiRoot } from "../../hooks/ApiRootContext.jsx";
 import ErrorMessage from "./ErrorMessage.client";
 import type { Props } from "./types";
-import { tError } from "../../services/i18n";
+import { convertErrorArgsToInterpolation } from "../../services/i18n";
 import type { MfaError } from "../../services/common";
+import { useTranslation } from "react-i18next";
 
 /**
  * Extracts the site key from the current URL path.
@@ -39,6 +40,7 @@ export default function LoginForm(props: Readonly<LoginFormProps>) {
   const [error, setError] = useState("");
   const [inProgress, setInProgress] = useState(false);
   const apiRoot = useApiRoot();
+  const { t } = useTranslation();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -58,7 +60,8 @@ export default function LoginForm(props: Readonly<LoginFormProps>) {
         } else if (result?.fatalError) {
           props.onFatalError(result.error);
         } else {
-          setError(tError(result.error));
+          const { key, interpolation } = convertErrorArgsToInterpolation(result.error);
+          setError(t(key, interpolation));
         }
       })
       .finally(() => setInProgress(false));
