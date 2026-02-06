@@ -133,7 +133,7 @@ The only required UPA module is the API module (`user-password-authentication-ap
 
 The APIs are available at `/modules/graphql-dxm-provider/tools/graphql-workspace.jsp` (go to **Tools → Jahia GraphQL Core Provider : graphql-workspace**) and can be used to build custom authentication flows. More information about GraphQL can be found in the [Jahia documentation](https://academy.jahia.com/documentation/jahia-cms/jahia-8.2/developer/working-with-our-apis/graphql-api/using-graphql-to-perform-queries).
 
-To create a custom UI, copy (or fork) the [UI module](.https://github.com/Jahia/user-password-authentication/tree/main/ui/) and customize it as needed. 
+To create a custom UI, copy (or fork) the [UI module](https://github.com/Jahia/user-password-authentication/tree/main/ui/) and customize it as needed. 
 
 ### Creating a Custom MFA Factor
 
