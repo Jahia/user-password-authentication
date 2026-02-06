@@ -5,6 +5,7 @@ page:
   j:templateName: documentation
 content:
   $subpath: document-area/content
+publish: false
 ---
 
 ## Table of Contents
