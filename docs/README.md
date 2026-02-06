@@ -44,13 +44,13 @@ If you're using a Jahia cluster, you must configure either **sticky sessions** o
 
 ### 1. Install the Modules
 
-Get the modules from the [Jahia Store](https://store.jahia.com/module/user-password-authentication).
+Get the modules from the [Jahia Store](https://store.jahia.com).
 
-1. **Deploy the API module** (`user-password-authentication-api-X.Y.Z.jar`)
+1. **Deploy the API module** (`user-password-authentication-api-X.Y.Z.jar` - [store](https://store.jahia.com/contents/modules-repository/org/jahia/modules/user-password-authentication-api.html))
    - Install via Jahia Module Manager or provisioning, more information can be found in the [Jahia documentation](https://academy.jahia.com/tutorials-get-started/java-developers/installing-a-module)
    - ⚠️ **Important**: Once enabled, this module will override the default login URL for all sites on your platform
    
-2. **Deploy the UI module** (`user-password-authentication-ui-X.Y.Z.tgz`)
+2. **Deploy the UI module** (`user-password-authentication-ui-X.Y.Z.tgz` - [store](https://store.jahia.com/contents/modules-repository/org/jahia/modules/javascript/user-password-authentication-ui.html))
    - Install the module
    - Enable it on your site(s)
 
