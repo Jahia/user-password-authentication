@@ -1,7 +1,7 @@
 ---
 page:
   $path: /sites/academy/home/documentation/jahia/8_2/developer/authentication/user-password-authentication
-  jcr:title: User Password Authentication (UPA) Module - User Guide
+  jcr:title: User Password Authentication
   j:templateName: documentation
 content:
   $subpath: document-area/content
