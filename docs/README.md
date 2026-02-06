@@ -37,7 +37,7 @@ It is not meant to be a replacement for a full-fledged Identity Provider (IdP) s
 If you're using a Jahia cluster, you must configure either **sticky sessions** or **distributed sessions** to ensure proper authentication handling.
 
 ### For MFA with Email Code Factor
-- **SMTP server** must be configured and working in Jahia. More information can be found in the [Jahia documentation](https://academy.jahia.com/documentation/jahia-cms/jahia-8.2/system-administrator/administering-your-server/configuring-mail-settings/configuring-mail-server-settings).
+- **SMTP server** must be configured and working in Jahia. More information can be found in the [Jahia documentation](/cms/{mode}/{lang}/sites/academy/home/documentation/jahia/8_2/sysadmin/administering-your-server/configuring-mail-settings/configuring-mail-server-settings.html).
 - Users must have the **`j:email`** property set in their profile (their `jnt:user` node)
 
 ## Installation & Configuration
