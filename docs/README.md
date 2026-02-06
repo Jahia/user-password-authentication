@@ -5,7 +5,6 @@ page:
   j:templateName: documentation
 content:
   $subpath: document-area/content
-publish: false
 ---
 
 ## Scope
