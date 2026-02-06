@@ -55,7 +55,7 @@ Notes:
   - The URL **must** include the site key for proper email template resolution (required when using the UI module's default template or custom templates)
   - If the value is empty or blank, the login URL provider will be disabled
 
-For all configuration options and default values, see the [default configuration file](https://github.com/Jahia/user-password-authentication/blob/main/api/src/main/resources/META-INF/configurations/org.jahia.modules.upa.mfa.cfg).
+For all configuration options and default values, see the [default configuration file](https://github.com/Jahia/user-password-authentication/blob/main/api/src/main/resources/META-INF/configurations/org.jahia.modules.upa.cfg).
 
 #### Option B: Use the community _Site Settings - Customize Error Pages_ module
 
@@ -125,7 +125,7 @@ You can customize the MFA verification code email by creating a custom view (`ma
 - Host images on publicly accessible URLs
 - See [Can I email](https://www.caniemail.com/) for HTML/CSS compatibility in email clients
 
-**Example:** See [mfa-custom-mail-code-template](https://github.com/Jahia/user-password-authentication/tree/main/test-modules/mfa-custom-mail-code-template/) module.
+**Example:** See [mfa-custom-email-code-template](https://github.com/Jahia/user-password-authentication/tree/main/test-modules/mfa-custom-email-code-template/) module.
 
 ### Building a Custom UI
 
