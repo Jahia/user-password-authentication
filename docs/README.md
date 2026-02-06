@@ -1,23 +1,12 @@
 ---
 page:
-  $path: /sites/academy/home/documentation/jahia/8_2/developer/authentication/configuring-multi-factor-authentication/document-area/upa-documentation
-  jcr:title: User Password Authentication (UPA) Module - User Guide
+  $path: /sites/academy/home/documentation/jahia/8_2/developer/authentication/user-password-authentication
+  jcr:title: User Password Authentication
   j:templateName: documentation
 content:
   $subpath: document-area/content
 publish: false
 ---
-
-## Table of Contents
-- [Scope](#scope)
-- [Prerequisites](#prerequisites)
-- [Installation & Configuration](#installation--configuration)
-- [Terminology](#terminology)
-- [User Authentication Flow](#user-authentication-flow)
-- [Customization](#customization)
-- [Troubleshooting](#troubleshooting)
-- [Known Limitations](#known-limitations)
-- [Contact and support](#contact-and-support)
 
 ## Scope
 
@@ -37,20 +26,20 @@ It is not meant to be a replacement for a full-fledged Identity Provider (IdP) s
 If you're using a Jahia cluster, you must configure either **sticky sessions** or **distributed sessions** to ensure proper authentication handling.
 
 ### For MFA with Email Code Factor
-- **SMTP server** must be configured and working in Jahia. More information can be found in the [Jahia documentation](https://academy.jahia.com/documentation/jahia-cms/jahia-8.2/system-administrator/administering-your-server/configuring-mail-settings/configuring-mail-server-settings).
+- **SMTP server** must be configured and working in Jahia. More information can be found in the [Jahia documentation](/cms/{mode}/{lang}/sites/academy/home/documentation/jahia/8_2/sysadmin/administering-your-server/configuring-mail-settings/configuring-mail-server-settings.html).
 - Users must have the **`j:email`** property set in their profile (their `jnt:user` node)
 
 ## Installation & Configuration
 
 ### 1. Install the Modules
 
-Get the modules from the [Jahia Store](https://store.jahia.com/module/user-password-authentication).
+Get the modules from the [Jahia Store](https://store.jahia.com).
 
-1. **Deploy the API module** (`user-password-authentication-api-X.Y.Z.jar`)
-   - Install via Jahia Module Manager or provisioning, more information can be found in the [Jahia documentation](https://academy.jahia.com/tutorials-get-started/java-developers/installing-a-module)
+1. **Deploy the API module** (`user-password-authentication-api-X.Y.Z.jar` - [store](https://store.jahia.com/contents/modules-repository/org/jahia/modules/user-password-authentication-api.html))
+   - Install via Jahia Module Manager or provisioning, more information can be found in the [Jahia documentation](/cms/{mode}/{lang}/sites/academy/home/get-started/java-developers/installing-a-module.html)
    - ⚠️ **Important**: Once enabled, this module will override the default login URL for all sites on your platform
    
-2. **Deploy the UI module** (`user-password-authentication-ui-X.Y.Z.tgz`)
+2. **Deploy the UI module** (`user-password-authentication-ui-X.Y.Z.tgz` - [store](https://store.jahia.com/contents/modules-repository/org/jahia/modules/javascript/user-password-authentication-ui.html))
    - Install the module
    - Enable it on your site(s)
 
@@ -66,7 +55,7 @@ Notes:
   - The URL **must** include the site key for proper email template resolution (required when using the UI module's default template or custom templates)
   - If the value is empty or blank, the login URL provider will be disabled
 
-For all configuration options and default values, see the [default configuration file](../api/src/main/resources/META-INF/configurations/org.jahia.modules.upa.mfa.cfg).
+For all configuration options and default values, see the [default configuration file](https://github.com/Jahia/user-password-authentication/blob/main/api/src/main/resources/META-INF/configurations/org.jahia.modules.upa.mfa.cfg).
 
 #### Option B: Use the community _Site Settings - Customize Error Pages_ module
 
@@ -136,7 +125,7 @@ You can customize the MFA verification code email by creating a custom view (`ma
 - Host images on publicly accessible URLs
 - See [Can I email](https://www.caniemail.com/) for HTML/CSS compatibility in email clients
 
-**Example:** See [mfa-custom-mail-code-template](../test-modules/mfa-custom-mail-code-template/) module.
+**Example:** See [mfa-custom-mail-code-template](https://github.com/Jahia/user-password-authentication/tree/main/test-modules/mfa-custom-mail-code-template/) module.
 
 ### Building a Custom UI
 
@@ -144,7 +133,7 @@ The only required UPA module is the API module (`user-password-authentication-ap
 
 The APIs are available at `/modules/graphql-dxm-provider/tools/graphql-workspace.jsp` (go to **Tools → Jahia GraphQL Core Provider : graphql-workspace**) and can be used to build custom authentication flows. More information about GraphQL can be found in the [Jahia documentation](https://academy.jahia.com/documentation/jahia-cms/jahia-8.2/developer/working-with-our-apis/graphql-api/using-graphql-to-perform-queries).
 
-To create a custom UI, copy (or fork) the [UI module](../ui/) and customize it as needed. 
+To create a custom UI, copy (or fork) the [UI module](https://github.com/Jahia/user-password-authentication/tree/main/ui/) and customize it as needed. 
 
 ### Creating a Custom MFA Factor
 
@@ -152,7 +141,7 @@ To create a custom UI, copy (or fork) the [UI module](../ui/) and customize it a
 
 You can implement custom MFA factors (e.g., SMS, TOTP, biometric) by implementing the `MfaFactorProvider` interface.
 
-**Example:** See [mfa-custom-factor](../test-modules/mfa-custom-factor/) module.
+**Example:** See [mfa-custom-factor](https://github.com/Jahia/user-password-authentication/tree/main/test-modules/mfa-custom-factor/) module.
 
 ## Troubleshooting
 
