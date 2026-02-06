@@ -1,6 +1,6 @@
 ---
 page:
-  $path: /sites/academy/home/documentation/jahia/8_2/developer/authentication/configuring-multi-factor-authentication/document-area/upa-documentation
+  $path: /sites/academy/home/documentation/jahia/8_2/developer/authentication/user-password-authentication/document-area/upa-documentation
   jcr:title: User Password Authentication (UPA) Module - User Guide
   j:templateName: documentation
 content:
