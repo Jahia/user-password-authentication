@@ -1,11 +1,10 @@
-import { useTranslation } from "react-i18next";
-
-export function tError(error: {
+/**
+ * Converts error arguments from array format to object format for i18next interpolation
+ */
+export function convertErrorArgsToInterpolation(error: {
   code: string;
   arguments?: Array<{ name: string; value: string }>;
-}): string {
-  const { t } = useTranslation();
-  // Convert array of {name, value} to interpolation object
+}): { key: string; interpolation: Record<string, string> } {
   const interpolationData: Record<string, string> = {};
 
   if (error.arguments) {
@@ -13,5 +12,9 @@ export function tError(error: {
       interpolationData[arg.name] = arg.value;
     });
   }
-  return t(error.code, interpolationData);
+
+  return {
+    key: error.code,
+    interpolation: interpolationData,
+  };
 }
