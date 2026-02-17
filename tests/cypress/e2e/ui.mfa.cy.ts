@@ -96,6 +96,8 @@ describe('Tests for the UI module', () => {
 
     after(() => {
         deleteSite(SITE_KEY);
+        // Wait 30 minutes
+        cy.wait(60 * 1000 * 30);
     });
 
     it('Should skip the second factor (email) when no factor is configured', () => {
