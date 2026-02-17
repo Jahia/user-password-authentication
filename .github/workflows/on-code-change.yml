@@ -68,6 +68,6 @@ jobs:
       module_id: user-password-authentication
       should_skip_testrail: true
       pagerduty_skip_notification: true
-      provisioning_manifest: provisioning-manifest-build.yml
+      provisioning_manifest: provisioning-manifest-snapshot.yml
       artifact_prefix: upa
       module_branch: ${{ github.ref }}
