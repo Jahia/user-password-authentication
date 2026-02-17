@@ -2,8 +2,9 @@ import {defineConfig} from 'cypress';
 import fs from 'fs';
 
 export default defineConfig({
-    // DefaultCommandTimeout: 10000,
-    // videoUploadOnPasses: false,
+    // The default timeout of 4 seconds is not enough when reloading the login form and waiting for the form to be ready
+    defaultCommandTimeout: 10000,
+    // VideoUploadOnPasses: false,
     reporter: 'cypress-multi-reporters',
     reporterOptions: {
         configFile: 'reporter-config.json'
