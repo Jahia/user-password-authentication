@@ -9,6 +9,7 @@ import type { MfaError } from "../../services/common";
 
 interface FatalErrorScreenProps {
   error: MfaError;
+  onResetFlow: () => void;
 }
 
 const suspendedUserErrorCode = "suspended_user";
@@ -48,9 +49,8 @@ export default function FatalErrorScreen(props: Readonly<FatalErrorScreenProps>)
     clear(apiRoot)
       .then((result) => {
         if (result.success) {
-          // refresh the page
-          globalThis.location.reload();
           setMessage("");
+          props.onResetFlow()
         } else {
           const { key, interpolation } = convertErrorArgsToInterpolation(result.error);
           setMessage(t(key, interpolation));

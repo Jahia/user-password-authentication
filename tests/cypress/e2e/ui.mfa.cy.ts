@@ -333,7 +333,6 @@ describe('Tests for the UI module', () => {
 
             // Restart the login flow
             EmailFactorStep.clickRestartLoginOnSuspension();
-            LoginStep.waitForEmptyLoginForm();
 
             // Should remain suspended
             LoginStep.login(username, password);
@@ -358,10 +357,8 @@ describe('Tests for the UI module', () => {
             EmailFactorStep.submitVerificationCode(wrongCode);
             EmailFactorStep.assertErrorMessage(I18N_LOCALES.suspended_user.replace('{{suspensionDurationInHours}}', '1'));
 
-            // Restart the login flow and expect a suspension message
+            // Restart the login flow and expect suspension message
             EmailFactorStep.clickRestartLoginOnSuspension();
-            LoginStep.waitForEmptyLoginForm();
-
             LoginStep.login(username, password);
             EmailFactorStep.assertErrorMessage(I18N_LOCALES.suspended_user.replace('{{suspensionDurationInHours}}', '1'));
 
@@ -371,8 +368,6 @@ describe('Tests for the UI module', () => {
 
             // Restart the login flow and receive a new code
             EmailFactorStep.clickRestartLoginOnSuspension();
-            LoginStep.waitForEmptyLoginForm();
-
             LoginStep.login(username, password);
             LoginStep.selectEmailCodeFactor();
             getVerificationCode(email).then(newCode => {

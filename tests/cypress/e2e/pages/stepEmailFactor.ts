@@ -68,7 +68,6 @@ export class EmailFactorStep extends BasePage {
 
     /**
      * Click on the "Restart login" link on suspension
-     * This triggers a page reload via location.reload()
      */
     static clickRestartLoginOnSuspension(): void {
         cy.get(this.selectors.linkRestartLogin).click();

@@ -62,15 +62,6 @@ export class LoginStep extends BasePage {
     }
 
     /**
-     * Wait for the login form to be empty and ready for input.
-     * This ensures the page has fully reloaded (e.g., after clicking "Restart login")
-     * and the username field is visible with no value.
-     */
-    static waitForEmptyLoginForm(): void {
-        cy.get(this.selectors.inputUsername).should('be.visible').and('have.value', '');
-    }
-
-    /**
      * Select email code factor (if multiple factors are available)
      */
     static selectEmailCodeFactor(): void {
