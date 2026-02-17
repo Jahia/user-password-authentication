@@ -61,6 +61,10 @@ export class LoginStep extends BasePage {
         cy.get(this.selectors.buttonSubmit).click();
     }
 
+    static waitForEmptyLoginForm(): void {
+        cy.get(this.selectors.inputUsername).should('be.visible').and('have.value', '');
+    }
+
     /**
      * Select email code factor (if multiple factors are available)
      */
