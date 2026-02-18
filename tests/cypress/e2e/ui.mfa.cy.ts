@@ -58,7 +58,12 @@ describe('Tests for the UI module', () => {
         LoginStep.selectEmailCodeFactor();
         getVerificationCode(email).then(code => {
             // Intercept the redirect to the expected page, to validate it actually happens
-            cy.intercept('GET', expectedRedirectUrl).as('expectedRedirect');
+            cy.intercept('GET', expectedRedirectUrl, req => {
+                // Only intercept if it's a document (page navigation), not XHR/fetch
+                if (req.headers.accept && req.headers.accept.includes('text/html')) {
+                    req.continue();
+                }
+            }).as('expectedRedirect');
 
             EmailFactorStep.submitVerificationCode(code);
             EmailFactorStep.assertSuccessfullyRedirected(SITE_KEY, I18N.defaultLanguage, expectedRedirectUrl);
