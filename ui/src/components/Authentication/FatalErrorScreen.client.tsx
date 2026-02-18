@@ -9,20 +9,21 @@ import type { MfaError } from "../../services/common";
 
 interface FatalErrorScreenProps {
   error: MfaError;
+  onResetFlow: () => void;
 }
 
 const suspendedUserErrorCode = "suspended_user";
-export default function FatalErrorScreen(props: Readonly<FatalErrorScreenProps>) {
+export default function FatalErrorScreen({ error, onResetFlow }: Readonly<FatalErrorScreenProps>) {
   const { t } = useTranslation();
   const [inProgress, setInProgress] = useState(false);
   const apiRoot = useApiRoot();
 
   // Compute error message from props without side effects
   const errorMessage = useMemo(() => {
-    if (props.error.code === suspendedUserErrorCode) {
+    if (error.code === suspendedUserErrorCode) {
       // special case for the suspension error message
       // Convert seconds to hours and round up for user-friendly display
-      const suspensionDurationInSecondsArg = props.error.arguments?.find(
+      const suspensionDurationInSecondsArg = error.arguments?.find(
         (arg) => arg.name === "suspensionDurationInSeconds",
       )?.value;
       const suspensionDurationInHours = suspensionDurationInSecondsArg
@@ -30,16 +31,16 @@ export default function FatalErrorScreen(props: Readonly<FatalErrorScreenProps>)
         : 0;
       return t(suspendedUserErrorCode, { suspensionDurationInHours });
     } else {
-      console.error("Unexpected error code:", props.error.code);
+      console.error("Unexpected error code:", error.code);
       return t(
-        props.error.code,
-        props.error.arguments?.reduce(
+        error.code,
+        error.arguments?.reduce(
           (acc, arg) => ({ ...acc, [arg.name]: arg.value }),
           {} as Record<string, string>,
         ),
       );
     }
-  }, [props.error]);
+  }, [error]);
 
   const [message, setMessage] = useState(errorMessage);
 
@@ -48,9 +49,8 @@ export default function FatalErrorScreen(props: Readonly<FatalErrorScreenProps>)
     clear(apiRoot)
       .then((result) => {
         if (result.success) {
-          // refresh the page
-          globalThis.location.reload();
           setMessage("");
+          onResetFlow();
         } else {
           const { key, interpolation } = convertErrorArgsToInterpolation(result.error);
           setMessage(t(key, interpolation));

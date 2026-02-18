@@ -31,9 +31,15 @@ export default function Authentication({
     redirect(content.contextPath);
   };
 
+  const handleResetFlow = () => {
+    setStep(Step.LOGIN);
+    setFatalError(undefined);
+  };
   return (
     <ApiRootContext value={apiRoot}>
-      {step === Step.FATAL_ERROR && fatalError && <FatalErrorScreen error={fatalError} />}
+      {step === Step.FATAL_ERROR && fatalError && (
+        <FatalErrorScreen error={fatalError} onResetFlow={() => handleResetFlow()} />
+      )}
       {step === Step.LOGIN && (
         <LoginForm
           content={content}
