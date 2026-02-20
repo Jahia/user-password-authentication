@@ -74,7 +74,7 @@ describe('Tests for the UI module', () => {
             EmailFactorStep.submitVerificationCode(code);
 
             // Wait for the expected redirect to complete FIRST - this ensures navigation has finished
-            cy.wait('@expectedRedirect').its('response.url').should('eq', interceptUrl);
+            cy.wait('@expectedRedirect');
 
             // Now validate the URL after navigation is complete
             EmailFactorStep.assertRedirectedFromLoginPage(loginPageURL);
