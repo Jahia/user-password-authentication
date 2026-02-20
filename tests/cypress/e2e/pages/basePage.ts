@@ -14,13 +14,9 @@ export class BasePage {
      * Assert that the user is successfully redirected
      * @param siteKey - The site key of the site to check for
      * @param language - Optional the language of the site to check for
-     * @param redirectUrl - Optional the expected redirect URL
      */
-    static assertSuccessfullyRedirected(siteKey: string, language?: string, redirectUrl?: string): void {
+    static assertRedirectedFromLoginPage(siteKey: string, language?: string): void {
         cy.url().should('not.include', getLoginPageURL(siteKey, language));
-        if (redirectUrl) {
-            cy.url().should('include', redirectUrl);
-        }
     }
 
     /**

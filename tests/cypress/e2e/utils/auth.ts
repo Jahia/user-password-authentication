@@ -69,8 +69,8 @@ export const assertIsLoggedIn = (username: string) => {
 export const assertCookiesMatch = (cookiesNames:string[]) => {
     cy.getCookies().should(cookies => {
         const cookieNames = cookies.map(cookie => cookie.name);
-        expect(cookieNames).to.include.members(cookiesNames);
-        expect(cookies).to.have.length(cookiesNames.length);
+        expect(cookieNames, `Expected cookies: [${cookiesNames.join(', ')}], but found: [${cookieNames.join(', ')}]`).to.include.members(cookiesNames);
+        expect(cookies, `Expected ${cookiesNames.length} cookie(s), but got ${cookies.length}: [${cookieNames.join(', ')}]`).to.have.length(cookiesNames.length);
     });
 };
 
