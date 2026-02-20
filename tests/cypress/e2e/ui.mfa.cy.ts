@@ -32,13 +32,13 @@ const VALID_REDIRECT_URLS = [
     {redirectPathname: Cypress.env('JAHIA_URL') + '/sample.html', expectedPathname: '/sample.html', description: 'Same domain (with protocol)'}
 ];
 const PROHIBITED_REDIRECT_URLS = [
-    `//sites/${SITE_KEY}/otherPage.html`, // Starting with '//'
+    {redirectPathname: `//sites/${SITE_KEY}/otherPage.html`, expectedPathname: '/jahia/dashboard', description: 'Starting with \'//\''},
     // eslint-disable-next-line no-script-url
-    'javascript:alert(\'XSS attack\')', // XSS attack using the 'javascript:' protocol
-    'javascript%3Aalert%28%27XSS%20attack%27%29', // XSS attack using the 'javascript:' protocol (URL encoded)
-    'data:text/html,<script>alert(\'XSS\')</script>', // XSS attack using the 'data:' protocol
-    'http://otherdomain.com/fake.html', // External site (http)
-    'https://otherdomain.com/fake.html' // External site (https)
+    {redirectPathname: 'javascript:alert(\'XSS attack\')', expectedPathname: '/jahia/dashboard', description: 'XSS attack using the \'javascript:\' protocol'},
+    {redirectPathname: 'javascript%3Aalert%28%27XSS%20attack%27%29', expectedPathname: '/jahia/dashboard', description: 'XSS attack using the \'javascript:\' protocol (URL encoded)'},
+    {redirectPathname: 'data:text/html,<script>alert(\'XSS\')</script>', expectedPathname: '/jahia/dashboard', description: 'XSS attack using the \'data:\' protocol'},
+    {redirectPathname: 'http://otherdomain.com/fake.html', expectedPathname: '/jahia/dashboard', description: 'External site (http)'},
+    {redirectPathname: 'https://otherdomain.com/fake.html', expectedPathname: '/jahia/dashboard', description: 'External site (https)'}
 ];
 
 describe('Tests for the UI module', () => {
@@ -562,8 +562,8 @@ describe('Tests for the UI module', () => {
 
     // Test with prohibited redirect URLS: should always be redirected to root page '/'
     PROHIBITED_REDIRECT_URLS.forEach(redirectURL => {
-        it(`Should be redirected to / when a prohibited redirect page is passed (${redirectURL})`, () => {
-            testSuccessfulRedirect(encodeURIComponent(redirectURL), '/');
+        it(`Should be redirected to / when a prohibited redirect page is passed (${redirectURL.description})`, () => {
+            testSuccessfulRedirect(encodeURIComponent(redirectURL.redirectPathname), redirectURL.expectedPathname);
         });
     });
 
