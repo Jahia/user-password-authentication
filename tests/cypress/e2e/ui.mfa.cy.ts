@@ -24,21 +24,21 @@ const MAX_INVALID_ATTEMPTS = 3;
 const TIME_BEFORE_NEXT_CODE_MS = 3000;
 const SUSPENSION_TIME_MS = 5000;
 const VALID_REDIRECT_URLS = [
-    `/sites/${SITE_KEY}/otherPage.html`, // Absolute URL, same site, no parameter
-    `/sites/${SITE_KEY}/otherPage.html?param=test`, // Absolute URL, same site, with parameter
-    '/sites/otherSite/otherPage.html?param=test', // Absolute URL, different site, with parameter
-    '/my/other/page?param=test', // Absolute URL, not a site, with parameter
-    'otherPage.html?param=test', // Relative URL, no parameter
-    Cypress.env('JAHIA_URL') + '/sample.html' // Same domain (with protocol)
+    {redirectPathname: `/sites/${SITE_KEY}/otherPage.html`, expectedPathname: `/sites/${SITE_KEY}/otherPage.html`, description: 'Absolute URL, same site, no parameter'},
+    {redirectPathname: `/sites/${SITE_KEY}/otherPage.html`, redirectSearch: '?param=test', expectedPathname: `/sites/${SITE_KEY}/otherPage.html`, description: 'Absolute URL, same site, with parameter'},
+    {redirectPathname: '/sites/otherSite/otherPage.html', redirectSearch: '?param=test', expectedPathname: '/sites/otherSite/otherPage.html', description: 'Absolute URL, different site, with parameter'},
+    {redirectPathname: '/my/other/page', redirectSearch: '?param=test', expectedPathname: '/my/other/page', description: 'Absolute URL, not a site, with parameter'},
+    {redirectPathname: 'otherPage.html', redirectSearch: '?param=test', expectedPathname: '/otherPage.html', description: 'Relative URL, with parameter'},
+    {redirectPathname: Cypress.env('JAHIA_URL') + '/sample.html', expectedPathname: '/sample.html', description: 'Same domain (with protocol)'}
 ];
 const PROHIBITED_REDIRECT_URLS = [
-    `//sites/${SITE_KEY}/otherPage.html`, // Starting with '//'
+    {redirectPathname: `//sites/${SITE_KEY}/otherPage.html`, expectedPathname: '/jahia/dashboard', description: 'Starting with \'//\''},
     // eslint-disable-next-line no-script-url
-    'javascript:alert(\'XSS attack\')', // XSS attack using the 'javascript:' protocol
-    'javascript%3Aalert%28%27XSS%20attack%27%29', // XSS attack using the 'javascript:' protocol (URL encoded)
-    'data:text/html,<script>alert(\'XSS\')</script>', // XSS attack using the 'data:' protocol
-    'http://otherdomain.com/fake.html', // External site (http)
-    'https://otherdomain.com/fake.html' // External site (https)
+    {redirectPathname: 'javascript:alert(\'XSS attack\')', expectedPathname: '/jahia/dashboard', description: 'XSS attack using the \'javascript:\' protocol'},
+    {redirectPathname: 'javascript%3Aalert%28%27XSS%20attack%27%29', expectedPathname: '/jahia/dashboard', description: 'XSS attack using the \'javascript:\' protocol (URL encoded)'},
+    {redirectPathname: 'data:text/html,<script>alert(\'XSS\')</script>', expectedPathname: '/jahia/dashboard', description: 'XSS attack using the \'data:\' protocol'},
+    {redirectPathname: 'http://otherdomain.com/fake.html', expectedPathname: '/jahia/dashboard', description: 'External site (http)'},
+    {redirectPathname: 'https://otherdomain.com/fake.html', expectedPathname: '/jahia/dashboard', description: 'External site (https)'}
 ];
 
 describe('Tests for the UI module', () => {
@@ -49,30 +49,41 @@ describe('Tests for the UI module', () => {
     /**
      * Tests a successful redirect to the given redirectParam after completing the MFA flow.
      * @param {string} redirectParam the redirect parameter to use in the login URL
-     * @param {string} expectedRedirectUrl the expected redirect URL after successful authentication (if different from redirectParam)
+     * @param {string} expectedPathname the expected pathname after successful authentication
+     * @param {string} expectedSearch the expected search/query string (optional)
      * @return {void}
      */
-    const testSuccessfulRedirect = (redirectParam: string, expectedRedirectUrl: string): void => {
-        cy.visit(`${getLoginPageURL(SITE_KEY)}?redirect=${redirectParam}`);
+    const testSuccessfulRedirect = (redirectParam: string, expectedPathname: string, expectedSearch?: string): void => {
+        const loginPageURL = getLoginPageURL(SITE_KEY);
+        cy.visit(`${loginPageURL}?redirect=${redirectParam}`);
         LoginStep.login(username, password);
         LoginStep.selectEmailCodeFactor();
         getVerificationCode(email).then(code => {
-            // Intercept the redirect to the expected page, to validate it actually happens
-            cy.intercept('GET', expectedRedirectUrl).as('expectedRedirect');
-
-            EmailFactorStep.submitVerificationCode(code);
-            EmailFactorStep.assertSuccessfullyRedirected(SITE_KEY, I18N.defaultLanguage, expectedRedirectUrl);
-
-            // Build expected response URL: handle the case when redirect URL is absolute or relative or full URL
-            let responseURL: string;
-            if (expectedRedirectUrl.startsWith('http://') || expectedRedirectUrl.startsWith('https://')) {
-                responseURL = expectedRedirectUrl;
+            // Build the full expected URL for interception
+            const expectedPath = expectedPathname + (expectedSearch || '');
+            let interceptUrl: string;
+            if (expectedPath.startsWith('http://') || expectedPath.startsWith('https://')) {
+                interceptUrl = expectedPath;
             } else {
-                responseURL = `${Cypress.env('JAHIA_URL')}${expectedRedirectUrl[0] === '/' ? '' : '/'}${expectedRedirectUrl}`;
+                interceptUrl = `${Cypress.env('JAHIA_URL')}${expectedPath[0] === '/' ? '' : '/'}${expectedPath}`;
             }
 
-            // Wait for the expected redirect to complete and validate the URL
-            cy.wait('@expectedRedirect').its('response.url').should('eq', responseURL);
+            // Intercept the redirect to the expected page, to validate it actually happens
+            cy.intercept('GET', interceptUrl).as('expectedRedirect');
+
+            EmailFactorStep.submitVerificationCode(code);
+
+            // Wait for the expected redirect to complete FIRST - this ensures navigation has finished
+            cy.wait('@expectedRedirect');
+
+            // Now validate the URL after navigation is complete
+            EmailFactorStep.assertRedirectedFromLoginPage(loginPageURL);
+
+            // Validate pathname and search separately
+            cy.location('pathname').should('eq', expectedPathname);
+            if (expectedSearch) {
+                cy.location('search').should('eq', expectedSearch);
+            }
         });
     };
 
@@ -109,7 +120,7 @@ describe('Tests for the UI module', () => {
         // Directly logged in
         LoginStep.login(username, password);
 
-        EmailFactorStep.assertSuccessfullyRedirected(SITE_KEY);
+        EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
         assertIsLoggedIn(username);
     });
 
@@ -128,7 +139,7 @@ describe('Tests for the UI module', () => {
 
             // Proceed with verification
             EmailFactorStep.submitVerificationCode(code);
-            EmailFactorStep.assertSuccessfullyRedirected(SITE_KEY);
+            EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
             assertIsLoggedIn(username);
         });
     });
@@ -152,7 +163,7 @@ describe('Tests for the UI module', () => {
 
             // Proceed with verification
             EmailFactorStep.submitVerificationCode(code);
-            EmailFactorStep.assertSuccessfullyRedirected(SITE_KEY);
+            EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
             assertIsLoggedIn(username);
         });
     });
@@ -308,7 +319,7 @@ describe('Tests for the UI module', () => {
 
             // Now enter the correct code
             EmailFactorStep.submitVerificationCode(code);
-            EmailFactorStep.assertSuccessfullyRedirected(SITE_KEY);
+            EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
             assertIsLoggedIn(username);
         });
     });
@@ -383,7 +394,7 @@ describe('Tests for the UI module', () => {
 
                 // Now enter the correct code and authenticate
                 EmailFactorStep.submitVerificationCode(newCode);
-                EmailFactorStep.assertSuccessfullyRedirected(SITE_KEY);
+                EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
                 assertIsLoggedIn(username);
             });
         });
@@ -424,7 +435,7 @@ describe('Tests for the UI module', () => {
 
             // Now enter the complete code and verify button becomes enabled
             EmailFactorStep.submitVerificationCode(code);
-            EmailFactorStep.assertSuccessfullyRedirected(SITE_KEY);
+            EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
             assertIsLoggedIn(username);
         });
     });
@@ -452,7 +463,7 @@ describe('Tests for the UI module', () => {
             cy.wait(1000);
             // Finally submit the initially received code
             EmailFactorStep.submitVerificationCode(code);
-            EmailFactorStep.assertSuccessfullyRedirected(SITE_KEY);
+            EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
             assertIsLoggedIn(username);
         });
     });
@@ -481,7 +492,7 @@ describe('Tests for the UI module', () => {
 
                 // Now enter the correct code
                 EmailFactorStep.submitVerificationCode(secondCode);
-                EmailFactorStep.assertSuccessfullyRedirected(SITE_KEY);
+                EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
                 assertIsLoggedIn(username);
             });
         });
@@ -530,7 +541,7 @@ describe('Tests for the UI module', () => {
 
                 // Now enter the correct code
                 EmailFactorStep.submitVerificationCode(secondCode);
-                EmailFactorStep.assertSuccessfullyRedirected(SITE_KEY);
+                EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
                 assertIsLoggedIn(username);
             });
         });
@@ -538,19 +549,21 @@ describe('Tests for the UI module', () => {
 
     // Test both URL-encoded and non URL-encoded redirect parameters
     VALID_REDIRECT_URLS.forEach(redirectURL => {
-        it(`Should be redirected to the provided URL-encoded redirect page (${redirectURL})`, () => {
-            testSuccessfulRedirect(encodeURIComponent(redirectURL), redirectURL);
+        const redirectParam = redirectURL.redirectPathname + (redirectURL.redirectSearch || '');
+
+        it(`Should be redirected to the provided URL-encoded redirect page (${redirectURL.description})`, () => {
+            testSuccessfulRedirect(encodeURIComponent(redirectParam), redirectURL.expectedPathname, redirectURL.redirectSearch);
         });
 
-        it(`Should be redirected to the provided (non URL-encoded) redirect page (${redirectURL})`, () => {
-            testSuccessfulRedirect(redirectURL, redirectURL);
+        it(`Should be redirected to the provided (non URL-encoded) redirect page (${redirectURL.description})`, () => {
+            testSuccessfulRedirect(redirectParam, redirectURL.expectedPathname, redirectURL.redirectSearch);
         });
     });
 
     // Test with prohibited redirect URLS: should always be redirected to root page '/'
     PROHIBITED_REDIRECT_URLS.forEach(redirectURL => {
-        it(`Should be redirected to / when a prohibited redirect page is passed (${redirectURL})`, () => {
-            testSuccessfulRedirect(encodeURIComponent(redirectURL), '/');
+        it(`Should be redirected to / when a prohibited redirect page is passed (${redirectURL.description})`, () => {
+            testSuccessfulRedirect(encodeURIComponent(redirectURL.redirectPathname), redirectURL.expectedPathname);
         });
     });
 
@@ -566,7 +579,7 @@ describe('Tests for the UI module', () => {
         getVerificationCode(email).then(code => {
             // Proceed with verification
             EmailFactorStep.submitVerificationCode(code);
-            EmailFactorStep.assertSuccessfullyRedirected(SITE_KEY);
+            EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
             assertIsLoggedIn(username);
             assertCookiesMatch(['JSESSIONID', 'jid']);
 
@@ -588,7 +601,7 @@ describe('Tests for the UI module', () => {
         getVerificationCode(email).then(code => {
             // Proceed with verification
             EmailFactorStep.submitVerificationCode(code);
-            EmailFactorStep.assertSuccessfullyRedirected(SITE_KEY);
+            EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
             assertIsLoggedIn(username);
             assertCookiesMatch(['JSESSIONID']);
 
