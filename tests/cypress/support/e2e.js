@@ -28,7 +28,25 @@ jsErrorsLogger.setAllowedJsWarnings([
 ]);
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-require('cypress-terminal-report/src/installLogsCollector')();
+require('cypress-terminal-report/src/installLogsCollector')({
+    processLog: log => {
+        const [logType, logMessage, severity] = log;
+        const timestamp = new Date().toISOString();
+        // Handle different types of log messages
+        let message;
+        if (Array.isArray(logMessage)) {
+            message = logMessage.join(' ');
+        } else if (typeof logMessage === 'object' && logMessage !== null) {
+            message = JSON.stringify(logMessage);
+        } else if (typeof logMessage === 'string') {
+            message = logMessage;
+        } else {
+            message = String(logMessage);
+        }
+
+        return [logType, `[${timestamp}] ${message}`, severity];
+    }
+});
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('@jahia/cypress/dist/support/registerSupport').registerSupport();
 

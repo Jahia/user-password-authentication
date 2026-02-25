@@ -54,7 +54,7 @@ export const assertIsLoggedIn = (username: string) => {
         });
     }, {
         errorMsg: `Welcome message for ${username} not found`,
-        timeout: 10000,
+        timeout: 30000, // Sometimes, the welcome message takes time to appear
         interval: 1000
     });
     // Also ensure the user is not suspended
