@@ -1,3 +1,4 @@
+import 'cypress-wait-until';
 import {getLoginPageURL} from '../utils';
 
 /**
@@ -16,7 +17,13 @@ export class BasePage {
      * @param language - Optional the language of the site to check for
      */
     static assertRedirectedFromLoginPage(siteKey: string, language?: string): void {
-        cy.url().should('not.include', getLoginPageURL(siteKey, language));
+        cy.waitUntil(() => {
+            return cy.url().then(url => !url.includes(getLoginPageURL(siteKey, language)));
+        }, {
+            errorMsg: 'The user is not redirected from the login page',
+            timeout: 10000,
+            interval: 1000
+        });
     }
 
     /**
