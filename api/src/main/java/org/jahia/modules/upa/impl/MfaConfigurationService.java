@@ -23,6 +23,8 @@
  */
 package org.jahia.modules.upa.impl;
 
+import org.apache.commons.lang3.StringUtils;
+import org.jahia.services.cache.CacheHelper;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
@@ -88,6 +90,11 @@ public class MfaConfigurationService {
 
     @Modified
     public void modified(Config config) {
+        if (!StringUtils.equals(config.loginUrl(), this.config.loginUrl())) {
+            // a new login URL has been set, the cache must be invalidated
+            // as org.jahia.services.render.URLGenerator.getLogin() may have been used to render some pages
+            CacheHelper.flushOutputCaches(true);
+        }
         this.config = config;
         logger.info("MFA Service configuration modified");
     }
