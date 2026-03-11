@@ -16,4 +16,5 @@ jobs:
       pagerduty_incident_service: user-password-authentication-JahiaSN
       provisioning_manifest: provisioning-manifest-snapshot.yml
       artifact_prefix: upa-nightly-sn
+      docker_build_cache_enabled: true
       module_branch: ${{ github.ref }}
