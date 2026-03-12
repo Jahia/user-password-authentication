@@ -1,16 +1,20 @@
 {
   "name": "user-password-authentication-cypress",
+  "type": "module",
   "version": "1.0.0",
   "description": "Cypress tests for the Jahia UPA (User Password Authentication) module",
   "private": "true",
   "devDependencies": {
+    "allure-cypress": "^3.0.0",
+    "axios": "^1.6.0",
+    "form-data": "^4.0.0",
     "@apollo/client": "^3.14.0",
     "@babel/core": "^7.25.2",
     "@babel/preset-env": "^7.25.3",
     "@cypress/code-coverage": "^3.9.11",
     "@cypress/webpack-preprocessor": "^5.9.1",
     "@faker-js/faker": "^10.0.0",
-    "@jahia/cypress": "^7.0.0",
+    "@jahia/cypress": "^7.4.0",
     "@jahia/eslint-config": "^2.1.2",
     "@typescript-eslint/eslint-plugin": "^5.2.0",
     "@typescript-eslint/parser": "^5.2.0",
@@ -57,7 +61,8 @@
     "lint": "eslint . -c .eslintrc.json --ext .ts",
     "lint:fix": "yarn lint --fix",
     "report:merge": "mochawesome-merge results/reports/cypress*.json > results/reports/report.json && rm results/reports/cypress*.json",
-    "report:html": "marge --inline results/reports/report.json --reportDir results/reports/"
+    "report:html": "marge --inline results/reports/report.json --reportDir results/reports/",
+    "report:allure": "node ./cypress/support/allure-reporter.js"
   },
   "repository": {
     "type": "git",
