@@ -1,5 +1,6 @@
 import {addNode, deleteSite, deleteUser, publishAndWaitJobEnding, revokeRoles} from '@jahia/cypress';
 import {faker} from '@faker-js/faker';
+import * as allure from 'allure-js-commons';
 import {
     createSiteWithLoginPage,
     createUserForMFA,
@@ -38,6 +39,10 @@ describe('Browsing Tests', () => {
     });
 
     it('Should return a 404 on page when MFA is deployed', () => {
+        allure.issue('https://github.com/allure-framework/allure-js/issues/900', 'ISSUE-900');
+        allure.owner('@baptistegrimaud');
+        allure.parameter('browser', Cypress.browser.family);
+
         const properties = [
             {name: 'jcr:title', value: 'Protected page (EN)', language: 'en'},
             {name: 'j:templateName', value: 'simple', language: 'en'}

@@ -18,6 +18,7 @@
 import './commands';
 import addContext from 'mochawesome/addContext';
 import {jsErrorsLogger} from '@jahia/cypress';
+import 'allure-cypress';
 
 // Enable and attach JS Errors Logger
 jsErrorsLogger.enable();
