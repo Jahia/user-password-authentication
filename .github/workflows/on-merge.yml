@@ -62,6 +62,7 @@ jobs:
       should_use_build_artifacts: true
       pagerduty_incident_service: user-password-authentication-JahiaSN
       artifact_prefix: upa
+      docker_build_cache_enabled: true
       module_branch: ${{ github.head_ref }}
 
   publish:

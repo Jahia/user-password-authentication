@@ -25,4 +25,5 @@ jobs:
       pagerduty_skip_notification: true
       provisioning_manifest: ${{ github.event.inputs.manifest }}
       artifact_prefix: upa
+      docker_build_cache_enabled: true
       module_branch: ${{ github.ref }}
