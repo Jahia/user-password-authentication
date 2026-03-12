@@ -587,7 +587,6 @@ describe('Tests for the UI module', () => {
             cy.clearCookie('JSESSIONID');
             assertCookiesMatch(['jid']);
             // The user should be logged in automatically
-            cy.reload();
             assertIsLoggedIn(username);
             assertCookiesMatch(['JSESSIONID', 'jid']);
         });
