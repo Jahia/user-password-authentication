@@ -60,7 +60,7 @@ jobs:
           nexus_password: ${{ secrets.NEXUS_PASSWORD }}
 
   integration-tests:
-    uses:  Jahia/jahia-modules-action/.github/workflows/reusable-integration-tests.yml@v2
+    uses:  Jahia/jahia-modules-action/.github/workflows/reusable-integration-tests.yml@use-cache-for-integration-tests
     needs: build
     secrets: inherit
     with:
@@ -71,3 +71,4 @@ jobs:
       provisioning_manifest: provisioning-manifest-build.yml
       artifact_prefix: upa
       module_branch: ${{ github.ref }}
+      docker_build_cache_enabled: true
