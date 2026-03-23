@@ -583,13 +583,14 @@ describe('Tests for the UI module', () => {
             assertIsLoggedIn(username, password);
             assertCookiesMatch(['JSESSIONID', 'jid']);
             // Log cookies for debugging purposes
-            logCookies();
+            cy.logAllCookies();
 
             // Simulate closing the browser session (by deleting the JSESSIONID cookie)
-            cy.clearCookie('JSESSIONID');
+            cy.simulateBrowserClose();
+
             assertCookiesMatch(['jid']);
             // Log cookies for debugging purposes
-            logCookies();
+            cy.logAllCookies();
 
             // The user should be logged in automatically
             assertIsLoggedIn(username, password);
