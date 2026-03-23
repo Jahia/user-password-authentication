@@ -26,9 +26,7 @@
 import 'cypress-wait-until';
 import 'cypress-mailpit';
 
-/**
- * Logs all cookies in a detailed format, with options for summary and table views.
- */
+// Logs all cookies in a detailed format
 Cypress.Commands.add('logAllCookies', () => {
     cy.getCookies().then(cookies => {
         if (cookies.length === 0) {
