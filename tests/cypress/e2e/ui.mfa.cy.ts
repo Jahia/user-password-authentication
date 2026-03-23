@@ -12,7 +12,7 @@ import {
     getLoginPageURL,
     getVerificationCode,
     I18N,
-    installMFAConfig,
+    installMFAConfig, logCookies,
     updateSiteLoginPageProps
 } from './utils';
 
@@ -582,10 +582,15 @@ describe('Tests for the UI module', () => {
             EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
             assertIsLoggedIn(username);
             assertCookiesMatch(['JSESSIONID', 'jid']);
+            // Log cookies for debugging purposes
+            logCookies();
 
             // Simulate closing the browser session (by deleting the JSESSIONID cookie)
             cy.clearCookie('JSESSIONID');
             assertCookiesMatch(['jid']);
+            // Log cookies for debugging purposes
+            logCookies();
+
             // The user should be logged in automatically
             assertIsLoggedIn(username);
             assertCookiesMatch(['JSESSIONID', 'jid']);

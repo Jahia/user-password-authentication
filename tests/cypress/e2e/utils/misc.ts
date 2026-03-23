@@ -44,3 +44,14 @@ export function expectArrayToContainExactly<T>(actual: T[], expected: T[]) {
         }
     });
 }
+
+/**
+ * Logs all current cookies to the Cypress log for debugging purposes.
+ */
+export const logCookies = () => {
+    cy.getCookies().then(cookies => {
+        cookies.forEach(cookie => {
+            cy.log(`Cookie: ${cookie.name} = ${cookie.value}`);
+        });
+    });
+};
