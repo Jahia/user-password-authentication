@@ -131,7 +131,7 @@ Cypress.Commands.add('simulateBrowserClose', () => {
     cy.log('Simulating browser close...');
 
     // Clear all storage
-    cy.clearLocalStorage();
+    // cy.clearLocalStorage();
     cy.clearAllSessionStorage();
 
     // Clear session cookies only
