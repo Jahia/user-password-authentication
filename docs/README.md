@@ -44,9 +44,11 @@ Get the modules from the [Jahia Store](https://store.jahia.com).
 
 ### 2. Setup
 
-To ensure that users are properly redirected to your login page when accessing protected resources, you need to configure a login URL provider. You have three options:
+To ensure that users are properly redirected to your login page when accessing protected resources, you need to configure a login URL provider (three possible options detailed below) and to create a login page. 
 
-#### Option A: Use the Embedded Login URL Provider (Recommended)
+#### Configure a login URL provider
+
+*Option A: Use the Embedded Login URL Provider (Recommended)*
 
 Navigate to **Tools → OSGi Console → OSGi → Configuration** and set the `loginUrl` parameter of the `org.jahia.modules.upa` configuration to the URL of the page containing your UPA login form (e.g., `/sites/mySite/login.html`).
 Notes:
@@ -56,13 +58,14 @@ Notes:
 
 For all configuration options and default values, see the [default configuration file](https://github.com/Jahia/user-password-authentication/blob/main/api/src/main/resources/META-INF/configurations/org.jahia.modules.upa.cfg).
 
-#### Option B: Use the community _Site Settings - Customize Error Pages_ module
+*Option B: Use the community _Site Settings - Customize Error Pages_ module*
 
 Install and configure the [Site Settings - Customize Error Pages](https://store.jahia.com/contents/modules-repository/org/jahia/community/site-settings-error-pages.html) module to define custom error pages per site, including the login page.
 
-#### Option C: Build Your Custom Login URL Provider
+*Option C: Build Your Custom Login URL Provider*
 
-For advanced use cases, you can implement your own custom `LoginUrlProvider` to have complete control over the login URL resolution logic.
+For advanced use cases, you can implement your own custom `LoginUrlProvider` to have complete control over the login URL resolution logic.  
+A sample module for such a component is available in [OSGI-modules-sample/login-provider](https://github.com/Jahia/OSGi-modules-samples/tree/master/login-provider).
 
 #### Create the Login Page
 
