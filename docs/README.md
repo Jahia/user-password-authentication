@@ -44,7 +44,7 @@ Get the modules from the [Jahia Store](https://store.jahia.com).
 
 ### 2. Setup
 
-To ensure that users are properly redirected to your login page when accessing protected resources, you need to configure a login URL provider. You have three options:
+To ensure that users are properly redirected to your login page when accessing protected resources, you need to configure a login URL provider (three possible options detailed below) and to create a login page. 
 
 #### Configure a login URL provider
 
