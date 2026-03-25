@@ -42,9 +42,10 @@ export const assertIsNotLoggedIn = (redirectedUrl: string) => {
 
 /**
  * Asserts the given user is logged by ensuring they can access the Jahia Dashboard and that they are not suspended.
- * @param username the username to check
+ * @param username the username to check (also used for gql call to check if the user is suspended)
+ * @param password the password to use for the gql call to check if the user is suspended
  */
-export const assertIsLoggedIn = (username: string) => {
+export const assertIsLoggedIn = (username: string, password: string) => {
     // TODO find better way to ensure the user is logged in
     // TODO: consider develop a custom apollo client able to reuse the current session cookie
     cy.visit('/jahia/dashboard');
@@ -58,7 +59,7 @@ export const assertIsLoggedIn = (username: string) => {
         interval: 1000
     });
     // Also ensure the user is not suspended
-    assertIsNotSuspended(username);
+    assertIsNotSuspended(username, password);
 };
 
 /**
@@ -97,9 +98,11 @@ export const assertIsSuspended = (username: string) => {
 
 /**
  * Asserts the given user is not suspended by ensuring the JCR 'upa:mfaSuspendedSince' property is not set in their JCR user node
- * @param username the username to check
+ * @param username the username to check (also used for gql call to check if the user is suspended)
+ * @param password the password to use for the gql call to check if the user is suspended
  */
-const assertIsNotSuspended = (username: string) => {
+const assertIsNotSuspended = (username: string, password: string) => {
+    cy.apolloClient({username: username, password: password});
     cy.apollo({
         queryFile: 'suspendedUserDetails.graphql',
         variables: {
