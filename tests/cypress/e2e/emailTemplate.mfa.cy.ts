@@ -83,7 +83,7 @@ describe('Tests for the email template', () => {
             expect(body).to.contain('<p data-testid="validity" style="margin: 0; padding: 0;">This code is valid for <strong>15 minutes</strong>.</p>');
             expect(body).to.contain('<p data-testid="footer-title" style="margin: 0; padding: 0;">Didn\'t request this code?</p>');
             expect(body).to.contain(
-                '<p data-testid="footer-text" style="margin: 0; padding: 0;">If you didn\'t request this code, secure your account immediately by <a style="color: #00A0E3; text-decoration: underline; display: inline-block;" href="https://support.jahia.com/">changing your password</a>.<br/>If you need assistance, <a style="color: #00A0E3; text-decoration: underline; display: inline-block;" href="https://support.jahia.com/">reach out to support</a><br/><br/>Regards,<br/>The Jahia Team</p>'
+                '<p data-testid="footer-text" style="margin: 0; padding: 0;">If you didn\'t request this code, secure your account immediately by <a style="color: #00A0E3; text-decoration: underline; display: inline-block;" href="https://id.jahia.com/lost-password/">changing your password</a>.<br/>If you need assistance, <a style="color: #00A0E3; text-decoration: underline; display: inline-block;" href="https://support.jahia.com/">reach out to support</a><br/><br/>Regards,<br/>The Jahia Team</p>'
             );
             // Make sure the placeholder for the code is replaced
             expect(body).to.match(
