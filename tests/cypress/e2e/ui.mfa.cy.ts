@@ -121,7 +121,7 @@ describe('Tests for the UI module', () => {
         LoginStep.login(username, password);
 
         EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
-        assertIsLoggedIn(username);
+        assertIsLoggedIn(username, password);
     });
 
     it('Should be authenticated when following all the MFA steps and have the correct props (labels, HTMLs)', () => {
@@ -140,7 +140,7 @@ describe('Tests for the UI module', () => {
             // Proceed with verification
             EmailFactorStep.submitVerificationCode(code);
             EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
-            assertIsLoggedIn(username);
+            assertIsLoggedIn(username, password);
         });
     });
 
@@ -164,7 +164,7 @@ describe('Tests for the UI module', () => {
             // Proceed with verification
             EmailFactorStep.submitVerificationCode(code);
             EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
-            assertIsLoggedIn(username);
+            assertIsLoggedIn(username, password);
         });
     });
 
@@ -320,7 +320,7 @@ describe('Tests for the UI module', () => {
             // Now enter the correct code
             EmailFactorStep.submitVerificationCode(code);
             EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
-            assertIsLoggedIn(username);
+            assertIsLoggedIn(username, password);
         });
     });
 
@@ -395,7 +395,7 @@ describe('Tests for the UI module', () => {
                 // Now enter the correct code and authenticate
                 EmailFactorStep.submitVerificationCode(newCode);
                 EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
-                assertIsLoggedIn(username);
+                assertIsLoggedIn(username, password);
             });
         });
     });
@@ -436,7 +436,7 @@ describe('Tests for the UI module', () => {
             // Now enter the complete code and verify button becomes enabled
             EmailFactorStep.submitVerificationCode(code);
             EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
-            assertIsLoggedIn(username);
+            assertIsLoggedIn(username, password);
         });
     });
 
@@ -464,7 +464,7 @@ describe('Tests for the UI module', () => {
             // Finally submit the initially received code
             EmailFactorStep.submitVerificationCode(code);
             EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
-            assertIsLoggedIn(username);
+            assertIsLoggedIn(username, password);
         });
     });
 
@@ -493,7 +493,7 @@ describe('Tests for the UI module', () => {
                 // Now enter the correct code
                 EmailFactorStep.submitVerificationCode(secondCode);
                 EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
-                assertIsLoggedIn(username);
+                assertIsLoggedIn(username, password);
             });
         });
     });
@@ -542,7 +542,7 @@ describe('Tests for the UI module', () => {
                 // Now enter the correct code
                 EmailFactorStep.submitVerificationCode(secondCode);
                 EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
-                assertIsLoggedIn(username);
+                assertIsLoggedIn(username, password);
             });
         });
     });
@@ -580,14 +580,24 @@ describe('Tests for the UI module', () => {
             // Proceed with verification
             EmailFactorStep.submitVerificationCode(code);
             EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
-            assertIsLoggedIn(username);
+            assertIsLoggedIn(username, password);
             assertCookiesMatch(['JSESSIONID', 'jid']);
+            // Log cookies, local and session storage for debugging purposes
+            cy.logAllCookies();
+            cy.logLocalStorage();
+            cy.logSessionStorage();
 
-            // Simulate closing the browser session (by deleting the JSESSIONID cookie)
-            cy.clearCookie('JSESSIONID');
+            // Simulate closing the browser session
+            cy.simulateBrowserClose();
+
             assertCookiesMatch(['jid']);
+            // Log cookies, local and session storage for debugging purposes
+            cy.logAllCookies();
+            cy.logLocalStorage();
+            cy.logSessionStorage();
+
             // The user should be logged in automatically
-            assertIsLoggedIn(username);
+            assertIsLoggedIn(username, password);
             assertCookiesMatch(['JSESSIONID', 'jid']);
         });
     });
@@ -601,7 +611,7 @@ describe('Tests for the UI module', () => {
             // Proceed with verification
             EmailFactorStep.submitVerificationCode(code);
             EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
-            assertIsLoggedIn(username);
+            assertIsLoggedIn(username, password);
             assertCookiesMatch(['JSESSIONID']);
 
             // Simulate closing the browser session (by deleting the JSESSIONID cookie)

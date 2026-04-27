@@ -70,4 +70,5 @@ jobs:
       pagerduty_skip_notification: true
       provisioning_manifest: provisioning-manifest-build.yml
       artifact_prefix: upa
+      docker_build_cache_enabled: true
       module_branch: ${{ github.ref }}
