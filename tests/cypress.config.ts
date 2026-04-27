@@ -1,5 +1,8 @@
 import {defineConfig} from 'cypress';
-import fs from 'fs';
+import {allureCypress} from 'allure-cypress/reporter';
+import * as path from 'path';
+import * as fs from 'fs';
+import * as os from 'os';
 
 export default defineConfig({
     // DefaultCommandTimeout: 10000,
@@ -34,6 +37,25 @@ export default defineConfig({
                     }
                 }
             );
+            const resultsDir = 'allure-results';
+
+            // Ensure directory exists
+            if (!fs.existsSync(resultsDir)) {
+                fs.mkdirSync(resultsDir, {recursive: true});
+            }
+
+            // Generate environment.properties file
+            const envProperties = `os_platform=${os.platform()}
+os_release=${os.release()}
+environment=${process.env.TEST_ENV || 'local'}
+browser=${config.browser?.name || 'electron'}}`;
+
+            fs.writeFileSync(path.join(resultsDir, 'environment.properties'), envProperties);
+
+            // Setup Allure
+            allureCypress(on, config, {
+                resultsDir: resultsDir
+            });
             // eslint-disable-next-line @typescript-eslint/no-var-requires
             return require('./cypress/plugins/index.js')(on, config);
         },
