@@ -1,6 +1,13 @@
 import {addUserToGroup, createUser, deleteUser, getUserPath} from '@jahia/cypress';
 
 /**
+ * Moonstone locators used to ensure the user is fully logged in
+ * and all content is loaded before performing any action on the dashboard.
+ */
+const MOONSTONE_FRAME = 'main.moonstone-layoutModule_main';
+const MOONSTONE_LOADER = 'svg.moonstone-loader';
+
+/**
  * Creates a user for the needs of the MFA. It first deletes the user matching this username that may already exist.
  * @param username the username to create
  * @param password the password associated with this username to create
@@ -58,6 +65,13 @@ export const assertIsLoggedIn = (username: string, password: string) => {
         timeout: 10000,
         interval: 1000
     });
+
+    // At this point user should be logged in, however moonstone cards might not be loaded yet.
+    // Wait for 'My projects' moonstone card to appear and make sure moonstone loaders are absent,
+    // to ensure user is logged in, all content is loaded and all events are propagated.
+    cy.get(MOONSTONE_FRAME, {timeout: 10_000}).contains('p', 'My projects').should('be.visible');
+    cy.get(MOONSTONE_LOADER).should('not.exist');
+
     // Also ensure the user is not suspended
     assertIsNotSuspended(username, password);
 };
