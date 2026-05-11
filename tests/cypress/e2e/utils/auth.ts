@@ -1,13 +1,26 @@
 import {addUserToGroup, createUser, deleteUser, getUserPath} from '@jahia/cypress';
 
 /**
+ * Moonstone locators used to ensure the user is fully logged in
+ * and all content is loaded before performing any action on the dashboard.
+ */
+const MOONSTONE = {
+    layout: 'main.moonstone-layoutModule_main',
+    loader: 'svg.moonstone-loader',
+    card: {
+        title: 'p.moonstone-typography.moonstone-variant_title',
+        body: 'p.moonstone-typography.moonstone-variant_body'
+    }
+};
+
+/**
  * Creates a user for the needs of the MFA. It first deletes the user matching this username that may already exist.
  * @param username the username to create
  * @param password the password associated with this username to create
  * @param email (optional) the user's email address
  * @param preferredLanguage (optional) the user's preferred language, defaults to 'en'
  */
-export const createUserForMFA = (username: string, password: string, email:string = undefined, preferredLanguage = 'en'): void => {
+export const createUserForMFA = (username: string, password: string, email: string | undefined = undefined, preferredLanguage = 'en'): void => {
     // Delete the user that may already exist
     getUserPath(username).then(response => {
         if (response?.data?.admin?.userAdmin?.user) {
@@ -45,7 +58,7 @@ export const assertIsNotLoggedIn = (redirectedUrl: string) => {
  * @param username the username to check (also used for gql call to check if the user is suspended)
  * @param password the password to use for the gql call to check if the user is suspended
  */
-export const assertIsLoggedIn = (username: string, password: string) => {
+export const assertIsLoggedIn = (username: string, password: string | undefined = undefined) => {
     // TODO find better way to ensure the user is logged in
     // TODO: consider develop a custom apollo client able to reuse the current session cookie
     cy.visit('/jahia/dashboard');
@@ -58,6 +71,16 @@ export const assertIsLoggedIn = (username: string, password: string) => {
         timeout: 10000,
         interval: 1000
     });
+
+    // At this point user should be logged in, however moonstone cards might not be loaded yet.
+    // If moonstone's content is not loaded yet, cards and loaders are absent in DOM.
+    // Once at least one card appear in DOM, all other are replaced with loaders until loaded.
+    // Wait for at least one moonstone card to appear and make sure moonstone loaders are absent afterward,
+    // to ensure user is logged in, all content is loaded and all events are propagated.
+    cy.get(`${MOONSTONE.layout} ${MOONSTONE.card.title}`, {timeout: 10_000}).should('exist');
+    cy.get(`${MOONSTONE.layout} ${MOONSTONE.card.body}`, {timeout: 10_000}).should('exist');
+    cy.get(`${MOONSTONE.layout} ${MOONSTONE.loader}`).should('not.exist');
+
     // Also ensure the user is not suspended
     assertIsNotSuspended(username, password);
 };
@@ -101,7 +124,7 @@ export const assertIsSuspended = (username: string) => {
  * @param username the username to check (also used for gql call to check if the user is suspended)
  * @param password the password to use for the gql call to check if the user is suspended
  */
-const assertIsNotSuspended = (username: string, password: string) => {
+const assertIsNotSuspended = (username: string, password: string | undefined) => {
     cy.apolloClient({username: username, password: password});
     cy.apollo({
         queryFile: 'suspendedUserDetails.graphql',
