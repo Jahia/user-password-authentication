@@ -79,7 +79,7 @@ export const assertIsLoggedIn = (username: string, password: string | undefined 
     // to ensure user is logged in, all content is loaded and all events are propagated.
     cy.get(`${MOONSTONE.layout} ${MOONSTONE.card.title}`, {timeout: 10_000}).should('exist');
     cy.get(`${MOONSTONE.layout} ${MOONSTONE.card.body}`, {timeout: 10_000}).should('exist');
-    cy.get(`${MOONSTONE.loader} ${MOONSTONE.loader}`).should('not.exist');
+    cy.get(`${MOONSTONE.layout} ${MOONSTONE.loader}`).should('not.exist');
 
     // Also ensure the user is not suspended
     assertIsNotSuspended(username, password);
