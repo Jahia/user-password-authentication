@@ -11,8 +11,7 @@ import {
     prepareEmailCodeFactorAndExpectFactorError, prepareEmailCodeFactorAndExpectSuspended,
     verifyEmailCodeFactorAndExpectFactorError, verifyEmailCodeFactorAndExpectSuspended
 } from './utils';
-import {deleteUser} from '@jahia/cypress';
-import {faker} from '@faker-js/faker';
+import {jfaker, deleteUser} from '@jahia/cypress';
 
 describe('Error scenarios common to all factors', () => {
     let usr;
@@ -21,9 +20,9 @@ describe('Error scenarios common to all factors', () => {
 
     beforeEach(() => {
         installMFAConfig('fake.yml'); // Tests might change the MFA config
-        usr = faker.internet.username();
-        pwd = faker.internet.password();
-        email = faker.internet.email();
+        usr = jfaker.internet.username();
+        pwd = jfaker.internet.password();
+        email = jfaker.internet.email();
         createUserForMFA(usr, pwd, email);
         deleteAllEmails(); // Sanity cleanup
         cy.logout(); // Ensure to start with an unauthenticated session
