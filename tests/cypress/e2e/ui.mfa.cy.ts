@@ -1,5 +1,5 @@
 import {deleteSite, deleteUser} from '@jahia/cypress';
-import {faker} from '@faker-js/faker';
+import {jfaker, BrowserHelper} from '@jahia/cypress';
 import {EmailFactorStep, LoginStep} from './pages';
 import {
     assertCookiesMatch,
@@ -17,7 +17,7 @@ import {
 } from './utils';
 
 const SITE_KEY = 'sample-ui';
-const I18N_LOCALES = I18N.locales[I18N.defaultLanguage];
+const I18N_LOCALES = I18N.locales[I18N.defaultLanguage as keyof typeof I18N.locales];
 const FACTOR_TYPE = 'email_code';
 const CODE_LENGTH = 6;
 const MAX_INVALID_ATTEMPTS = 3;
@@ -93,9 +93,9 @@ describe('Tests for the UI module', () => {
 
     beforeEach(() => {
         installMFAConfig('sample-ui.yml'); // Tests might change the MFA config
-        username = faker.internet.username();
-        password = faker.internet.password();
-        email = faker.internet.email();
+        username = jfaker.internet.username();
+        password = jfaker.internet.password();
+        email = jfaker.internet.email();
         createUserForMFA(username, password, email);
         deleteAllEmails(); // Sanity cleanup
     });
@@ -583,18 +583,18 @@ describe('Tests for the UI module', () => {
             assertIsLoggedIn(username, password);
             assertCookiesMatch(['JSESSIONID', 'jid']);
             // Log cookies, local and session storage for debugging purposes
-            cy.logAllCookies();
-            cy.logLocalStorage();
-            cy.logSessionStorage();
+            BrowserHelper.logCookies();
+            BrowserHelper.logLocalStorage();
+            BrowserHelper.logSessionStorage();
 
             // Simulate closing the browser session
-            cy.simulateBrowserClose();
-
+            BrowserHelper.simulateClose();
             assertCookiesMatch(['jid']);
+
             // Log cookies, local and session storage for debugging purposes
-            cy.logAllCookies();
-            cy.logLocalStorage();
-            cy.logSessionStorage();
+            BrowserHelper.logCookies();
+            BrowserHelper.logLocalStorage();
+            BrowserHelper.logSessionStorage();
 
             // The user should be logged in automatically
             assertIsLoggedIn(username, password);
@@ -614,16 +614,17 @@ describe('Tests for the UI module', () => {
             assertIsLoggedIn(username, password);
             assertCookiesMatch(['JSESSIONID']);
 
-            // Simulate closing the browser session (by deleting the JSESSIONID cookie)
-            cy.clearCookie('JSESSIONID');
+            // Simulate closing the browser session
+            BrowserHelper.simulateClose();
             assertCookiesMatch([]);
+
             // The user should remain logged out
             assertIsNotLoggedIn('/sites/sample-ui/myLoginPage.html');
             assertCookiesMatch(['JSESSIONID']); // A new (unauthenticated) session is created, hence the JSESSIONID cookie is set
         });
     });
 
-    // Dummy test to fail if any errors or warnings appear in the browser console,
+    // Dummy spec to fail if any errors or warnings appear in the browser console,
     // providing clearer insight into execution and failure reasons.
     // Analysis itself will happen inside jsErrorsLogger module (if one is enabled).
     it('Should ensure errors and warnings absence in browser console', () => {

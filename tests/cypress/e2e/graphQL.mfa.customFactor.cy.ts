@@ -1,9 +1,8 @@
-import {deleteSite, deleteUser} from '@jahia/cypress';
+import {jfaker, deleteSite, deleteUser} from '@jahia/cypress';
 import {
     createSiteWithLoginPage, createUserForMFA, deleteAllEmails,
     expectArrayToContainExactly, initiate, installMFAConfig
 } from './utils';
-import {faker} from '@faker-js/faker';
 
 describe('Tests for the GraphQL APIs related to the CustomFactorProvider', () => {
     let siteKey: string;
@@ -12,15 +11,15 @@ describe('Tests for the GraphQL APIs related to the CustomFactorProvider', () =>
     let email: string;
 
     before(() => {
-        siteKey = 'custom-factor-' + faker.lorem.slug();
+        siteKey = 'custom-factor-' + jfaker.lorem.slug();
         createSiteWithLoginPage(siteKey);
     });
 
     beforeEach(() => {
         installMFAConfig('custom-factor.yml');
-        username = faker.internet.username();
-        password = faker.internet.password();
-        email = faker.internet.email();
+        username = jfaker.internet.username();
+        password = jfaker.internet.password();
+        email = jfaker.internet.email();
         createUserForMFA(username, password, email);
         deleteAllEmails(); // Sanity cleanup
     });

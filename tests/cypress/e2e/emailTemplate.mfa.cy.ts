@@ -1,4 +1,4 @@
-import {deleteSite, deleteUser, enableModule} from '@jahia/cypress';
+import {jfaker, deleteSite, deleteUser, enableModule} from '@jahia/cypress';
 import {
     createSiteWithLoginPage,
     createUserForMFA,
@@ -8,7 +8,6 @@ import {
     installMFAConfig,
     prepareEmailCodeFactor
 } from './utils';
-import {faker} from '@faker-js/faker';
 
 describe('Tests for the email template', () => {
     let username: string;
@@ -17,9 +16,9 @@ describe('Tests for the email template', () => {
 
     beforeEach(() => {
         installMFAConfig('email-template.yml'); // Tests might change the MFA config
-        username = faker.internet.username();
-        password = faker.internet.password();
-        email = faker.internet.email();
+        username = jfaker.internet.username();
+        password = jfaker.internet.password();
+        email = jfaker.internet.email();
         createUserForMFA(username, password, email);
         deleteAllEmails(); // Sanity cleanup
         cy.logout(); // Ensure to start with an unauthenticated session
@@ -45,7 +44,7 @@ describe('Tests for the email template', () => {
 
     it('Should get the fallback email template when using a site but without a custom email template', () => {
     // GIVEN: A site without a custom email template provided by a module
-        const siteKey = faker.lorem.slug();
+        const siteKey = jfaker.lorem.slug();
         createSiteWithLoginPage(siteKey, undefined, undefined, []);
 
         // WHEN: Initiating the MFA process
@@ -63,7 +62,7 @@ describe('Tests for the email template', () => {
 
     it('Should get the custom email template when using a site with a custom email template', () => {
     // GIVEN: A site without a custom email template provided by a module
-        const siteKey = faker.lorem.slug();
+        const siteKey = jfaker.lorem.slug();
         createSiteWithLoginPage(siteKey, undefined, undefined, []);
         enableModule('user-password-authentication-ui', siteKey); // The UI module provides a custom email template
 
@@ -98,8 +97,8 @@ describe('Tests for the email template', () => {
 
     it('Should correctly resolve the server name when generating URLs in a custom email template', () => {
     // GIVEN: A site with a server name and a module with a custom email template enabled
-        const siteKey = faker.lorem.slug();
-        const serverName = faker.internet.domainName();
+        const siteKey = jfaker.lorem.slug();
+        const serverName = jfaker.internet.domainName();
         createSiteWithLoginPage(siteKey, undefined, serverName, []);
         enableModule(
             'user-password-authentication-mfa-custom-email-code-template-test-module',

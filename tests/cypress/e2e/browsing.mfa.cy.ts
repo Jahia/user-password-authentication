@@ -1,5 +1,4 @@
-import {addNode, deleteSite, deleteUser, publishAndWaitJobEnding, revokeRoles} from '@jahia/cypress';
-import {faker} from '@faker-js/faker';
+import {jfaker, addNode, deleteSite, deleteUser, publishAndWaitJobEnding, revokeRoles} from '@jahia/cypress';
 import {
     createSiteWithLoginPage,
     createUserForMFA,
@@ -21,9 +20,9 @@ describe('Browsing Tests', () => {
 
     beforeEach(() => {
         installMFAConfig('sample-ui.yml'); // Tests might change the MFA config
-        username = faker.internet.username();
-        password = faker.internet.password();
-        email = faker.internet.email();
+        username = jfaker.internet.username();
+        password = jfaker.internet.password();
+        email = jfaker.internet.email();
         createUserForMFA(username, password, email);
         deleteAllEmails(); // Sanity cleanup
     });

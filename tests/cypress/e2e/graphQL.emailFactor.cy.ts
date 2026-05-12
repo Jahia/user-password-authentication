@@ -1,4 +1,4 @@
-import {deleteSite, deleteUser, getJahiaVersion} from '@jahia/cypress';
+import {jfaker, deleteSite, deleteUser, getJahiaVersion} from '@jahia/cypress';
 import {compare} from 'compare-versions';
 import {
     assertIsLoggedIn,
@@ -18,7 +18,6 @@ import {
     verifyEmailCodeFactorAndExpectFactorError,
     verifyEmailCodeFactorAndExpectSuspended
 } from './utils';
-import {faker} from '@faker-js/faker';
 
 let globalUsername = '';
 
@@ -54,7 +53,7 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
 
     beforeEach(() => {
         // Generating a different username allows starting several MFA flows (without ending) in successive tests.
-        globalUsername = faker.internet.username({firstName: 'emailFactorUser'});
+        globalUsername = jfaker.internet.username({firstName: 'emailFactorUser'});
         cy.log(`user for the test ${globalUsername}`);
         createUserForMFA(TEST_USER.username(), TEST_USER.password, TEST_USER.email); // Create for each test as the user might have been updated by a previous test (with mfa:suspendedUser mixin)
         deleteAllEmails(); // Sanity cleanup
@@ -78,7 +77,7 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
      * @note For readability sake, this function covers only happy-path steps without any negative assertions.
      *       Negative scenarios are covered inline in the separate test cases below.
      */
-    const validatePositiveMFAFlow = (user:TestUser, site: string = undefined) => {
+    const validatePositiveMFAFlow = (user:TestUser, site: string | undefined = undefined) => {
         // STEP 1: Initiate the MFA process
         cy.log('1- initiate');
         initiate(user.username(), user.password, site);
@@ -101,7 +100,7 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
     });
 
     it(`Should be authenticated on a specific site when correct credentials and code are provided: ${TEST_USER.username()}`, () => {
-        const siteKey = faker.lorem.slug();
+        const siteKey = jfaker.lorem.slug();
         createSiteWithLoginPage(siteKey);
         validatePositiveMFAFlow(TEST_USER, siteKey);
         deleteSite(siteKey);
@@ -271,9 +270,9 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
 
     it('Should be allowed to authenticate even after trying to resend the code too early', () => {
         // Setup:
-        const username = faker.internet.username();
-        const password = faker.internet.password();
-        const email = faker.internet.email();
+        const username = jfaker.internet.username();
+        const password = jfaker.internet.password();
+        const email = jfaker.internet.email();
         createUserForMFA(username, password, email);
 
         // Start the MFA process
