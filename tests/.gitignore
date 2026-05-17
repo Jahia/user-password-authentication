@@ -9,3 +9,32 @@ instrumented/
 node_modules/
 run-artifacts
 .yarn/
+# --- jahia-cli:managed-start ---
+# Files below are managed by jahia-cli tests init.
+# They are sourced from the remote scaffolding repository.
+# Remove a line to "own" that file and stop syncing it from remote.
+.env.example.global
+.eslintrc.json
+ci.build.sh
+ci.postrun.sh
+ci.startup.sh
+cypress.config.ts
+cypress/e2e/base.cy.ts
+cypress/plugins/index.js
+cypress/support/commands.js
+cypress/support/e2e.js
+cypress/tsconfig.json
+docker/Dockerfile
+docker/Dockerfile.dockerignore
+docker/Dockerfile.local
+docker/env.run.sh
+env.provision.sh
+graphql.config.yml
+package.json
+README.md
+reporter-config.json
+schema.graphql
+set-env.sh
+tsconfig.json
+yarn.lock
+# --- jahia-cli:managed-end ---

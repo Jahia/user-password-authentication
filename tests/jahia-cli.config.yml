@@ -1,0 +1,89 @@
+# ── Environment ──────────────────────────────────────────────────────────
+# Defines the Jahia environment to create via Docker.
+# - name: unique identifier for the environment (auto-generated if omitted)
+# - provider: "docker" (default) or "jahiacloudv1" (future)
+# - components: list of services to start (e.g. jahia, smtp-server)
+#   Each component can be a plain string or an object with overrides:
+#     - jahia                          # uses default image and tag
+#     - { name: jahia, overrides: { tag: "8.3.0.0" } }  # custom version
+#     - { name: jahia, overrides: { image: "jahia/jahia-ee:8.3.0.0" } }
+#     - { name: jahia, overrides: { image: "my-registry.example.com/jahia/jahia-ee:8.3.0.0" } }
+#     - smtp-server                    # Mailpit for email testing
+#
+#   The "image" override accepts the full image:tag format in a single value.
+#   A separate "tag" override takes precedence over the tag embedded in "image".
+#
+#   Overrides support environment variable substitution (resolved at parse time):
+#     ${VAR}            — resolves from process.env; errors if not set
+#     ${VAR:-default}   — resolves from process.env, falls back to default
+#
+#   Example — parameterize the full image reference for CI/CD pipelines:
+#     - name: jahia
+#       overrides:
+#         image: "${JAHIA_IMAGE:-jahia/jahia-ee:8.2.1.0}"
+#
+#   Env vars are the same ones available in workflow "run:" steps.
+#   Set them in your shell before running jahia-cli:
+#     export JAHIA_IMAGE=jahia/jahia-ee:8.3.0.0 && jahia-cli environment create --config this-file.yml
+environment:
+  name: env-dd50f5cd
+  provider: docker
+  components:
+    - name: jahia
+      overrides:
+        image: "${JAHIA_IMAGE}"
+    - smtp-server
+
+# ── Tests ────────────────────────────────────────────────────────────────
+# Configures test scaffolding pulled from a remote Git repository.
+# - scaffolding.repository: Git URL of the test scaffolding source
+# - scaffolding.path: subdirectory within the repo containing scaffolding files
+# - scaffolding.version: Git ref to checkout ("latest" resolves to newest tag)
+tests:
+  scaffolding:
+    repository: https://github.com/Jahia/jahia-cypress
+    path: scaffolding/
+    version: test-jahia-cli
+
+# ── Workflow ─────────────────────────────────────────────────────────────
+# Sequential steps executed by "jahia-cli workflow run".
+# Each step is either a shell command (run:) or a jahia-cli command (uses:).
+# - name: human-readable label (optional)
+# - run: shell command executed via execa
+# - uses: jahia-cli command name (e.g. "environment:create")
+# - with: flags passed to the command (e.g. { timeout: "300" })
+# - working_dir: override the working directory for this step
+# Steps run in order; the workflow stops on the first failure.
+workflows:
+  test:
+    default: true
+    steps:
+      - name: Initialize test scaffolding
+        uses: tests:init
+      - name: Verify JAHIA_LICENSE is set
+        run: |
+          if [ -z "$JAHIA_LICENSE" ]; then
+            echo "Error: JAHIA_LICENSE environment variable is not set"
+            exit 1
+          else
+            echo "JAHIA_LICENSE is set"
+          fi
+      - name: Create Jahia environment
+        uses: environment:create
+        with:
+          force: "true"
+      - name: Wait for Jahia to be healthy
+        uses: jahia:alive
+        with:
+          timeout: "300"
+      - name: Provision environment
+        uses: jahia:provision
+        with:
+          manifest: ./provisioning-manifest-snapshot.yml
+          assets: ./assets
+      - name: Install test dependencies
+        run: yarn
+      - name: Run tests
+        run: yarn run e2e:ci
+      # - name: Cleanup environment
+      #   uses: environment:delete
