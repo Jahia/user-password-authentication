@@ -18,7 +18,7 @@ jobs:
       sbom_execute: true
       sbom_hostname: ${{ vars.DEPENDENCYTRACK_HOSTNAME }}
       integration_tests_standalone_execute: true
-      integration_tests_jahia_image: ghcr.io/jahia/jahia-ee-dev:8-SNAPSHOT
+      integration_tests_jahia_image: ghcr.io/jahia/jahia-ee-dev:8-SNAPSHOT 
       integration_tests_testrail_project: Jahia User Password Authentication Module
       integration_tests_provisioning_manifest: provisioning-manifest-build.yml
       integration_tests_should_use_build_artifacts: true
