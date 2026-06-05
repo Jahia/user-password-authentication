@@ -324,6 +324,37 @@ describe('Tests for the UI module', () => {
         });
     });
 
+    it('Should not allow valid code to be used twice', () => {
+        LoginStep.triggerRedirect(SITE_KEY);
+        LoginStep.login(username, password);
+        LoginStep.selectEmailCodeFactor();
+        getVerificationCode(email).then(code => {
+            // Proceed with verification
+            EmailFactorStep.submitVerificationCode(code);
+            EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
+            assertIsLoggedIn(username, password);
+
+            // Reset browser state to be able to re-login and use the same code
+            BrowserHelper.resetState();
+            // Delete all emails, since the code expects only one email to be present
+            deleteAllEmails();
+
+            LoginStep.triggerRedirect(SITE_KEY);
+            LoginStep.login(username, password);
+            LoginStep.selectEmailCodeFactor();
+            getVerificationCode(email).then(newCode => {
+                // Use previously received code, which should now be invalid since it was already used
+                EmailFactorStep.submitVerificationCode(code);
+                EmailFactorStep.assertErrorMessage(I18N_LOCALES['verify.verification_failed']);
+
+                // Now enter the correct code
+                EmailFactorStep.submitVerificationCode(newCode);
+                EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
+                assertIsLoggedIn(username, password);
+            });
+        });
+    });
+
     it('Should be suspended when reaching the limit of INVALID attempts; when restarting the login flow, should remain suspended', () => {
         installMFAConfig('sample-ui-long-suspension.yml');
         LoginStep.triggerRedirect(SITE_KEY);
