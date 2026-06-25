@@ -4,8 +4,8 @@ name: On Code Change (PR)
 
 # The workflow could also be triggered on PRs
 on:
-  # pull_request:
-  #   types: [opened, reopened, synchronize]
+  pull_request:
+    types: [opened, reopened, synchronize]
 
 jobs:
   update-signature:

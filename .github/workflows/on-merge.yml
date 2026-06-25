@@ -2,10 +2,10 @@ name: On merge to main
 
 on:
   push:
-    # branches:
-    #   - 'main'
-    # tags-ignore:
-    #   - '**'
+    branches:
+      - 'main'
+    tags-ignore:
+      - '**'
 
 jobs:
   on-merge:
