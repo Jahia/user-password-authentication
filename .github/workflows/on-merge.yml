@@ -13,16 +13,8 @@ jobs:
     uses: Jahia/jahia-modules-action/.github/workflows/reusable-on-merge.yml@reusable-on-merge
     with:
       module_id: user-password-authentication
-      module_branch: ${{ github.ref }}
-      update_signature_execute: true
-      sbom_execute: true
-      sbom_hostname: ${{ vars.DEPENDENCYTRACK_HOSTNAME }}
-      integration_tests_standalone_execute: true
-      integration_tests_jahia_image: ghcr.io/jahia/jahia-ee-dev:8-SNAPSHOT 
       integration_tests_testrail_project: Jahia User Password Authentication Module
-      integration_tests_provisioning_manifest: provisioning-manifest-build.yml
-      integration_tests_should_use_build_artifacts: true
-      integration_tests_pagerduty_incident_service: user-password-authentication-JahiaSN
+      integration_tests_incident_service: user-password-authentication-JahiaSN
       integration_tests_artifact_prefix: upa
-      publish_execute: false
+      publish_execute: false # Will be removed for real implem but avoid publishing for testing
       publish_container_image: ghcr.io/jahia/jahia-docker-mvn-cache:11-jdk-noble-mvn-loaded
