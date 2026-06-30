@@ -2,19 +2,15 @@ name: On merge to main
 
 on:
   push:
-    branches:
-      - 'main'
-    tags-ignore:
-      - '**'
+    # branches:
+    #   - 'main'
+    # tags-ignore:
+    #   - '**'
 
 jobs:
   on-merge:
     secrets: inherit
     uses: Jahia/jahia-modules-action/.github/workflows/reusable-on-merge.yml@reusable-on-merge
     with:
-      module_id: user-password-authentication
       integration_tests_testrail_project: Jahia User Password Authentication Module
-      integration_tests_incident_service: user-password-authentication-JahiaSN
-      integration_tests_artifact_prefix: upa
-      publish_execute: false # Will be removed for real implem but avoid publishing for testing
-      publish_container_image: ghcr.io/jahia/jahia-docker-mvn-cache:11-jdk-noble-mvn-loaded
+      publish_execute: false
