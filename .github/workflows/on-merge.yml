@@ -2,15 +2,12 @@ name: On merge to main
 
 on:
   push:
-    # branches:
-    #   - 'main'
-    # tags-ignore:
-    #   - '**'
+    branches:
+      - 'main'
+    tags-ignore:
+      - '**'
 
 jobs:
   on-merge:
     secrets: inherit
     uses: Jahia/jahia-modules-action/.github/workflows/reusable-on-merge.yml@reusable-on-merge
-    with:
-      integration_tests_testrail_project: Jahia User Password Authentication Module
-      publish_execute: false
