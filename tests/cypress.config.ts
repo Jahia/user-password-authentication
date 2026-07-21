@@ -3,7 +3,6 @@ import fs from 'fs';
 
 export default defineConfig({
     defaultCommandTimeout: 10000,
-    // videoUploadOnPasses: false,
     reporter: 'cypress-multi-reporters',
     reporterOptions: {
         configFile: 'reporter-config.json'
