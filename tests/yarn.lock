@@ -1057,6 +1057,17 @@
     graphql "^15.5.0"
     graphql-tag "^2.11.0"
 
+"@jahia/cypress@https://pkg.pr.new/@jahia/cypress@243.tgz":
+  version "8.3.0"
+  resolved "https://pkg.pr.new/@jahia/cypress@243.tgz#8fb2c1f1c3c4980ed251d13d81f81decec4e906b"
+  dependencies:
+    "@apollo/client" "^3.4.9"
+    "@faker-js/faker" "^10.3.0"
+    compare-versions "^6.1.1"
+    cypress-real-events "^1.11.0"
+    graphql "^15.5.0"
+    graphql-tag "^2.11.0"
+
 "@jahia/eslint-config@^2.1.2":
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/@jahia/eslint-config/-/eslint-config-2.2.0.tgz#15de17f9c7503892cce2be9f43bb32363496c547"

@@ -9,7 +9,7 @@
     "@babel/preset-env": "^7.25.3",
     "@cypress/code-coverage": "^3.9.11",
     "@cypress/webpack-preprocessor": "^5.9.1",
-    "@jahia/cypress": "^8.2.0",
+    "@jahia/cypress": "https://pkg.pr.new/@jahia/cypress@243.tgz",
     "@jahia/eslint-config": "^2.1.2",
     "@typescript-eslint/eslint-plugin": "^5.2.0",
     "@typescript-eslint/parser": "^5.2.0",
