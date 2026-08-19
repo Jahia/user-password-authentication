@@ -64,7 +64,14 @@ jobs:
     needs: build
     secrets: inherit
     with:
-      jahia_image: ghcr.io/jahia/jahia-ee-dev:8-SNAPSHOT
+      # DELIBERATELY UNREACHABLE (validation branch only): the development images moved to
+      # ghcr.io, so this Docker Hub reference answers with a 404 whose message contains
+      # "repository does not exist". That is the one pull error docker-compose v1 turns into an
+      # interactive prompt, so it is what the fix under test has to fail fast on.
+      jahia_image: jahia/jahia-ee-dev:8-SNAPSHOT
+      # Blast-radius guard: the job needs ~6 min to reach the startup, so a fast failure lands
+      # around 7 min. If it hangs instead, this kills it at 15 min rather than the default 75.
+      timeout_job: 15
       module_id: user-password-authentication
       should_skip_testrail: true
       pagerduty_skip_notification: true
