@@ -121,7 +121,7 @@ describe('Tests for the UI module', () => {
         LoginStep.login(username, password);
 
         EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
-        assertIsLoggedIn(username, password);
+        assertIsLoggedIn(username);
     });
 
     it('Should be authenticated when following all the MFA steps and have the correct props (labels, HTMLs)', () => {
@@ -140,7 +140,7 @@ describe('Tests for the UI module', () => {
             // Proceed with verification
             EmailFactorStep.submitVerificationCode(code);
             EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
-            assertIsLoggedIn(username, password);
+            assertIsLoggedIn(username);
         });
     });
 
@@ -164,7 +164,7 @@ describe('Tests for the UI module', () => {
             // Proceed with verification
             EmailFactorStep.submitVerificationCode(code);
             EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
-            assertIsLoggedIn(username, password);
+            assertIsLoggedIn(username);
         });
     });
 
@@ -320,7 +320,7 @@ describe('Tests for the UI module', () => {
             // Now enter the correct code
             EmailFactorStep.submitVerificationCode(code);
             EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
-            assertIsLoggedIn(username, password);
+            assertIsLoggedIn(username);
         });
     });
 
@@ -332,7 +332,7 @@ describe('Tests for the UI module', () => {
             // Proceed with verification
             EmailFactorStep.submitVerificationCode(code);
             EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
-            assertIsLoggedIn(username, password);
+            assertIsLoggedIn(username);
 
             // Reset browser state to be able to re-login and use the same code
             BrowserHelper.resetState();
@@ -350,7 +350,7 @@ describe('Tests for the UI module', () => {
                 // Now enter the correct code
                 EmailFactorStep.submitVerificationCode(newCode);
                 EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
-                assertIsLoggedIn(username, password);
+                assertIsLoggedIn(username);
             });
         });
     });
@@ -426,7 +426,7 @@ describe('Tests for the UI module', () => {
                 // Now enter the correct code and authenticate
                 EmailFactorStep.submitVerificationCode(newCode);
                 EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
-                assertIsLoggedIn(username, password);
+                assertIsLoggedIn(username);
             });
         });
     });
@@ -467,7 +467,7 @@ describe('Tests for the UI module', () => {
             // Now enter the complete code and verify button becomes enabled
             EmailFactorStep.submitVerificationCode(code);
             EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
-            assertIsLoggedIn(username, password);
+            assertIsLoggedIn(username);
         });
     });
 
@@ -495,7 +495,7 @@ describe('Tests for the UI module', () => {
             // Finally submit the initially received code
             EmailFactorStep.submitVerificationCode(code);
             EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
-            assertIsLoggedIn(username, password);
+            assertIsLoggedIn(username);
         });
     });
 
@@ -524,7 +524,7 @@ describe('Tests for the UI module', () => {
                 // Now enter the correct code
                 EmailFactorStep.submitVerificationCode(secondCode);
                 EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
-                assertIsLoggedIn(username, password);
+                assertIsLoggedIn(username);
             });
         });
     });
@@ -573,7 +573,7 @@ describe('Tests for the UI module', () => {
                 // Now enter the correct code
                 EmailFactorStep.submitVerificationCode(secondCode);
                 EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
-                assertIsLoggedIn(username, password);
+                assertIsLoggedIn(username);
             });
         });
     });
@@ -611,7 +611,7 @@ describe('Tests for the UI module', () => {
             // Proceed with verification
             EmailFactorStep.submitVerificationCode(code);
             EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
-            assertIsLoggedIn(username, password);
+            assertIsLoggedIn(username);
             assertCookiesMatch(['JSESSIONID', 'jid']);
             // Log cookies, local and session storage for debugging purposes
             BrowserHelper.logCookies();
@@ -628,7 +628,7 @@ describe('Tests for the UI module', () => {
             BrowserHelper.logSessionStorage();
 
             // The user should be logged in automatically
-            assertIsLoggedIn(username, password);
+            assertIsLoggedIn(username);
             assertCookiesMatch(['JSESSIONID', 'jid']);
         });
     });
@@ -642,7 +642,7 @@ describe('Tests for the UI module', () => {
             // Proceed with verification
             EmailFactorStep.submitVerificationCode(code);
             EmailFactorStep.assertRedirectedFromLoginPage(SITE_KEY);
-            assertIsLoggedIn(username, password);
+            assertIsLoggedIn(username);
             assertCookiesMatch(['JSESSIONID']);
 
             // Simulate closing the browser session
