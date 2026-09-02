@@ -55,10 +55,9 @@ export const assertIsNotLoggedIn = (redirectedUrl: string) => {
 
 /**
  * Asserts the given user is logged by ensuring they can access the Jahia Dashboard and that they are not suspended.
- * @param username the username to check (also used for gql call to check if the user is suspended)
- * @param password the password to use for the gql call to check if the user is suspended
+ * @param username the username to check
  */
-export const assertIsLoggedIn = (username: string, password: string | undefined = undefined) => {
+export const assertIsLoggedIn = (username: string) => {
     // TODO find better way to ensure the user is logged in
     // TODO: consider develop a custom apollo client able to reuse the current session cookie
     cy.visit('/jahia/dashboard');
@@ -82,7 +81,7 @@ export const assertIsLoggedIn = (username: string, password: string | undefined 
     cy.get(`${MOONSTONE.layout} ${MOONSTONE.loader}`).should('not.exist');
 
     // Also ensure the user is not suspended
-    assertIsNotSuspended(username, password);
+    assertIsNotSuspended(username);
 };
 
 /**
@@ -111,8 +110,8 @@ export const assertIsSuspended = (username: string) => {
     }).then(response => {
         // Can't compare with actual JavaScript dates (or within a range) as the property is set in the backend and might differ by a few milliseconds
         // expect(suspendedSince).to.be.within(rangeBegin, rangeEnd);
-        // so we just check that the property is defined
-        expect(response?.data?.admin?.userAdmin?.user?.property).to.not.be.undefined;
+        // so we just check that the property is set
+        expect(response?.data?.admin?.userAdmin?.user?.property, 'the upa:mfaSuspendedSince property should be set').to.not.be.null;
         // And check the mixin is present
         expect(response?.data?.admin?.userAdmin?.user?.node?.mixinTypes).to.be.a('array').and.have.length(1);
         expect(response?.data?.admin?.userAdmin?.user?.node?.mixinTypes[0]?.name).to.eq('upa:mfaSuspendedUser');
@@ -121,18 +120,16 @@ export const assertIsSuspended = (username: string) => {
 
 /**
  * Asserts the given user is not suspended by ensuring the JCR 'upa:mfaSuspendedSince' property is not set in their JCR user node
- * @param username the username to check (also used for gql call to check if the user is suspended)
- * @param password the password to use for the gql call to check if the user is suspended
+ * @param username the username to check
  */
-const assertIsNotSuspended = (username: string, password: string | undefined) => {
-    cy.apolloClient({username: username, password: password});
+const assertIsNotSuspended = (username: string) => {
     cy.apollo({
         queryFile: 'suspendedUserDetails.graphql',
         variables: {
             username: username
         }
     }).then(response => {
-        expect(response?.data?.admin?.userAdmin?.user?.property, 'the upa:mfaSuspendedUser property should not be set').to.be.null;
+        expect(response?.data?.admin?.userAdmin?.user?.property, 'the upa:mfaSuspendedSince property should not be set').to.be.null;
         expect(response?.data?.admin?.userAdmin?.user?.node?.mixinTypes, 'the upa:mfaSuspendedUser mixin should not exist on the user node').to.be.empty;
     });
 };
