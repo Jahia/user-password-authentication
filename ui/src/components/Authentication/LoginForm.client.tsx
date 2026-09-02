@@ -1,4 +1,4 @@
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useRef, useState } from "react";
 import { initiate } from "../../services";
 import classes from "./component.module.css";
 import { useApiRoot } from "../../hooks/ApiRootContext.jsx";
@@ -34,8 +34,8 @@ interface LoginFormProps {
 }
 
 export default function LoginForm(props: Readonly<LoginFormProps>) {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const usernameRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
   const [rememberMe, setRememberMe] = useState(true); // by default, enable the "remember me" feature
   const [error, setError] = useState("");
   const [inProgress, setInProgress] = useState(false);
@@ -46,6 +46,8 @@ export default function LoginForm(props: Readonly<LoginFormProps>) {
     e.preventDefault();
     setInProgress(true);
 
+    const username = usernameRef.current?.value ?? "";
+    const password = passwordRef.current?.value ?? "";
     const site = extractSiteKeyFromUrl();
 
     initiate(apiRoot, username, password, rememberMe, site)
@@ -79,7 +81,7 @@ export default function LoginForm(props: Readonly<LoginFormProps>) {
             autoComplete={"username"}
             placeholder="Email"
             data-testid="login-username"
-            onChange={(e) => setUsername(e.target.value)}
+            ref={usernameRef}
           />
         </div>
         <div className={classes.formField}>
@@ -91,7 +93,7 @@ export default function LoginForm(props: Readonly<LoginFormProps>) {
             autoComplete={"current-password"}
             placeholder="Password"
             data-testid="login-password"
-            onChange={(e) => setPassword(e.target.value)}
+            ref={passwordRef}
           />
         </div>
         {props.content.loginBelowPasswordFieldHtml && (
