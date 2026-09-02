@@ -1045,7 +1045,7 @@
   resolved "https://registry.yarnpkg.com/@istanbuljs/schema/-/schema-0.1.6.tgz#8dc9afa2ac1506cb1a58f89940f1c124446c8df3"
   integrity sha512-+Sg6GCR/wy1oSmQDFq4LQDAhm3ETKnorxN+y5nbLULOR3P0c14f2Wurzj3/xqPXtasLFfHd5iRFQ7AJt4KH2cw==
 
-"@jahia/cypress@8.5.0":
+"@jahia/cypress@^8.5.0":
   version "8.5.0"
   resolved "https://registry.yarnpkg.com/@jahia/cypress/-/cypress-8.5.0.tgz#acb5f75bb9479ce85e6aab52de9bdd0696a5326e"
   integrity sha512-pELqzYj6/k4vmpT4/dG1mPbmfQN9AneCg76QTMGDKKoadHRSiHB1SXDGyDJlKMj/AlqH6bOLvvzrqDjXy4YFEA==
