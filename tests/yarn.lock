@@ -1045,14 +1045,15 @@
   resolved "https://registry.yarnpkg.com/@istanbuljs/schema/-/schema-0.1.6.tgz#8dc9afa2ac1506cb1a58f89940f1c124446c8df3"
   integrity sha512-+Sg6GCR/wy1oSmQDFq4LQDAhm3ETKnorxN+y5nbLULOR3P0c14f2Wurzj3/xqPXtasLFfHd5iRFQ7AJt4KH2cw==
 
-"@jahia/cypress@^8.2.0":
-  version "8.2.0"
-  resolved "https://registry.yarnpkg.com/@jahia/cypress/-/cypress-8.2.0.tgz#57e55dfe65eaded5ca484f438a7b32e0821bf579"
-  integrity sha512-iEvashbhcu9L2GxLkztk7uK/7gX8vmmfuOKbjI6M430a7gsLPzG/tO/jlFR466NyH449A7f8lsm0Th0W6AR3FQ==
+"@jahia/cypress@^8.5.0":
+  version "8.5.0"
+  resolved "https://registry.yarnpkg.com/@jahia/cypress/-/cypress-8.5.0.tgz#acb5f75bb9479ce85e6aab52de9bdd0696a5326e"
+  integrity sha512-pELqzYj6/k4vmpT4/dG1mPbmfQN9AneCg76QTMGDKKoadHRSiHB1SXDGyDJlKMj/AlqH6bOLvvzrqDjXy4YFEA==
   dependencies:
     "@apollo/client" "^3.4.9"
     "@faker-js/faker" "^10.3.0"
     compare-versions "^6.1.1"
+    cypress-mailpit "^1.4.0"
     cypress-real-events "^1.11.0"
     graphql "^15.5.0"
     graphql-tag "^2.11.0"

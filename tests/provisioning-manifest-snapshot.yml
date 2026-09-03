@@ -12,4 +12,3 @@
     - 'js:mvn:org.jahia.modules.javascript/user-password-authentication-ui/LATEST/tgz'
   autoStart: true
   uninstallPreviousVersion: true
-- include: 'provisioning.yml'

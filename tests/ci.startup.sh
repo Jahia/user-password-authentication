@@ -11,7 +11,6 @@ echo " JAHIA_CLUSTER_ENABLED: ${JAHIA_CLUSTER_ENABLED}"
 echo " MODULE_ID: ${MODULE_ID}"
 echo " JAHIA_URL: ${JAHIA_URL}"
 echo " SUPER_USER_PASSWORD: ${SUPER_USER_PASSWORD}"
-echo " SMTP_SERVER_URL: ${SMTP_SERVER_URL}"
 
 version=$(node -p "require('./package.json').devDependencies['@jahia/cypress']")
 echo Using @jahia/cypress@$version...
