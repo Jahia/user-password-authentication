@@ -1,4 +1,3 @@
-import 'cypress-mailpit';
 import {
     createUserForMFA,
     deleteAllEmails,
