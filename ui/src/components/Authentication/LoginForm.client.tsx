@@ -5,6 +5,7 @@ import { useApiRoot } from "../../hooks/ApiRootContext.jsx";
 import ErrorMessage from "./ErrorMessage.client";
 import type { Props } from "./types";
 import { convertErrorArgsToInterpolation } from "../../services/i18n";
+import { sanitizeHtml } from "./sanitizeHtml";
 import type { MfaError } from "../../services/common";
 import { useTranslation } from "react-i18next";
 
@@ -98,7 +99,9 @@ export default function LoginForm(props: Readonly<LoginFormProps>) {
           <div
             data-testid="below-password-field"
             className={classes.belowPasswordField}
-            dangerouslySetInnerHTML={{ __html: props.content.loginBelowPasswordFieldHtml }}
+            dangerouslySetInnerHTML={{
+              __html: sanitizeHtml(props.content.loginBelowPasswordFieldHtml),
+            }}
           />
         )}
         <div className={classes.formField}>
@@ -122,7 +125,9 @@ export default function LoginForm(props: Readonly<LoginFormProps>) {
         <div
           data-testid="additional-action"
           className={classes.additionalAction}
-          dangerouslySetInnerHTML={{ __html: props.content.loginAdditionalActionHtml }}
+          dangerouslySetInnerHTML={{
+            __html: sanitizeHtml(props.content.loginAdditionalActionHtml),
+          }}
         />
       )}
     </>

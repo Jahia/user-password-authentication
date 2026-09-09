@@ -7,6 +7,7 @@ import type { Props } from "./types";
 import { convertErrorArgsToInterpolation } from "../../services/i18n";
 import { Trans, useTranslation } from "react-i18next";
 import type { MfaError } from "../../services/common";
+import { sanitizeHtml } from "./sanitizeHtml";
 
 interface EmailCodeVerificationFormProps {
   content: Props;
@@ -167,7 +168,7 @@ export default function EmailCodeVerificationForm(props: Readonly<EmailCodeVerif
           {props.content.emailCodeVerificationAdditionalActionHtml && (
             <div
               dangerouslySetInnerHTML={{
-                __html: props.content.emailCodeVerificationAdditionalActionHtml,
+                __html: sanitizeHtml(props.content.emailCodeVerificationAdditionalActionHtml),
               }}
             />
           )}

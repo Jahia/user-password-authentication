@@ -10,6 +10,7 @@ import classes from "./component.module.css";
 import "@fontsource-variable/nunito-sans";
 import Authentication from "./Authentication.client.jsx";
 import type { Props } from "./types";
+import { sanitizeHtml } from "./sanitizeHtml";
 
 jahiaComponent(
   {
@@ -26,11 +27,13 @@ jahiaComponent(
       loginEmailFieldLabel: props.loginEmailFieldLabel,
       loginPasswordFieldLabel: props.loginPasswordFieldLabel,
       loginSubmitButtonLabel: props.loginSubmitButtonLabel,
-      loginBelowPasswordFieldHtml: props.loginBelowPasswordFieldHtml,
-      loginAdditionalActionHtml: props.loginAdditionalActionHtml,
+      loginBelowPasswordFieldHtml: sanitizeHtml(props.loginBelowPasswordFieldHtml),
+      loginAdditionalActionHtml: sanitizeHtml(props.loginAdditionalActionHtml),
       emailCodeVerificationFieldLabel: props.emailCodeVerificationFieldLabel,
       emailCodeVerificationSubmitButtonLabel: props.emailCodeVerificationSubmitButtonLabel,
-      emailCodeVerificationAdditionalActionHtml: props.emailCodeVerificationAdditionalActionHtml,
+      emailCodeVerificationAdditionalActionHtml: sanitizeHtml(
+        props.emailCodeVerificationAdditionalActionHtml,
+      ),
       emailCodeVerificationAdditionalActionResendLabel:
         props.emailCodeVerificationAdditionalActionResendLabel,
     };
