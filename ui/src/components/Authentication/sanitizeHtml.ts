@@ -1,25 +1,36 @@
-import { FilterXSS, getDefaultWhiteList } from "xss";
+import { FilterXSS } from "xss";
 
 /**
  * Allow-list for the richtext properties of `upaui:authentication`, rendered through
- * `dangerouslySetInnerHTML`. It is the formatting set the Content Editor produces for these
- * fields: links (including the `target="_blank"` of the shipped defaults), paragraphs, inline
- * emphasis, lists and headings. Tags and attributes outside it are dropped, and `href`/`src`
- * values are kept only for the usual document schemes.
+ * `dangerouslySetInnerHTML`. It names the formatting these fields are meant to carry: links
+ * (including the `target="_blank"` of the shipped defaults), paragraphs, inline emphasis, lists
+ * and headings. Every other tag and attribute is dropped, and `href` keeps only the usual
+ * document schemes.
  *
  * `xss` is used rather than DOMPurify because it is a pure-JS tokenizer with no DOM dependency,
  * so the same allow-list applies in the server rendering engine and in the browser.
  */
-const whiteList = {
-  ...getDefaultWhiteList(),
+const whiteList: Record<string, string[]> = {
   a: ["href", "title", "target", "rel"],
   p: ["class"],
   span: ["class"],
-  img: ["src", "alt", "title", "width", "height"],
+  b: [],
+  strong: [],
+  i: [],
+  em: [],
+  u: [],
+  s: [],
+  br: [],
+  ul: [],
+  ol: [],
+  li: [],
+  h1: [],
+  h2: [],
+  h3: [],
+  h4: [],
+  h5: [],
+  h6: [],
 };
-// The library scheme-filters `href` and `src`, not `poster`, and these fields carry no media.
-delete (whiteList as Record<string, unknown>).video;
-delete (whiteList as Record<string, unknown>).audio;
 
 const filter = new FilterXSS({
   whiteList,

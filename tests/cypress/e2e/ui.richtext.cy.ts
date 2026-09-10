@@ -19,6 +19,7 @@ const SITE_KEY = 'sample-richtext';
 const AUTHORED_HTML = '<p class=\'hint\'>Need <strong>help</strong>?</p>' +
     '<a href=\'https://www.jahia.com/\' target=\'_blank\'>Contact us</a>' +
     '<img src=\'x\' onerror=\'globalThis.upaRichtextMarker = true\'>' +
+    '<area shape=\'rect\' coords=\'0,0,99,99\' href=\'https://www.jahia.com/\'>' +
     '<iframe src=\'https://www.jahia.com/\'></iframe>';
 
 /**
@@ -30,7 +31,7 @@ const assertRendersSupportedFormatting = (selector: string): void => {
     cy.get(selector).find('strong').should('have.text', 'help');
     cy.get(selector).find('a').should('have.attr', 'href', 'https://www.jahia.com/');
     cy.get(selector).find('a').should('have.attr', 'target', '_blank');
-    cy.get(selector).find('img').should('not.have.attr', 'onerror');
+    cy.get(selector).find('img').should('not.exist');
     cy.get(selector).find('iframe').should('not.exist');
     cy.window().should(window => {
         expect(window).to.not.have.property('upaRichtextMarker');
@@ -65,6 +66,8 @@ describe('Rich text properties of the authentication component', () => {
             expect(belowPasswordField, 'the field must be server-rendered for the checks below to mean anything').to.not.eq(null);
             expect(belowPasswordField[1]).to.contain('<strong>help</strong>');
             expect(belowPasswordField[1]).to.not.contain('onerror');
+            expect(belowPasswordField[1]).to.not.contain('<img');
+            expect(belowPasswordField[1]).to.not.contain('<area');
             expect(belowPasswordField[1]).to.not.contain('<iframe');
         });
 
