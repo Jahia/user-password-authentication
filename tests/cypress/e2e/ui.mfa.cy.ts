@@ -124,6 +124,16 @@ describe('Tests for the UI module', () => {
         assertIsLoggedIn(username);
     });
 
+    it('Should be authenticated when the browser autofills the credentials without firing any input event', () => {
+        installMFAConfig('sample-ui-no-factors.yml');
+
+        LoginStep.triggerRedirect(SITE_KEY);
+        LoginStep.loginWithAutofill(username, password);
+
+        LoginStep.assertRedirectedFromLoginPage(SITE_KEY);
+        assertIsLoggedIn(username, password);
+    });
+
     it('Should be authenticated when following all the MFA steps and have the correct props (labels, HTMLs)', () => {
         LoginStep.triggerRedirect(SITE_KEY);
 
