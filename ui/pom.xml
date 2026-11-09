@@ -29,6 +29,9 @@
     <packaging>pom</packaging> <!-- the JavaScript .tgz module is generated, but for Maven it is just a pom -->
     <description>UI of the User Password Authentication (UPA) module</description>
 
+    <properties>
+        <sonar.sources>src,package.json,pom.xml</sonar.sources>
+    </properties>
 
     <build>
         <plugins>

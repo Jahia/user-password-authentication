@@ -2,8 +2,8 @@ import {defineConfig} from 'cypress';
 import fs from 'fs';
 
 export default defineConfig({
-    // DefaultCommandTimeout: 10000,
-    // videoUploadOnPasses: false,
+    defaultCommandTimeout: 10000,
+    // VideoUploadOnPasses: false,
     reporter: 'cypress-multi-reporters',
     reporterOptions: {
         configFile: 'reporter-config.json'
@@ -39,8 +39,5 @@ export default defineConfig({
         },
         excludeSpecPattern: '*.ignore.ts',
         baseUrl: 'http://localhost:8080'
-    },
-    env: {
-        MAILPIT_URL: process.env.MAILPIT_URL || 'http://localhost:8025' // Fallback for local runs
     }
 });

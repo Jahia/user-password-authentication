@@ -33,6 +33,7 @@
         <jahia-deploy-on-site>all</jahia-deploy-on-site>
         <jahia-depends>graphql-dxm-provider</jahia-depends>
         <jahia-module-signature>MC0CFBV5RNIxXSOSDh6ltS7jWnV+O8BtAhUAj1pxt8wJShlhZBUatskXiFWpuIo=</jahia-module-signature>
+        <sonar.sources>src,pom.xml</sonar.sources>
     </properties>
 
 

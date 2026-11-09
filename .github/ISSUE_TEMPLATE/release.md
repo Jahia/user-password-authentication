@@ -45,9 +45,10 @@ The following combinations should be validated:
 
 <h2 id="prepare-checklist">:pencil2: Prepare checklist</h2>
 
-- [ ] All other tickets within that milestone are are closed
+- [ ] All other tickets within that milestone are closed
 - [ ] Testing matrix and Minimum Jahia version are detailed
 - [ ] Jahia-parent (minimum Jahia version) was updated if requested in the ticket
+- [ ] Chachalog PR has been verified and merged
 - [ ] Release creation has been triggered from the Github Release UI ([detailed documentation](https://jahia-confluence.atlassian.net/wiki/spaces/PR/pages/2064804/Releasing+a+module#Releasingamodule-ReleasingwithGithub))
 
 <h2 id="tests-checklist">:vertical_traffic_light: Tests checklist</h2>
@@ -75,10 +76,11 @@ After Testing
 - [ ] The release changelog was prepared
 - [ ] In case of a major release, a **Breaking Changes** section is present in the Changelog
 - [ ] The artifact was released on Nexus
-- [ ] If the module is included in Jahia distribution, [jahia-pack-private](https://github.com/Jahia/jahia-pack-private/blob/master/core-modules/pom.xml) was updated with the released version
+- [ ] If the module is included in Jahia distribution, [jahia-pack-private](https://github.com/Jahia/jahia-pack-private/blob/main/core-modules/pom.xml) was updated with the released version
 - [ ] ⚠️ If the module has a dependency to a recent release of [graphql-dxm-provider](https://github.com/Jahia/graphql-core), [server-availability-manager](https://github.com/Jahia/server-availability-manager) or [personal-api-tokens](https://github.com/Jahia/personal-api-tokens), contact the Cloud team to require their approval before publication.
 - [ ] If applicable, corresponding academy pages were published
 - [ ] The module was published on the store
 - [ ] The [modules releases log page](https://edit.jahia.com/jahia/jcontent/academy/en/pages/home/customer-center/jahia/release-notes/modules-releases-log?params=(sub:!f)) on the Academy was updated
 - [ ] A message was published on slack #releases channel
 - [ ] The milestone on GitHub was closed
+- [ ] The GitHub Release is not in Draft anymore and does contain the changelog
