@@ -131,7 +131,7 @@ describe('Tests for the UI module', () => {
         LoginStep.loginWithAutofill(username, password);
 
         LoginStep.assertRedirectedFromLoginPage(SITE_KEY);
-        assertIsLoggedIn(username, password);
+        assertIsLoggedIn(username);
     });
 
     it('Should be authenticated when following all the MFA steps and have the correct props (labels, HTMLs)', () => {
