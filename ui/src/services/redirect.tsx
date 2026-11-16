@@ -13,15 +13,10 @@ function getSafeRedirect(redirect: string | null, contextPath: string): string {
       return contextPath + "/";
     }
 
-    // Only allow relative URLs (starting with a single /, not //)
-    if (redirect.startsWith("/") && !redirect.startsWith("//")) {
-      return redirect;
-    }
-
-    // If it's an absolute URL, only allow if it's for the same origin
+    // Resolve the target the way the browser does, and only allow the current origin
     const url = new URL(redirect, window.location.origin);
     if (url.origin === window.location.origin) {
-      return url.pathname + url.search + url.hash;
+      return url.href;
     }
   } catch (e) {
     console.warn("Invalid redirect URL", e);
