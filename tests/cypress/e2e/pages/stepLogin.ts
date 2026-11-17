@@ -62,6 +62,24 @@ export class LoginStep extends BasePage {
     }
 
     /**
+     * Login with credentials that the browser autofills: the values reach the DOM, and no input or change event fires.
+     * @param username - The username to login with
+     * @param password - The password to login with
+     */
+    static loginWithAutofill(username: string, password: string): void {
+        cy.log(String('Authenticating with autofilled credentials: ' + username + ' / ' + password));
+        // Wait for the hydration of the island: React attaches its props to the DOM node it hydrated
+        cy.get(this.selectors.inputUsername).should($input => {
+            expect(Object.keys($input[0]).some(key => key.startsWith('__reactProps$'))).to.equal(true);
+        });
+        // The val() method of jQuery sets the DOM value and dispatches no event, like the autofill of Firefox
+        cy.get(this.selectors.inputUsername).invoke('val', username);
+        cy.get(this.selectors.inputPassword).invoke('val', password);
+
+        cy.get(this.selectors.buttonSubmit).click();
+    }
+
+    /**
      * Select email code factor (if multiple factors are available)
      */
     static selectEmailCodeFactor(): void {
