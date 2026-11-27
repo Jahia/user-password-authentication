@@ -373,7 +373,7 @@ describe('Tests for the UI module', () => {
             signInFromSecondLanguage(username, email);
         });
 
-        it('Should not authenticate a user of another site', () => {
+        it('Should look the user up in the site of the login page, so a user of another site is not found', () => {
             const otherSiteUsername = jfaker.internet.username({safe: true});
             createSiteUser(otherSiteUsername, jfaker.internet.email(), SITE_KEY);
 
