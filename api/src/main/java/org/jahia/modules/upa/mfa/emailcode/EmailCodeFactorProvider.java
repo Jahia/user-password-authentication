@@ -47,6 +47,7 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
     private static final String EMAIL_CODE_TEMPLATE_NAME = "emailCodeTemplate";
     private static final SecureRandom random = new SecureRandom();
     private static final String ERROR_SENDING_VALIDATION_FAILED = "factor.email_code.sending_validation_code_failed";
+    private static final String ERROR_USER_NOT_FOUND = "user_not_found";
     private static final String ERROR_VERIFICATION_CODE_REQUIRED = "factor.email_code.verification_code_required";
     private static final String ERROR_PREPARATION_CODE_REQUIRED = "factor.email_code.missing_prepared_code";
     private static final String ERROR_PREPARATION_FAILED = "factor.email_code.preparation_failed";
@@ -95,7 +96,7 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
         // Looks a server user up first, then a user of the site, as the password check of MfaService.initiate does
         JCRUserNode userNode = userManagerService.lookupUser(userId, siteKey);
         if (userNode == null) {
-            throw new MfaException("user_not_found", "user", userId);
+            throw new MfaException(ERROR_USER_NOT_FOUND, "user", userId);
         }
         String emailAddress = getUserEmailAddress(userNode);
 

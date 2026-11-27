@@ -163,7 +163,7 @@ public class MfaServiceImpl implements MfaService {
         try {
             user = authenticationService.getUserFromCredentials(authenticationRequest);
         } catch (IllegalArgumentException | LoginException e) {
-            logger.warn("Unable to authenticate the user: {}", username);
+            logger.warn("Unable to authenticate the user: {} (site: {})", username, siteKey);
             logger.debug("Authentication error", e);
             MfaSession errorSession = createNoSessionError();
             errorSession.setError(new MfaError(ERROR_AUTHENTICATION_FAILED));

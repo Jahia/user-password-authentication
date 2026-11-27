@@ -312,12 +312,16 @@ describe('Tests for the UI module', () => {
         const languages = ['en', 'fr'];
         const loginPageURL = getLoginPageURL(siteKey, languages[1]);
 
-        const signInFromSecondLanguage = (signInUsername: string, signInEmail?: string): void => {
+        const interceptInitiate = (): void => {
             cy.intercept('POST', '**/modules/graphql', req => {
                 if (req.body?.variables?.password !== undefined) {
                     req.alias = 'mfaInitiate';
                 }
             });
+        };
+
+        const signInFromSecondLanguage = (signInUsername: string, signInEmail?: string): void => {
+            interceptInitiate();
             cy.logout();
             cy.visit(loginPageURL);
             LoginStep.login(signInUsername, password);
@@ -373,9 +377,14 @@ describe('Tests for the UI module', () => {
             const otherSiteUsername = jfaker.internet.username({safe: true});
             createSiteUser(otherSiteUsername, jfaker.internet.email(), SITE_KEY);
 
+            interceptInitiate();
             cy.logout();
             cy.visit(loginPageURL);
             LoginStep.login(otherSiteUsername, password);
+            cy.wait('@mfaInitiate').then(({request, response}) => {
+                expect(request.body.variables.site).to.eq(siteKey);
+                expect(response.body.data.upa.mfaInitiate.session.error.code).to.eq('authentication_failed');
+            });
             LoginStep.assertErrorMessage();
         });
     });
