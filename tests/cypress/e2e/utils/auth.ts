@@ -84,13 +84,17 @@ export const assertIsLoggedIn = (username: string) => {
     assertIsNotSuspended(username);
 };
 
-// A user of a site cannot open the Jahia Dashboard
+/**
+ * Asserts the session belongs to the given user, through the currentUser GraphQL query.
+ * Works for a user of a site, who cannot open the Jahia Dashboard. The template set test module grants the query to any user.
+ * @param username the username to check
+ */
 export const assertCurrentUser = (username: string) => {
     cy.request({
         method: 'POST',
         url: '/modules/graphql',
-        body: {query: '{ currentUser { name } }'}
-    }).its('body.data.currentUser.name').should('eq', username);
+        body: {query: '{ currentUser { username } }'}
+    }).its('body.data.currentUser.username').should('eq', username);
 };
 
 /**
