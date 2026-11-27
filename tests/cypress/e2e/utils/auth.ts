@@ -84,6 +84,15 @@ export const assertIsLoggedIn = (username: string) => {
     assertIsNotSuspended(username);
 };
 
+// A user of a site cannot open the Jahia Dashboard
+export const assertCurrentUser = (username: string) => {
+    cy.request({
+        method: 'POST',
+        url: '/modules/graphql',
+        body: {query: '{ currentUser { name } }'}
+    }).its('body.data.currentUser.name').should('eq', username);
+};
+
 /**
  * Asserts that the current cookies match the expected cookie names.
  * First verifies that all expected cookies are present, then checks that the total count matches exactly.

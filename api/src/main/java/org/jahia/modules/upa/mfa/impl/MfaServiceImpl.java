@@ -163,7 +163,7 @@ public class MfaServiceImpl implements MfaService {
         try {
             user = authenticationService.getUserFromCredentials(authenticationRequest);
         } catch (IllegalArgumentException | LoginException e) {
-            logger.warn("Unable to authenticate the user: {}", username);
+            logger.warn("Unable to authenticate the user: {} (site: {})", username, siteKey);
             logger.debug("Authentication error", e);
             MfaSession errorSession = createNoSessionError();
             errorSession.setError(new MfaError(ERROR_AUTHENTICATION_FAILED));
@@ -185,14 +185,23 @@ public class MfaServiceImpl implements MfaService {
             return session;
         }
 
+        // special case when there is no required factor configured (the 2nd factor is disabled): the user is
+        // resolved first, so that no initiated MFA session is stored for a user that cannot be found
+        JCRUserNode jcrUserNode = null;
+        if (session.areAllRequiredFactorsCompleted()) {
+            jcrUserNode = resolveUserNode(session);
+            if (jcrUserNode == null) {
+                session.setError(new MfaError(ERROR_USER_NOT_FOUND));
+                return session;
+            }
+        }
+
         // Complete initiation
         session.setInitiated(true);
         httpSession.setAttribute(MFA_SESSION_KEY, session);
 
-        if (session.areAllRequiredFactorsCompleted()) {
-            // special case when there is no required factor configured (the 2nd factor is disabled)
+        if (jcrUserNode != null) {
             logger.info("No required factors to verify for context: {}, proceed with authentication", session.getContext());
-            JCRUserNode jcrUserNode = resolveUserNode(session);
             authenticateUser(session, jcrUserNode, request, response);
             failuresCache.invalidate(jcrUserNode.getPath());
         } else {
@@ -366,10 +375,16 @@ public class MfaServiceImpl implements MfaService {
         return provider;
     }
 
+    /**
+     * Returns the user of the session, looked up with the site of the sign-in, as the password check of
+     * {@link #initiate} did: a server user first, then a user of that site. Returns {@code null}, after a
+     * warning in the log, when neither matches.
+     */
     private JCRUserNode resolveUserNode(MfaSession session) {
-        JCRUserNode user = userManagerService.lookupUser(session.getContext().getUserId());
+        MfaSessionContext context = session.getContext();
+        JCRUserNode user = userManagerService.lookupUser(context.getUserId(), context.getSiteKey());
         if (user == null) {
-            logger.warn("User not found: {}", session.getContext().getUserId());
+            logger.warn("User not found: {} (site: {})", context.getUserId(), context.getSiteKey());
         }
         return user;
     }

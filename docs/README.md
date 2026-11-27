@@ -53,7 +53,7 @@ To ensure that users are properly redirected to your login page when accessing p
 Navigate to **Tools → OSGi Console → OSGi → Configuration** and set the `loginUrl` parameter of the `org.jahia.modules.upa` configuration to the URL of the page containing your UPA login form (e.g., `/sites/mySite/login.html`).
 Notes:
   - This page must be accessible without authentication
-  - The URL **must** include the site key for proper email template resolution (required when using the UI module's default template or custom templates)
+  - The component sends the site of the page that renders it, so that the users of that site can sign in and the email template of that site is used, whatever the form of the URL
   - If the value is empty or blank, the login URL provider will be disabled
 
 For all configuration options and default values, see the [default configuration file](https://github.com/Jahia/user-password-authentication/blob/main/api/src/main/resources/META-INF/configurations/org.jahia.modules.upa.cfg).
@@ -178,6 +178,7 @@ For example, with 3 nodes and 5 tries configured, a user could, theoretically, g
 ### Global login URL
 The login URL is global and shared across all sites.
 If you set the `loginUrl` in the configuration, visitors of all sites will be redirected to this URL when getting a 401 page. The Login URL Provider embedded in this module applies to the whole platform.
+Only the server users and the users of the site of that login page can sign in from it: the users of another site cannot sign in through it.
 
 ### Multiple Login URL Providers
 

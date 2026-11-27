@@ -1,8 +1,9 @@
-import {deleteSite, deleteUser} from '@jahia/cypress';
+import {createUser, deleteSite, deleteUser, publishAndWaitJobEnding} from '@jahia/cypress';
 import {jfaker, BrowserHelper} from '@jahia/cypress';
 import {EmailFactorStep, LoginStep} from './pages';
 import {
     assertCookiesMatch,
+    assertCurrentUser,
     assertIsLoggedIn, assertIsNotLoggedIn,
     AuthenticationProps,
     createSiteWithLoginPage,
@@ -304,6 +305,88 @@ describe('Tests for the UI module', () => {
 
         // Cleanup
         deleteSite(siteKey);
+    });
+
+    describe('Sign-in from the login page of a site in its second language', () => {
+        const siteKey = 'second-language-site';
+        const languages = ['en', 'fr'];
+        const loginPageURL = getLoginPageURL(siteKey, languages[1]);
+
+        const interceptInitiate = (): void => {
+            cy.intercept('POST', '**/modules/graphql', req => {
+                if (req.body?.variables?.password !== undefined) {
+                    req.alias = 'mfaInitiate';
+                }
+            });
+        };
+
+        const signInFromSecondLanguage = (signInUsername: string, signInEmail?: string): void => {
+            interceptInitiate();
+            cy.logout();
+            cy.visit(loginPageURL);
+            LoginStep.login(signInUsername, password);
+            cy.wait('@mfaInitiate').its('request.body.variables.site').should('eq', siteKey);
+            if (signInEmail) {
+                LoginStep.selectEmailCodeFactor();
+                getVerificationCode(signInEmail).then(code => EmailFactorStep.submitVerificationCode(code));
+            }
+
+            LoginStep.assertRedirectedFromLoginPage(siteKey, languages[1]);
+            assertCurrentUser(signInUsername);
+        };
+
+        const createSiteUser = (siteUsername: string, siteUserEmail: string, userSiteKey = siteKey): void => {
+            createUser(siteUsername, password, [
+                {name: 'preferredLanguage', value: 'en'},
+                {name: 'j:firstName', value: ''},
+                {name: 'j:lastName', value: ''},
+                {name: 'j:email', value: siteUserEmail}
+            ], userSiteKey);
+        };
+
+        before(() => {
+            createSiteWithLoginPage(siteKey, languages);
+            publishAndWaitJobEnding(`/sites/${siteKey}`, languages);
+        });
+
+        after(() => {
+            deleteSite(siteKey); // Removes the site users with it
+        });
+
+        it('Should authenticate a user of the site', () => {
+            const siteUsername = jfaker.internet.username({safe: true});
+            const siteUserEmail = jfaker.internet.email();
+            createSiteUser(siteUsername, siteUserEmail);
+
+            signInFromSecondLanguage(siteUsername, siteUserEmail);
+        });
+
+        it('Should authenticate a user of the site when no factor is configured', () => {
+            installMFAConfig('sample-ui-no-factors.yml');
+            const siteUsername = jfaker.internet.username({safe: true});
+            createSiteUser(siteUsername, jfaker.internet.email());
+
+            signInFromSecondLanguage(siteUsername);
+        });
+
+        it('Should authenticate a server user', () => {
+            signInFromSecondLanguage(username, email);
+        });
+
+        it('Should not authenticate a user of another site', () => {
+            const otherSiteUsername = jfaker.internet.username({safe: true});
+            createSiteUser(otherSiteUsername, jfaker.internet.email(), SITE_KEY);
+
+            interceptInitiate();
+            cy.logout();
+            cy.visit(loginPageURL);
+            LoginStep.login(otherSiteUsername, password);
+            cy.wait('@mfaInitiate').then(({request, response}) => {
+                expect(request.body.variables.site).to.eq(siteKey);
+                expect(response.body.data.upa.mfaInitiate.session.error.code).to.eq('authentication_failed');
+            });
+            LoginStep.assertErrorMessage();
+        });
     });
 
     it('Should display an error when an invalid password is entered', () => {
