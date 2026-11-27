@@ -7,9 +7,6 @@ export interface Props {
    *
    */
   contextPath: string;
-  /**
-   * The key of the site of the page that renders the component, sent with the credentials so that a user of that site can sign in.
-   */
   siteKey?: string;
   logo?: JCRNodeWrapper;
   loginEmailFieldLabel: string;

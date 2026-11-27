@@ -3,6 +3,7 @@ import {jfaker, BrowserHelper} from '@jahia/cypress';
 import {EmailFactorStep, LoginStep} from './pages';
 import {
     assertCookiesMatch,
+    assertCurrentUser,
     assertIsLoggedIn, assertIsNotLoggedIn,
     AuthenticationProps,
     createSiteWithLoginPage,
@@ -309,13 +310,9 @@ describe('Tests for the UI module', () => {
     describe('Sign-in from the login page of a site in its second language', () => {
         const siteKey = 'second-language-site';
         const languages = ['en', 'fr'];
-        const loginPageURL = getLoginPageURL(siteKey, languages[1]); // /fr/sites/second-language-site/...
+        const loginPageURL = getLoginPageURL(siteKey, languages[1]);
 
-        /**
-         * Signs in from the login page in the second language through the email factor, and asserts that the
-         * screen sent the site of the page with the credentials.
-         */
-        const signInFromSecondLanguage = (signInUsername: string, signInEmail: string): void => {
+        const signInFromSecondLanguage = (signInUsername: string, signInEmail?: string): void => {
             cy.intercept('POST', '**/modules/graphql', req => {
                 if (req.body?.variables?.password !== undefined) {
                     req.alias = 'mfaInitiate';
@@ -325,11 +322,22 @@ describe('Tests for the UI module', () => {
             cy.visit(loginPageURL);
             LoginStep.login(signInUsername, password);
             cy.wait('@mfaInitiate').its('request.body.variables.site').should('eq', siteKey);
-            LoginStep.selectEmailCodeFactor();
-            getVerificationCode(signInEmail).then(code => {
-                EmailFactorStep.submitVerificationCode(code);
-                EmailFactorStep.assertRedirectedFromLoginPage(siteKey, languages[1]);
-            });
+            if (signInEmail) {
+                LoginStep.selectEmailCodeFactor();
+                getVerificationCode(signInEmail).then(code => EmailFactorStep.submitVerificationCode(code));
+            }
+
+            LoginStep.assertRedirectedFromLoginPage(siteKey, languages[1]);
+            assertCurrentUser(signInUsername);
+        };
+
+        const createSiteUser = (siteUsername: string, siteUserEmail: string): void => {
+            createUser(siteUsername, password, [
+                {name: 'preferredLanguage', value: 'en'},
+                {name: 'j:firstName', value: ''},
+                {name: 'j:lastName', value: ''},
+                {name: 'j:email', value: siteUserEmail}
+            ], siteKey);
         };
 
         before(() => {
@@ -344,17 +352,21 @@ describe('Tests for the UI module', () => {
         it('Should authenticate a user of the site', () => {
             const siteUsername = jfaker.internet.username({safe: true});
             const siteUserEmail = jfaker.internet.email();
-            createUser(siteUsername, password, [
-                {name: 'preferredLanguage', value: 'en'},
-                {name: 'j:email', value: siteUserEmail}
-            ], siteKey);
+            createSiteUser(siteUsername, siteUserEmail);
 
             signInFromSecondLanguage(siteUsername, siteUserEmail);
         });
 
+        it('Should authenticate a user of the site when no factor is configured', () => {
+            installMFAConfig('sample-ui-no-factors.yml');
+            const siteUsername = jfaker.internet.username({safe: true});
+            createSiteUser(siteUsername, jfaker.internet.email());
+
+            signInFromSecondLanguage(siteUsername);
+        });
+
         it('Should authenticate a server user', () => {
             signInFromSecondLanguage(username, email);
-            assertIsLoggedIn(username);
         });
     });
 

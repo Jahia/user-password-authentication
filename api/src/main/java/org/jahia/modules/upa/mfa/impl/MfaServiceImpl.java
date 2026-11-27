@@ -185,18 +185,23 @@ public class MfaServiceImpl implements MfaService {
             return session;
         }
 
-        // Complete initiation
-        session.setInitiated(true);
-        httpSession.setAttribute(MFA_SESSION_KEY, session);
-
+        // special case when there is no required factor configured (the 2nd factor is disabled):
+        // the user is resolved before the initiation, so that a user not found is an error and no sign-in
+        JCRUserNode jcrUserNode = null;
         if (session.areAllRequiredFactorsCompleted()) {
-            // special case when there is no required factor configured (the 2nd factor is disabled)
-            logger.info("No required factors to verify for context: {}, proceed with authentication", session.getContext());
-            JCRUserNode jcrUserNode = resolveUserNode(session);
+            jcrUserNode = resolveUserNode(session);
             if (jcrUserNode == null) {
                 session.setError(new MfaError(ERROR_USER_NOT_FOUND));
                 return session;
             }
+        }
+
+        // Complete initiation
+        session.setInitiated(true);
+        httpSession.setAttribute(MFA_SESSION_KEY, session);
+
+        if (jcrUserNode != null) {
+            logger.info("No required factors to verify for context: {}, proceed with authentication", session.getContext());
             authenticateUser(session, jcrUserNode, request, response);
             failuresCache.invalidate(jcrUserNode.getPath());
         } else {
@@ -372,7 +377,8 @@ public class MfaServiceImpl implements MfaService {
 
     /**
      * Returns the user of the session, looked up with the site of the sign-in, as the password check of
-     * {@link #initiate} did: a server user first, then a user of that site.
+     * {@link #initiate} did: a server user first, then a user of that site. Returns {@code null}, after a
+     * warning in the log, when neither matches.
      */
     private JCRUserNode resolveUserNode(MfaSession session) {
         MfaSessionContext context = session.getContext();

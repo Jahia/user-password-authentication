@@ -91,10 +91,11 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
     @Override
     public Serializable prepare(PreparationContext preparationContext) throws MfaException {
         String userId = preparationContext.getSessionContext().getUserId();
-        // The site of the sign-in, as the password check used it: a server user first, then a user of that site
-        JCRUserNode userNode = userManagerService.lookupUser(userId, preparationContext.getSessionContext().getSiteKey());
+        String siteKey = preparationContext.getSessionContext().getSiteKey();
+        // Looks a server user up first, then a user of the site, as the password check of MfaService.initiate does
+        JCRUserNode userNode = userManagerService.lookupUser(userId, siteKey);
         if (userNode == null) {
-            throw new IllegalStateException("User " + userId + " not found");
+            throw new IllegalStateException("User " + userId + " not found (site: " + siteKey + ")");
         }
         String emailAddress = getUserEmailAddress(userNode);
 

@@ -85,6 +85,19 @@ export const assertIsLoggedIn = (username: string) => {
 };
 
 /**
+ * Asserts that the session of the browser belongs to the given user, through the GraphQL API that a user of a site can
+ * call too, unlike the Jahia Dashboard of `assertIsLoggedIn`.
+ * @param username the username to check
+ */
+export const assertCurrentUser = (username: string) => {
+    cy.request({
+        method: 'POST',
+        url: '/modules/graphql',
+        body: {query: '{ currentUser { name } }'}
+    }).its('body.data.currentUser.name').should('eq', username);
+};
+
+/**
  * Asserts that the current cookies match the expected cookie names.
  * First verifies that all expected cookies are present, then checks that the total count matches exactly.
  * @param cookiesNames the array of expected cookie names
