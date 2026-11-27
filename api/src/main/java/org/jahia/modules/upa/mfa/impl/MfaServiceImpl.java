@@ -193,6 +193,10 @@ public class MfaServiceImpl implements MfaService {
             // special case when there is no required factor configured (the 2nd factor is disabled)
             logger.info("No required factors to verify for context: {}, proceed with authentication", session.getContext());
             JCRUserNode jcrUserNode = resolveUserNode(session);
+            if (jcrUserNode == null) {
+                session.setError(new MfaError(ERROR_USER_NOT_FOUND));
+                return session;
+            }
             authenticateUser(session, jcrUserNode, request, response);
             failuresCache.invalidate(jcrUserNode.getPath());
         } else {
@@ -366,10 +370,15 @@ public class MfaServiceImpl implements MfaService {
         return provider;
     }
 
+    /**
+     * Returns the user of the session, looked up with the site of the sign-in, as the password check of
+     * {@link #initiate} did: a server user first, then a user of that site.
+     */
     private JCRUserNode resolveUserNode(MfaSession session) {
-        JCRUserNode user = userManagerService.lookupUser(session.getContext().getUserId());
+        MfaSessionContext context = session.getContext();
+        JCRUserNode user = userManagerService.lookupUser(context.getUserId(), context.getSiteKey());
         if (user == null) {
-            logger.warn("User not found: {}", session.getContext().getUserId());
+            logger.warn("User not found: {} (site: {})", context.getUserId(), context.getSiteKey());
         }
         return user;
     }

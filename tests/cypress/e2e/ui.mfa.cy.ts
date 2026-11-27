@@ -1,4 +1,4 @@
-import {deleteSite, deleteUser} from '@jahia/cypress';
+import {createUser, deleteSite, deleteUser, publishAndWaitJobEnding} from '@jahia/cypress';
 import {jfaker, BrowserHelper} from '@jahia/cypress';
 import {EmailFactorStep, LoginStep} from './pages';
 import {
@@ -304,6 +304,58 @@ describe('Tests for the UI module', () => {
 
         // Cleanup
         deleteSite(siteKey);
+    });
+
+    describe('Sign-in from the login page of a site in its second language', () => {
+        const siteKey = 'second-language-site';
+        const languages = ['en', 'fr'];
+        const loginPageURL = getLoginPageURL(siteKey, languages[1]); // /fr/sites/second-language-site/...
+
+        /**
+         * Signs in from the login page in the second language through the email factor, and asserts that the
+         * screen sent the site of the page with the credentials.
+         */
+        const signInFromSecondLanguage = (signInUsername: string, signInEmail: string): void => {
+            cy.intercept('POST', '**/modules/graphql', req => {
+                if (req.body?.variables?.password !== undefined) {
+                    req.alias = 'mfaInitiate';
+                }
+            });
+            cy.logout();
+            cy.visit(loginPageURL);
+            LoginStep.login(signInUsername, password);
+            cy.wait('@mfaInitiate').its('request.body.variables.site').should('eq', siteKey);
+            LoginStep.selectEmailCodeFactor();
+            getVerificationCode(signInEmail).then(code => {
+                EmailFactorStep.submitVerificationCode(code);
+                EmailFactorStep.assertRedirectedFromLoginPage(siteKey, languages[1]);
+            });
+        };
+
+        before(() => {
+            createSiteWithLoginPage(siteKey, languages);
+            publishAndWaitJobEnding(`/sites/${siteKey}`, languages);
+        });
+
+        after(() => {
+            deleteSite(siteKey); // Removes the site users with it
+        });
+
+        it('Should authenticate a user of the site', () => {
+            const siteUsername = jfaker.internet.username({safe: true});
+            const siteUserEmail = jfaker.internet.email();
+            createUser(siteUsername, password, [
+                {name: 'preferredLanguage', value: 'en'},
+                {name: 'j:email', value: siteUserEmail}
+            ], siteKey);
+
+            signInFromSecondLanguage(siteUsername, siteUserEmail);
+        });
+
+        it('Should authenticate a server user', () => {
+            signInFromSecondLanguage(username, email);
+            assertIsLoggedIn(username);
+        });
     });
 
     it('Should display an error when an invalid password is entered', () => {

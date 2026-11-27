@@ -23,6 +23,7 @@ jahiaComponent(
     // pass the JCR props server-side -> client-side
     const content: Props = {
       contextPath: renderContext.getRequest().getContextPath(),
+      siteKey: renderContext.getSite()?.getSiteKey(),
       loginEmailFieldLabel: props.loginEmailFieldLabel,
       loginPasswordFieldLabel: props.loginPasswordFieldLabel,
       loginSubmitButtonLabel: props.loginSubmitButtonLabel,
