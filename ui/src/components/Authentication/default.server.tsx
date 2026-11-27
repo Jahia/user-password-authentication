@@ -20,11 +20,11 @@ jahiaComponent(
   (props: Props, { renderContext }) => {
     // the API root is generated server-side
     const apiRoot = buildEndpointUrl("/modules/graphql");
-    // under /modules/, the site of the render is a template set, whose users are not site users
     const site = renderContext.getSite();
     // pass the JCR props server-side -> client-side
     const content: Props = {
       contextPath: renderContext.getRequest().getContextPath(),
+      // under /modules/, the site of the render is a template set, whose users are not site users
       siteKey: site?.getPath().startsWith("/sites/") ? site.getSiteKey() : undefined,
       loginEmailFieldLabel: props.loginEmailFieldLabel,
       loginPasswordFieldLabel: props.loginPasswordFieldLabel,

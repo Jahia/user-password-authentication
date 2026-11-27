@@ -185,8 +185,8 @@ public class MfaServiceImpl implements MfaService {
             return session;
         }
 
-        // special case when there is no required factor configured (the 2nd factor is disabled):
-        // the user is resolved before the initiation, so that a user not found is an error and no sign-in
+        // special case when there is no required factor configured (the 2nd factor is disabled): the user is
+        // resolved first, so that no initiated MFA session is stored for a user that cannot be found
         JCRUserNode jcrUserNode = null;
         if (session.areAllRequiredFactorsCompleted()) {
             jcrUserNode = resolveUserNode(session);

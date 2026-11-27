@@ -84,11 +84,7 @@ export const assertIsLoggedIn = (username: string) => {
     assertIsNotSuspended(username);
 };
 
-/**
- * Asserts that the session of the browser belongs to the given user, through the GraphQL API that a user of a site can
- * call too, unlike the Jahia Dashboard of `assertIsLoggedIn`.
- * @param username the username to check
- */
+// A user of a site cannot open the Jahia Dashboard
 export const assertCurrentUser = (username: string) => {
     cy.request({
         method: 'POST',
