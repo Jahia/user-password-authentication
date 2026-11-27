@@ -95,7 +95,7 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
         // Looks a server user up first, then a user of the site, as the password check of MfaService.initiate does
         JCRUserNode userNode = userManagerService.lookupUser(userId, siteKey);
         if (userNode == null) {
-            throw new IllegalStateException("User " + userId + " not found (site: " + siteKey + ")");
+            throw new MfaException("user_not_found", "user", userId);
         }
         String emailAddress = getUserEmailAddress(userNode);
 

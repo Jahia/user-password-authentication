@@ -331,13 +331,13 @@ describe('Tests for the UI module', () => {
             assertCurrentUser(signInUsername);
         };
 
-        const createSiteUser = (siteUsername: string, siteUserEmail: string): void => {
+        const createSiteUser = (siteUsername: string, siteUserEmail: string, userSiteKey = siteKey): void => {
             createUser(siteUsername, password, [
                 {name: 'preferredLanguage', value: 'en'},
                 {name: 'j:firstName', value: ''},
                 {name: 'j:lastName', value: ''},
                 {name: 'j:email', value: siteUserEmail}
-            ], siteKey);
+            ], userSiteKey);
         };
 
         before(() => {
@@ -367,6 +367,16 @@ describe('Tests for the UI module', () => {
 
         it('Should authenticate a server user', () => {
             signInFromSecondLanguage(username, email);
+        });
+
+        it('Should not authenticate a user of another site', () => {
+            const otherSiteUsername = jfaker.internet.username({safe: true});
+            createSiteUser(otherSiteUsername, jfaker.internet.email(), SITE_KEY);
+
+            cy.logout();
+            cy.visit(loginPageURL);
+            LoginStep.login(otherSiteUsername, password);
+            LoginStep.assertErrorMessage();
         });
     });
 

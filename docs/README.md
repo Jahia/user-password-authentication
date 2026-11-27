@@ -178,6 +178,7 @@ For example, with 3 nodes and 5 tries configured, a user could, theoretically, g
 ### Global login URL
 The login URL is global and shared across all sites.
 If you set the `loginUrl` in the configuration, visitors of all sites will be redirected to this URL when getting a 401 page. The Login URL Provider embedded in this module applies to the whole platform.
+Only the server users and the users of the site of that login page can sign in from it: the users of another site need a login page of their own site.
 
 ### Multiple Login URL Providers
 
