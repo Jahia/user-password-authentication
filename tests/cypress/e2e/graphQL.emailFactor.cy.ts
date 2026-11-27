@@ -1,6 +1,7 @@
-import {jfaker, deleteSite, deleteUser, getJahiaVersion} from '@jahia/cypress';
+import {jfaker, createUser, deleteSite, deleteUser, getJahiaVersion} from '@jahia/cypress';
 import {compare} from 'compare-versions';
 import {
+    assertCurrentUser,
     assertIsLoggedIn,
     assertIsNotLoggedIn,
     assertIsSuspended,
@@ -104,6 +105,26 @@ describe('Tests for the GraphQL APIs related to the EmailCodeFactorProvider', ()
         createSiteWithLoginPage(siteKey);
         validatePositiveMFAFlow(TEST_USER, siteKey);
         deleteSite(siteKey);
+    });
+
+    it('Should be authenticated on a specific site as a user of that site', () => {
+        const siteKey = jfaker.lorem.slug();
+        createSiteWithLoginPage(siteKey);
+        const siteUsername = jfaker.internet.username({firstName: 'siteUser'});
+        const siteUserEmail = jfaker.internet.email();
+        createUser(siteUsername, TEST_USER.password, [
+            {name: 'preferredLanguage', value: 'en'},
+            {name: 'j:email', value: siteUserEmail}
+        ], siteKey);
+
+        initiate(siteUsername, TEST_USER.password, siteKey);
+        prepareEmailCodeFactor();
+        getVerificationCode(siteUserEmail).then(code => {
+            verifyEmailCodeFactor(code);
+            assertCurrentUser(siteUsername);
+        });
+
+        deleteSite(siteKey); // Removes the site user with it
     });
 
     it(`Should receive i18n mail based on user preferred language: ${TEST_USER_I18N.username()}`, () => {

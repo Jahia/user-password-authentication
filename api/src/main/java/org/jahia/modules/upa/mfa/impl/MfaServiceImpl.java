@@ -175,7 +175,7 @@ public class MfaServiceImpl implements MfaService {
         String preferredLanguage = user.getProperty("preferredLanguage");
         userLocale = preferredLanguage != null ? new Locale(preferredLanguage) : Locale.ENGLISH;
         List<String> requiredFactors = getAvailableFactors(); // for now just use all available factors
-        MfaSessionContext sessionContext = new MfaSessionContext(username, userLocale, siteKey, rememberMe, requiredFactors);
+        MfaSessionContext sessionContext = new MfaSessionContext(username, user.getLocalPath(), userLocale, siteKey, rememberMe, requiredFactors);
         MfaSession session = new MfaSession(sessionContext);
 
         // Validate user not suspended
@@ -185,25 +185,15 @@ public class MfaServiceImpl implements MfaService {
             return session;
         }
 
-        // special case when there is no required factor configured (the 2nd factor is disabled): the user is
-        // resolved first, so that no initiated MFA session is stored for a user that cannot be found
-        JCRUserNode jcrUserNode = null;
-        if (session.areAllRequiredFactorsCompleted()) {
-            jcrUserNode = resolveUserNode(session);
-            if (jcrUserNode == null) {
-                session.setError(new MfaError(ERROR_USER_NOT_FOUND));
-                return session;
-            }
-        }
-
         // Complete initiation
         session.setInitiated(true);
         httpSession.setAttribute(MFA_SESSION_KEY, session);
 
-        if (jcrUserNode != null) {
+        if (session.areAllRequiredFactorsCompleted()) {
+            // special case when there is no required factor configured (the 2nd factor is disabled)
             logger.info("No required factors to verify for context: {}, proceed with authentication", session.getContext());
-            authenticateUser(session, jcrUserNode, request, response);
-            failuresCache.invalidate(jcrUserNode.getPath());
+            authenticateUser(session, sessionContext.getUserNodePath(), request, response);
+            failuresCache.invalidate(sessionContext.getUserNodePath());
         } else {
             logger.info("MFA session initiated for user: {}", username);
         }
@@ -288,7 +278,7 @@ public class MfaServiceImpl implements MfaService {
 
             if (session.areAllRequiredFactorsCompleted()) {
                 logger.info("All MFA factors completed for context: {}, proceed with authentication", session.getContext());
-                authenticateUser(session, validation.userNode, httpServletRequest, httpServletResponse);
+                authenticateUser(session, userPath, httpServletRequest, httpServletResponse);
                 failuresCache.invalidate(userPath);
             }
         } catch (MfaException e) {
@@ -375,26 +365,21 @@ public class MfaServiceImpl implements MfaService {
         return provider;
     }
 
-    /**
-     * Returns the user of the session, looked up with the site of the sign-in, as the password check of
-     * {@link #initiate} did: a server user first, then a user of that site. Returns {@code null}, after a
-     * warning in the log, when neither matches.
-     */
     private JCRUserNode resolveUserNode(MfaSession session) {
-        MfaSessionContext context = session.getContext();
-        JCRUserNode user = userManagerService.lookupUser(context.getUserId(), context.getSiteKey());
+        String userNodePath = session.getContext().getUserNodePath();
+        JCRUserNode user = userNodePath != null ? userManagerService.lookupUserByPath(userNodePath) : null;
         if (user == null) {
-            logger.warn("User not found: {} (site: {})", context.getUserId(), context.getSiteKey());
+            logger.warn("User not found: {}", userNodePath);
         }
         return user;
     }
 
-    private void authenticateUser(MfaSession session, JCRUserNode jcrUserNode, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
+    private void authenticateUser(MfaSession session, String userNodePath, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
         AuthenticationOptions authOptions = AuthenticationOptions.Builder.withDefaults()
                 .shouldRememberMe(session.getContext().shouldRememberMe())
                 .build();
         try {
-            authenticationService.authenticate(jcrUserNode.getPath(), authOptions, httpServletRequest, httpServletResponse);
+            authenticationService.authenticate(userNodePath, authOptions, httpServletRequest, httpServletResponse);
         } catch (InvalidSessionLoginException e) {
             throw new IllegalStateException("Invalid session login", e);
         } catch (AccountNotFoundException e) {

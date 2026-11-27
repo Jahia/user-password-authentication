@@ -137,11 +137,15 @@ The APIs are available at `/modules/graphql-dxm-provider/tools/graphql-workspace
 
 To create a custom UI, copy (or fork) the [UI module](https://github.com/Jahia/user-password-authentication/tree/main/ui/) and customize it as needed. 
 
+A custom UI sends the key of the site of the login page in the `site` argument of `mfaInitiate`. Without it, only the server users can sign in, and the email template of the site is not used.
+
 ### Creating a Custom MFA Factor
 
 ⚠️ **Experimental Feature**: This feature is subject to change in future releases.
 
 You can implement custom MFA factors (e.g., SMS, TOTP, biometric) by implementing the `MfaFactorProvider` interface.
+
+To read the user who signs in, use `MfaSessionContext.getUserNodePath()`: it is the path of the user whose password was checked, a server user or a user of a site. Resolve it with `JahiaUserManagerService.lookupUserByPath`, and do not look the user up again by name.
 
 **Example:** See [mfa-custom-factor](https://github.com/Jahia/user-password-authentication/tree/main/test-modules/mfa-custom-factor/) module.
 

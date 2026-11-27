@@ -34,13 +34,14 @@ import java.util.Locale;
  */
 public class MfaSessionContext implements Serializable {
     private final String userId;
+    private final String userNodePath;
     private final Locale userPreferredLanguage;
     private final String siteKey;
     private final boolean rememberMe;
     private final List<String> requiredFactors;
 
     /**
-     * Creates a new MFA session context.
+     * Creates a new MFA session context with no authenticated user node.
      *
      * @param userId                the unique identifier for the user
      * @param userPreferredLanguage the user's preferred language for localized messages
@@ -49,7 +50,23 @@ public class MfaSessionContext implements Serializable {
      * @param requiredFactors       the list of factor types required to complete authentication
      */
     public MfaSessionContext(String userId, Locale userPreferredLanguage, String siteKey, boolean rememberMe, List<String> requiredFactors) {
+        this(userId, null, userPreferredLanguage, siteKey, rememberMe, requiredFactors);
+    }
+
+    /**
+     * Creates a new MFA session context.
+     *
+     * @param userId                the unique identifier for the user
+     * @param userNodePath          the path of the JCR node of the user whose password was verified (may be null)
+     * @param userPreferredLanguage the user's preferred language for localized messages
+     * @param siteKey               the site context for this MFA session (may be null)
+     * @param rememberMe            whether the user enables the "remember me" feature
+     * @param requiredFactors       the list of factor types required to complete authentication
+     */
+    public MfaSessionContext(String userId, String userNodePath, Locale userPreferredLanguage, String siteKey, boolean rememberMe,
+            List<String> requiredFactors) {
         this.userId = userId;
+        this.userNodePath = userNodePath;
         this.userPreferredLanguage = userPreferredLanguage;
         this.siteKey = siteKey;
         this.rememberMe = rememberMe;
@@ -63,6 +80,16 @@ public class MfaSessionContext implements Serializable {
      */
     public String getUserId() {
         return userId;
+    }
+
+    /**
+     * Returns the path of the JCR node of the user whose password was verified when the session was initiated,
+     * to be resolved with {@code JahiaUserManagerService.lookupUserByPath(String)}.
+     *
+     * @return the path of the user node, or null if no user was authenticated
+     */
+    public String getUserNodePath() {
+        return userNodePath;
     }
 
     /**
