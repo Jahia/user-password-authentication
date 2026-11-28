@@ -312,9 +312,13 @@ describe('Tests for the UI module', () => {
         const languages = ['en', 'fr'];
         const loginPageURL = getLoginPageURL(siteKey, languages[1]);
 
+        // Read in the handler: with no factor, the page leaves for the redirect before cy.wait() yields the request
+        let initiateSite: string | undefined;
         const interceptInitiate = (): void => {
+            initiateSite = undefined;
             cy.intercept('POST', '**/modules/graphql', req => {
                 if (req.body?.variables?.password !== undefined) {
+                    initiateSite = req.body.variables.site;
                     req.alias = 'mfaInitiate';
                 }
             });
@@ -325,7 +329,7 @@ describe('Tests for the UI module', () => {
             cy.logout();
             cy.visit(loginPageURL);
             LoginStep.login(signInUsername, password);
-            cy.wait('@mfaInitiate').its('request.body.variables.site').should('eq', siteKey);
+            cy.wait('@mfaInitiate').then(() => expect(initiateSite).to.eq(siteKey));
             if (signInEmail) {
                 LoginStep.selectEmailCodeFactor();
                 getVerificationCode(signInEmail).then(code => EmailFactorStep.submitVerificationCode(code));
@@ -381,8 +385,8 @@ describe('Tests for the UI module', () => {
             cy.logout();
             cy.visit(loginPageURL);
             LoginStep.login(otherSiteUsername, password);
-            cy.wait('@mfaInitiate').then(({request, response}) => {
-                expect(request.body.variables.site).to.eq(siteKey);
+            cy.wait('@mfaInitiate').then(({response}) => {
+                expect(initiateSite).to.eq(siteKey);
                 expect(response.body.data.upa.mfaInitiate.session.error.code).to.eq('authentication_failed');
             });
             LoginStep.assertErrorMessage();
