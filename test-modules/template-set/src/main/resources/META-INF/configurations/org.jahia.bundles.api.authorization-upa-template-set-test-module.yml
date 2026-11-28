@@ -1,0 +1,8 @@
+---
+# Test only: lets the Cypress tests read the user of their session, a site user included
+upaTestsCurrentUser:
+  grants:
+  - api: "graphql.Query.currentUser"
+  - api: "graphql.Current_32_user"
+  auto_apply:
+  - always: "true"

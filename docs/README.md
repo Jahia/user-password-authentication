@@ -53,7 +53,7 @@ To ensure that users are properly redirected to your login page when accessing p
 Navigate to **Tools → OSGi Console → OSGi → Configuration** and set the `loginUrl` parameter of the `org.jahia.modules.upa` configuration to the URL of the page containing your UPA login form (e.g., `/sites/mySite/login.html`).
 Notes:
   - This page must be accessible without authentication
-  - The URL **must** include the site key for proper email template resolution (required when using the UI module's default template or custom templates)
+  - The component sends the site of the page that renders it, so that the users of that site can sign in and the email template of that site is used, whatever the form of the URL
   - If the value is empty or blank, the login URL provider will be disabled
 
 For all configuration options and default values, see the [default configuration file](https://github.com/Jahia/user-password-authentication/blob/main/api/src/main/resources/META-INF/configurations/org.jahia.modules.upa.cfg).
@@ -137,11 +137,15 @@ The APIs are available at `/modules/graphql-dxm-provider/tools/graphql-workspace
 
 To create a custom UI, copy (or fork) the [UI module](https://github.com/Jahia/user-password-authentication/tree/main/ui/) and customize it as needed. 
 
+A custom UI sends the key of the site of the login page in the `site` argument of `mfaInitiate`. Without it, only the server users can sign in, and the email template of the site is not used.
+
 ### Creating a Custom MFA Factor
 
 ⚠️ **Experimental Feature**: This feature is subject to change in future releases.
 
 You can implement custom MFA factors (e.g., SMS, TOTP, biometric) by implementing the `MfaFactorProvider` interface.
+
+To read the user who signs in, use `MfaSessionContext.getUserNodePath()`: it is the path of the user whose password was checked, a server user or a user of a site. Resolve it with `JahiaUserManagerService.lookupUserByPath`, and do not look the user up again by name.
 
 **Example:** See [mfa-custom-factor](https://github.com/Jahia/user-password-authentication/tree/main/test-modules/mfa-custom-factor/) module.
 
@@ -178,6 +182,7 @@ For example, with 3 nodes and 5 tries configured, a user could, theoretically, g
 ### Global login URL
 The login URL is global and shared across all sites.
 If you set the `loginUrl` in the configuration, visitors of all sites will be redirected to this URL when getting a 401 page. The Login URL Provider embedded in this module applies to the whole platform.
+The login form sends the site of its page in the `site` argument of `mfaInitiate`. So the server users and the users of that site can sign in from it, with the email template of that site. This argument only selects where the user is looked up: it is not an access control, because any client can send another site key.
 
 ### Multiple Login URL Providers
 

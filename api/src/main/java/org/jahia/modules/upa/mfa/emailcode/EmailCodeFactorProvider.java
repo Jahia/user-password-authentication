@@ -47,6 +47,7 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
     private static final String EMAIL_CODE_TEMPLATE_NAME = "emailCodeTemplate";
     private static final SecureRandom random = new SecureRandom();
     private static final String ERROR_SENDING_VALIDATION_FAILED = "factor.email_code.sending_validation_code_failed";
+    private static final String ERROR_USER_NOT_FOUND = "user_not_found";
     private static final String ERROR_VERIFICATION_CODE_REQUIRED = "factor.email_code.verification_code_required";
     private static final String ERROR_PREPARATION_CODE_REQUIRED = "factor.email_code.missing_prepared_code";
     private static final String ERROR_PREPARATION_FAILED = "factor.email_code.preparation_failed";
@@ -90,10 +91,10 @@ public class EmailCodeFactorProvider implements MfaFactorProvider {
 
     @Override
     public Serializable prepare(PreparationContext preparationContext) throws MfaException {
-        String userId = preparationContext.getSessionContext().getUserId();
-        JCRUserNode userNode = userManagerService.lookupUser(userId);
+        String userNodePath = preparationContext.getSessionContext().getUserNodePath();
+        JCRUserNode userNode = userNodePath != null ? userManagerService.lookupUserByPath(userNodePath) : null;
         if (userNode == null) {
-            throw new IllegalStateException("User " + userId + " not found");
+            throw new MfaException(ERROR_USER_NOT_FOUND, "user", preparationContext.getSessionContext().getUserId());
         }
         String emailAddress = getUserEmailAddress(userNode);
 

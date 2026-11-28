@@ -7,6 +7,7 @@ export interface Props {
    *
    */
   contextPath: string;
+  siteKey?: string;
   logo?: JCRNodeWrapper;
   loginEmailFieldLabel: string;
   loginPasswordFieldLabel: string;
